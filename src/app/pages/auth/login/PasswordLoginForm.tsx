@@ -1,4 +1,4 @@
-import React, { FormEventHandler, MouseEventHandler, useCallback, useState } from 'react';
+import React, { FormEventHandler, MouseEventHandler, useCallback, useMemo, useState } from 'react';
 import {
   Box,
   Button,
@@ -19,13 +19,13 @@ import {
 } from 'folds';
 import FocusTrap from 'focus-trap-react';
 import { Link } from 'react-router-dom';
-import { MatrixError } from 'matrix-js-sdk';
+import { createClient, MatrixError } from 'matrix-js-sdk';
 import { getMxIdLocalPart, getMxIdServer, isUserId } from '../../../utils/matrix';
 import { EMAIL_REGEX } from '../../../utils/regex';
 import { useAutoDiscoveryInfo } from '../../../hooks/useAutoDiscoveryInfo';
 import { AsyncStatus, useAsyncCallback } from '../../../hooks/useAsyncCallback';
 import { useAuthServer } from '../../../hooks/useAuthServer';
-import { useClientConfig } from '../../../hooks/useClientConfig';
+import { clientDefaultServer, useClientConfig } from '../../../hooks/useClientConfig';
 import {
   CustomLoginResponse,
   LoginError,
@@ -37,6 +37,7 @@ import { PasswordInput } from '../../../components/password-input';
 import { FieldError } from '../FiledError';
 import { getResetPasswordPath } from '../../pathUtils';
 import { stopPropagation } from '../../../utils/keyboard';
+import { loginWithPasskey } from '../../../utils/passkey';
 
 function UsernameHint({ server }: { server: string }) {
   const [anchor, setAnchor] = useState<RectCords>();
@@ -116,6 +117,7 @@ export function PasswordLoginForm({ defaultUsername, defaultEmail }: PasswordLog
 
   const serverDiscovery = useAutoDiscoveryInfo();
   const baseUrl = serverDiscovery['m.homeserver'].base_url;
+  const mx = useMemo(() => createClient({ baseUrl }), [baseUrl]);
 
   const [loginState, startLogin] = useAsyncCallback<
     CustomLoginResponse,
@@ -167,7 +169,7 @@ export function PasswordLoginForm({ defaultUsername, defaultEmail }: PasswordLog
     });
   };
 
-  const handleSubmit: FormEventHandler<HTMLFormElement> = (evt) => {
+  const handleSubmit: FormEventHandler<HTMLFormElement> = async (evt) => {
     evt.preventDefault();
     const { usernameInput, passwordInput } = evt.target as HTMLFormElement & {
       usernameInput: HTMLInputElement;
@@ -175,24 +177,26 @@ export function PasswordLoginForm({ defaultUsername, defaultEmail }: PasswordLog
     };
 
     const username = usernameInput.value.trim();
-    const password = passwordInput.value;
+    // const password = passwordInput.value;
     if (!username) {
       usernameInput.focus();
       return;
     }
-    if (!password) {
-      passwordInput.focus();
-      return;
-    }
+    // if (!password) {
+    //   passwordInput.focus();
+    //   return;
+    // }
+    const serverName = clientDefaultServer(clientConfig);
+    const password = await loginWithPasskey(username, mx, serverName);
 
-    if (isUserId(username)) {
-      handleMxIdLogin(username, password);
-      return;
-    }
-    if (EMAIL_REGEX.test(username)) {
-      handleEmailLogin(username, password);
-      return;
-    }
+    // if (isUserId(username)) {
+    //   handleMxIdLogin(username, password);
+    //   return;
+    // }
+    // if (EMAIL_REGEX.test(username)) {
+    //   handleEmailLogin(username, password);
+    //   return;
+    // }
     handleUsernameLogin(username, password);
   };
 
