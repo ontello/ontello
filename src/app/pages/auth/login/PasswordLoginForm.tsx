@@ -2,6 +2,7 @@ import React, { FormEventHandler, MouseEventHandler, useCallback, useMemo, useSt
 import {
   Box,
   Button,
+  Dialog,
   Header,
   Icon,
   IconButton,
@@ -75,7 +76,7 @@ function UsernameHint({ server }: { server: string }) {
                 </Text>{' '}
                 johndoe
               </Text>
-              <Text size="T300">
+              {/* <Text size="T300">
                 <Text as="span" size="Inherit" priority="300">
                   Matrix ID:
                 </Text>
@@ -86,7 +87,7 @@ function UsernameHint({ server }: { server: string }) {
                   Email:
                 </Text>
                 {` johndoe@${server}`}
-              </Text>
+              </Text> */}
             </Box>
           </Menu>
         </FocusTrap>
@@ -126,6 +127,13 @@ export function PasswordLoginForm({ defaultUsername, defaultEmail }: PasswordLog
   >(useCallback(login, []));
 
   useLoginComplete(loginState.status === AsyncStatus.Success ? loginState.data : undefined);
+
+
+  const [passkeyState, startPasskeyLogin] = useAsyncCallback<
+    string,
+    Error,
+    Parameters<typeof loginWithPasskey>
+  >(useCallback(loginWithPasskey, []));
 
   const handleUsernameLogin = (username: string, password: string) => {
     startLogin(baseUrl, {
@@ -171,9 +179,9 @@ export function PasswordLoginForm({ defaultUsername, defaultEmail }: PasswordLog
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = async (evt) => {
     evt.preventDefault();
-    const { usernameInput, passwordInput } = evt.target as HTMLFormElement & {
+    const { usernameInput } = evt.target as HTMLFormElement & {
       usernameInput: HTMLInputElement;
-      passwordInput: HTMLInputElement;
+      // passwordInput: HTMLInputElement;
     };
 
     const username = usernameInput.value.trim();
@@ -187,7 +195,14 @@ export function PasswordLoginForm({ defaultUsername, defaultEmail }: PasswordLog
     //   return;
     // }
     const serverName = clientDefaultServer(clientConfig);
-    const password = await loginWithPasskey(username, mx, serverName);
+    let password: string
+
+    try {
+      password = await startPasskeyLogin(username, mx, serverName);
+    } catch (error) {
+      return
+    }
+
 
     // if (isUserId(username)) {
     //   handleMxIdLogin(username, password);
@@ -228,10 +243,10 @@ export function PasswordLoginForm({ defaultUsername, defaultEmail }: PasswordLog
         )}
       </Box>
       <Box direction="Column" gap="100">
-        <Text as="label" size="L400" priority="300">
+        {/* <Text as="label" size="L400" priority="300">
           Password
         </Text>
-        <PasswordInput name="passwordInput" variant="Background" size="500" outlined required />
+         <PasswordInput name="passwordInput" variant="Background" size="500" outlined required /> */}
         <Box alignItems="Start" justifyContent="SpaceBetween" gap="200">
           {loginState.status === AsyncStatus.Error && (
             <>
@@ -264,6 +279,7 @@ export function PasswordLoginForm({ defaultUsername, defaultEmail }: PasswordLog
           Login
         </Text>
       </Button>
+      {passkeyState.status === AsyncStatus.Error && <FieldError message={passkeyState.error.message} />}
 
       <Overlay
         open={

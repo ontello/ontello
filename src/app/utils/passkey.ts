@@ -31,7 +31,7 @@ export function fromBase64Url(base64url: string): ArrayBuffer {
   }
   const binary = atob(base64);
   const buffer = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) {
+  for (let i = 0; i < binary.length; i += 1) {
     buffer[i] = binary.charCodeAt(i);
   }
 
@@ -119,13 +119,9 @@ const genChallenge = (user: string, prefix: string): ArrayBuffer => {
   const challenge = `${prefix} ${user}.ont.im at ${timestampInSeconds}`
   return (new TextEncoder).encode(challenge).buffer
 }
-const genLoginChallenge = (username: string): ArrayBuffer => {
-  return genChallenge(username, "Login");
-}
+const genLoginChallenge = (username: string): ArrayBuffer => genChallenge(username, "Login")
 
-const genRegisterChallenge = (user: string): ArrayBuffer => {
-  return genChallenge(user, "Register")
-}
+const genRegisterChallenge = (user: string): ArrayBuffer => genChallenge(user, "Register")
 
 
 export const registerWithPasskey = async (name: string): Promise<string> => {
@@ -135,14 +131,14 @@ export const registerWithPasskey = async (name: string): Promise<string> => {
 
     const publicKeyCredentialCreationOptions = {
       challenge: genRegisterChallenge(name),
-      //TODO
+      // TODO
       rp: {
         name: "PassKey Demo",
         id: "localhost",
       },
       user: {
         id: userIdArray,
-        name: name,
+        name,
         displayName: name,
       },
       pubKeyCredParams: [
@@ -205,31 +201,26 @@ export const loginWithPasskey = async (name: string, cl: MatrixClient, serverNam
     })) as PublicKeyCredential;
 
     const response = credential.response as AuthenticatorAssertionResponse;
-    console.log('credential', credential);
-    console.log('name', name);
-    console.log('serverName', serverName);
-
-    const credentials = await cl.getPasskeyCredentials(`@${name}:${serverName}`);
-    console.log('credentials', credentials);
+    const addedPublicks = await cl.getPasskeyCredentials(`@${name}:${serverName}`);
 
     let choseCredential = null
-    for (const credential of credentials) {
-      const pk = await recoverPublicKey(credential.publicKey);
+    // eslint-disable-next-line no-restricted-syntax
+    for (const addedPublick of addedPublicks) {
+      const pk = await recoverPublicKey(addedPublick.publicKey);
       const res = await verifySignature(pk, response.signature, response.clientDataJSON, response.authenticatorData);
-      console.log('res', res);
 
       if (res) {
-        choseCredential = credential;
+        choseCredential = addedPublick;
         break;
       }
     }
-    console.log('choseCredential', choseCredential);
-
     if (!choseCredential) {
+      console.log('err');
+
       throw new Error("Failed to verify passkey");
     }
+    console.log(1111);
 
-    console.log('choseCredential', choseCredential);
 
     const password = JSON.stringify(
       {
@@ -248,7 +239,8 @@ export const loginWithPasskey = async (name: string, cl: MatrixClient, serverNam
     )
     return password;
   } catch (error: any) {
-    console.error(error)
+    // console.error(error)
     throw new Error("Failed to login passkey");
+    // throw new Error(error.message);
   }
 }

@@ -14,7 +14,7 @@ declare module "matrix-js-sdk" {
 
 
 const requestPrefix = "/_matrix/client/v3";
-const registerExtendApis = function (): void {
+const registerExtendApis = (): void => {
   MatrixClient.prototype.getPasskeyCredentials = function (
     userId: string
   ): Promise<IPasskeyCredential[]> {

@@ -58,7 +58,8 @@ module.exports = {
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "error",
 
-    "@typescript-eslint/no-unused-vars": "error",
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": "warn",
     "@typescript-eslint/no-shadow": "error"
   },
   overrides: [

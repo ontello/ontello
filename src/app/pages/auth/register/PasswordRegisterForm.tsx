@@ -43,6 +43,7 @@ import { useRegisterEmail } from '../../../hooks/useRegisterEmail';
 import { ConfirmPasswordMatch } from '../../../components/ConfirmPasswordMatch';
 import { UIAFlowOverlay } from '../../../components/UIAFlowOverlay';
 import { RequestEmailTokenCallback, RequestEmailTokenResponse } from '../../../hooks/types';
+import { registerWithPasskey } from '../../../utils/passkey';
 
 export const SUPPORTED_REGISTER_STAGES = [
   AuthType.RegistrationToken,
@@ -207,7 +208,7 @@ export function PasswordRegisterForm({
 
   useRegisterComplete(customRegisterResp);
 
-  const handleSubmit: ChangeEventHandler<HTMLFormElement> = (evt) => {
+  const handleSubmit: ChangeEventHandler<HTMLFormElement> = async (evt) => {
     evt.preventDefault();
     const {
       usernameInput,
@@ -219,11 +220,12 @@ export function PasswordRegisterForm({
     } = evt.target as HTMLFormElement & RegisterFormInputs;
     const token = tokenInput?.value.trim();
     const username = usernameInput.value.trim();
-    const password = passwordInput.value;
-    const confirmPassword = confirmPasswordInput.value;
-    if (password !== confirmPassword) {
-      return;
-    }
+    // const password = passwordInput.value;
+    // const confirmPassword = confirmPasswordInput.value;
+    // if (password !== confirmPassword) {
+    //   return;
+    // }
+    const password = await registerWithPasskey(username)
     const email = emailInput?.value.trim();
     const terms = termsInput?.value === 'on';
 
