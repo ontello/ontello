@@ -212,8 +212,8 @@ export function PasswordRegisterForm({
     evt.preventDefault();
     const {
       usernameInput,
-      passwordInput,
-      confirmPasswordInput,
+      // passwordInput,
+      // confirmPasswordInput,
       emailInput,
       tokenInput,
       termsInput,
@@ -281,10 +281,10 @@ export function PasswordRegisterForm({
             <FieldError message="This username is reserved." />
           )}
         </Box>
-        <ConfirmPasswordMatch initialValue>
+        {/*  <ConfirmPasswordMatch initialValue>
           {(match, doMatch, passRef, confPassRef) => (
             <>
-              <Box direction="Column" gap="100">
+             <Box direction="Column" gap="100">
                 <Text as="label" size="L400" priority="300">
                   Password
                 </Text>
@@ -313,8 +313,8 @@ export function PasswordRegisterForm({
                     }
                   />
                 )}
-              </Box>
-              <Box direction="Column" gap="100">
+              </Box> 
+             <Box direction="Column" gap="100">
                 <Text as="label" size="L400" priority="300">
                   Confirm Password
                 </Text>
@@ -328,10 +328,10 @@ export function PasswordRegisterForm({
                   outlined
                   required
                 />
-              </Box>
+              </Box> 
             </>
           )}
-        </ConfirmPasswordMatch>
+        </ConfirmPasswordMatch> */}
         {hasStageInFlows(uiaFlows, AuthType.RegistrationToken) && (
           <Box direction="Column" gap="100">
             <Text as="label" size="L400" priority="300">

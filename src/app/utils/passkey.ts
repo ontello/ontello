@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop */
 import { type MatrixClient } from "matrix-js-sdk";
 
 export function hexToArrayBuffer(hex: string): ArrayBuffer {
@@ -133,7 +134,7 @@ export const registerWithPasskey = async (name: string): Promise<string> => {
       challenge: genRegisterChallenge(name),
       // TODO
       rp: {
-        name: "PassKey Demo",
+        name: "Name",
         id: "localhost",
       },
       user: {
@@ -216,11 +217,8 @@ export const loginWithPasskey = async (name: string, cl: MatrixClient, serverNam
     }
     if (!choseCredential) {
       console.log('err');
-
       throw new Error("Failed to verify passkey");
     }
-    console.log(1111);
-
 
     const password = JSON.stringify(
       {

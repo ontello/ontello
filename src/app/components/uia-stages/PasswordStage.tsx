@@ -4,6 +4,10 @@ import { AuthType } from 'matrix-js-sdk';
 import { StageComponentProps } from './types';
 import { ErrorCode } from '../../cs-errorcode';
 import { PasswordInput } from '../password-input';
+import { useMatrixClient } from '../../hooks/useMatrixClient';
+import { loginWithPasskey } from '../../utils/passkey';
+import { getIdServer } from '../../../util/matrixUtil';
+
 
 export function PasswordStage({
   stageData,
@@ -13,15 +17,22 @@ export function PasswordStage({
 }: StageComponentProps & {
   userId: string;
 }) {
+  const mx = useMatrixClient();
+  console.log('userId', userId);
+
   const { errorCode, error, session } = stageData;
 
-  const handleFormSubmit: FormEventHandler<HTMLFormElement> = (evt) => {
+  const handleFormSubmit: FormEventHandler<HTMLFormElement> = async (evt) => {
     evt.preventDefault();
-    const { passwordInput } = evt.target as HTMLFormElement & {
-      passwordInput: HTMLInputElement;
-    };
-    const password = passwordInput.value;
-    if (!password) return;
+    // const { passwordInput } = evt.target as HTMLFormElement & {
+    //   passwordInput: HTMLInputElement;
+    // };
+    // const password = passwordInput.value
+
+    const user = mx.getUser(userId);
+    if (!user || !user.displayName) return;
+    const password = await loginWithPasskey(user.displayName, mx, getIdServer(userId))
+    // if (!password) return;
     submitAuthDict({
       type: AuthType.Password,
       identifier: {
@@ -61,7 +72,7 @@ export function PasswordStage({
             To perform this action you need to authenticate yourself by entering you account
             password.
           </Text>
-          <Box direction="Column" gap="100">
+          {/* <Box direction="Column" gap="100">
             <Text size="L400">Password</Text>
             <PasswordInput size="400" name="passwordInput" outlined autoFocus required />
             {errorCode && (
@@ -76,7 +87,7 @@ export function PasswordStage({
                 </Text>
               </Box>
             )}
-          </Box>
+          </Box> */}
         </Box>
         <Button variant="Primary" type="submit">
           <Text as="span" size="B400">
