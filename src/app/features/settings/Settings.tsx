@@ -33,6 +33,7 @@ import { About } from './about';
 import { UseStateProvider } from '../../components/UseStateProvider';
 import { stopPropagation } from '../../utils/keyboard';
 import { LogoutDialog } from '../../components/LogoutDialog';
+import { Wallet } from './wallet';
 
 export enum SettingsPages {
   GeneralPage,
@@ -42,6 +43,7 @@ export enum SettingsPages {
   EmojisStickersPage,
   DeveloperToolsPage,
   AboutPage,
+  WalletPage
 }
 
 type SettingsMenuItem = {
@@ -87,6 +89,11 @@ const useSettingsMenuItems = (): SettingsMenuItem[] =>
         page: SettingsPages.AboutPage,
         name: 'About',
         icon: Icons.Info,
+      },
+      {
+        page: SettingsPages.WalletPage,
+        name: 'Wallet',
+        icon: Icons.Inbox,
       },
     ],
     []
@@ -229,6 +236,9 @@ export function Settings({ initialPage, requestClose }: SettingsProps) {
         <DeveloperTools requestClose={handlePageRequestClose} />
       )}
       {activePage === SettingsPages.AboutPage && <About requestClose={handlePageRequestClose} />}
+      {activePage === SettingsPages.WalletPage && (
+        <Wallet requestClose={handlePageRequestClose} />
+      )}
     </PageRoot>
   );
 }

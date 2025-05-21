@@ -14,17 +14,17 @@ declare module "matrix-js-sdk" {
 
 
 const requestPrefix = "/_matrix/client/v3";
-const registerExtendApis = (): void => {
-  MatrixClient.prototype.getPasskeyCredentials = function (
-    userId: string
-  ): Promise<IPasskeyCredential[]> {
-    return this.http.authedRequest(
-      Method.Get,
-      `/profile/${encodeURIComponent(userId)}/credentials`,
-      undefined, // query params
-      undefined, // data
-      { prefix: requestPrefix }
-    );
-  };
-}
-registerExtendApis()
+// const registerExtendApis = (): void => {
+MatrixClient.prototype.getPasskeyCredentials = function (
+  userId: string
+): Promise<IPasskeyCredential[]> {
+  return this.http.authedRequest(
+    Method.Get,
+    `/profile/${encodeURIComponent(userId)}/credentials`,
+    undefined, // query params
+    undefined, // data
+    { prefix: requestPrefix }
+  );
+};
+// }
+// registerExtendApis()
