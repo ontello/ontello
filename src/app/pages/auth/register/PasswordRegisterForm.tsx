@@ -44,6 +44,7 @@ import { ConfirmPasswordMatch } from '../../../components/ConfirmPasswordMatch';
 import { UIAFlowOverlay } from '../../../components/UIAFlowOverlay';
 import { RequestEmailTokenCallback, RequestEmailTokenResponse } from '../../../hooks/types';
 import { registerWithPasskey } from '../../../utils/passkey';
+import cons from '../../../../client/state/cons';
 
 export const SUPPORTED_REGISTER_STAGES = [
   AuthType.RegistrationToken,
@@ -225,7 +226,7 @@ export function PasswordRegisterForm({
     // if (password !== confirmPassword) {
     //   return;
     // }
-    const password = await registerWithPasskey(username)
+    const { password, publicKey } = await registerWithPasskey(username)
     const email = emailInput?.value.trim();
     const terms = termsInput?.value === 'on';
 
@@ -246,7 +247,7 @@ export function PasswordRegisterForm({
     const pickedFlow = getUIAFlowForStages(uiaFlows, pickedStages);
     setOngoingFlow(pickedFlow);
     setFormData(fData);
-    handleRegister({
+    await handleRegister({
       username,
       password,
       auth: {
@@ -254,6 +255,7 @@ export function PasswordRegisterForm({
       },
       initial_device_display_name: 'Cinny Web',
     });
+    localStorage.setItem(cons.secretKey.PUBLIC_KEY, publicKey);
   };
 
   return (

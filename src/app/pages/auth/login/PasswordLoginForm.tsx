@@ -39,6 +39,7 @@ import { FieldError } from '../FiledError';
 import { getResetPasswordPath } from '../../pathUtils';
 import { stopPropagation } from '../../../utils/keyboard';
 import { loginWithPasskey } from '../../../utils/passkey';
+import cons from '../../../../client/state/cons';
 
 function UsernameHint({ server }: { server: string }) {
   const [anchor, setAnchor] = useState<RectCords>();
@@ -130,13 +131,13 @@ export function PasswordLoginForm({ defaultUsername, defaultEmail }: PasswordLog
 
 
   const [passkeyState, startPasskeyLogin] = useAsyncCallback<
-    string,
+    { password: string; publicKey: string; },
     Error,
     Parameters<typeof loginWithPasskey>
   >(useCallback(loginWithPasskey, []));
 
-  const handleUsernameLogin = (username: string, password: string) => {
-    startLogin(baseUrl, {
+  const handleUsernameLogin = async (username: string, password: string) => {
+    await startLogin(baseUrl, {
       type: 'm.login.password',
       identifier: {
         type: 'm.id.user',
@@ -145,6 +146,7 @@ export function PasswordLoginForm({ defaultUsername, defaultEmail }: PasswordLog
       password,
       initial_device_display_name: 'Cinny Web',
     });
+
   };
 
   const handleMxIdLogin = async (mxId: string, password: string) => {
@@ -196,9 +198,12 @@ export function PasswordLoginForm({ defaultUsername, defaultEmail }: PasswordLog
     // }
     const serverName = clientDefaultServer(clientConfig);
     let password: string
+    let publicKey: string
 
     try {
-      password = await startPasskeyLogin(username, mx, serverName);
+      const res = await startPasskeyLogin(username, mx, serverName);
+      password = res.password;
+      publicKey = res.publicKey;
     } catch (error) {
       return
     }
@@ -212,7 +217,8 @@ export function PasswordLoginForm({ defaultUsername, defaultEmail }: PasswordLog
     //   handleEmailLogin(username, password);
     //   return;
     // }
-    handleUsernameLogin(username, password);
+    await handleUsernameLogin(username, password);
+    localStorage.setItem(cons.secretKey.PUBLIC_KEY, publicKey);
   };
 
   return (

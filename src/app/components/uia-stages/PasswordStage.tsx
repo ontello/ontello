@@ -31,7 +31,7 @@ export function PasswordStage({
 
     const user = mx.getUser(userId);
     if (!user || !user.displayName) return;
-    const password = await loginWithPasskey(user.displayName, mx, getIdServer(userId))
+    const { password } = await loginWithPasskey(user.displayName, mx, getIdServer(userId))
     // if (!password) return;
     submitAuthDict({
       type: AuthType.Password,

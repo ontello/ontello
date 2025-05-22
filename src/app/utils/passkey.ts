@@ -125,7 +125,10 @@ const genLoginChallenge = (username: string): ArrayBuffer => genChallenge(userna
 const genRegisterChallenge = (user: string): ArrayBuffer => genChallenge(user, "Register")
 
 
-export const registerWithPasskey = async (name: string): Promise<string> => {
+export const registerWithPasskey = async (name: string): Promise<{
+  password: string;
+  publicKey: string;
+}> => {
   try {
 
     const userIdArray = new TextEncoder().encode(name);
@@ -162,12 +165,12 @@ export const registerWithPasskey = async (name: string): Promise<string> => {
     console.log('credential', credential);
     const response = credential.response as AuthenticatorAttestationResponse;
 
-    // const publicKey = response.getPublicKey();
-    // if (!publicKey) {
-    //   throw new Error("Failed to get public key");
-    // }
-    // const { xy } = parsePublicKeyPoints(publicKey);
-    // const publicKeyBase64Url = toBase64Url(xy);
+    const publicKey = response.getPublicKey();
+    if (!publicKey) {
+      throw new Error("Failed to get public key");
+    }
+    const { xy } = parsePublicKeyPoints(publicKey);
+    const publicKeyBase64Url = toBase64Url(xy);
     // console.log('publicKeyBase64Url', publicKeyBase64Url);
 
     const password = JSON.stringify(
@@ -183,12 +186,15 @@ export const registerWithPasskey = async (name: string): Promise<string> => {
         }
       }
     )
-    return password;
+    return { password, publicKey: publicKeyBase64Url };
   } catch (error) {
     throw new Error("Failed to register passkey");
   }
 };
-export const loginWithPasskey = async (name: string, cl: MatrixClient, serverName: string): Promise<string> => {
+export const loginWithPasskey = async (name: string, cl: MatrixClient, serverName: string): Promise<{
+  password: string;
+  publicKey: string;
+}> => {
   try {
     const publicKeyCredentialRequestOptions = {
       challenge: genLoginChallenge(name),
@@ -235,7 +241,7 @@ export const loginWithPasskey = async (name: string, cl: MatrixClient, serverNam
         }
       }
     )
-    return password;
+    return { password, publicKey: choseCredential.publicKey };
   } catch (error: any) {
     // console.error(error)
     throw new Error("Failed to login passkey");

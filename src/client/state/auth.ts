@@ -7,6 +7,7 @@ const getSecret = () => ({
   deviceId: localStorage.getItem(cons.secretKey.DEVICE_ID),
   userId: localStorage.getItem(cons.secretKey.USER_ID),
   baseUrl: localStorage.getItem(cons.secretKey.BASE_URL),
+  publicKey: localStorage.getItem(cons.secretKey.PUBLIC_KEY),
 });
 
 export { isAuthenticated, getSecret };
