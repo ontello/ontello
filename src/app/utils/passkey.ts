@@ -1,5 +1,6 @@
 /* eslint-disable no-await-in-loop */
 import { type MatrixClient } from "matrix-js-sdk";
+import { getPasskeyCredentials } from "../extendApis";
 
 export function hexToArrayBuffer(hex: string): ArrayBuffer {
   const buffer = new Uint8Array(hex.length / 2);
@@ -208,7 +209,7 @@ export const loginWithPasskey = async (name: string, cl: MatrixClient, serverNam
     })) as PublicKeyCredential;
 
     const response = credential.response as AuthenticatorAssertionResponse;
-    const addedPublicks = await cl.getPasskeyCredentials(`@${name}:${serverName}`);
+    const addedPublicks = await getPasskeyCredentials(cl, `@${name}:${serverName}`);
 
     let choseCredential = null
     // eslint-disable-next-line no-restricted-syntax

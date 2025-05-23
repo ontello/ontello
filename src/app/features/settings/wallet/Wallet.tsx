@@ -12,15 +12,17 @@ import {
   Dialog,
   Header,
   config,
-  Scroll
+  Scroll,
 } from 'folds';
 import FocusTrap from 'focus-trap-react';
-import { MatrixClient } from 'matrix-js-sdk';
 import { Page, PageContent, PageHeader } from '../../../components/page';
 import { SequenceCard } from '../../../components/sequence-card';
 import { SequenceCardStyle } from '../styles.css';
 import { stopPropagation } from '../../../utils/keyboard';
 import { SettingTile } from '../../../components/setting-tile';
+import { getSecret } from '../../../../client/state/auth';
+import { useFetchPasskeyList } from '../../../hooks/useFetchPasskeyList';
+import { useMatrixClient } from '../../../hooks/useMatrixClient';
 
 interface PasskeyItem {
   id: string;
@@ -32,16 +34,20 @@ type Props = {
 };
 
 export function Wallet({ requestClose }: Props) {
-  const currentPasskeyId = ''
   const [isRecoveryDialogOpen, setIsRecoveryDialogOpen] = useState(false);
   const [recoveryKey, setRecoveryKey] = useState('');
-  const [passkeys, setPasskeys] = useState<PasskeyItem[]>([]);
+
+  const { publicKey: currentPublicKey } = getSecret();
+  const mx = useMatrixClient();
+  const userId = mx.getUserId();
+
+  const [passkeys, refetch] = useFetchPasskeyList(userId!);
 
   const handleGenerateRecovery = async () => {
     try {
       // TODO: 调用生成助记词的函数
       // const mnemonic = await generateMnemonic();
-      setRecoveryKey("示例助记词");
+      setRecoveryKey('示例助记词');
       setIsRecoveryDialogOpen(true);
     } catch (error) {
       // TODO: 使用错误提示组件
@@ -52,9 +58,9 @@ export function Wallet({ requestClose }: Props) {
     try {
       // TODO: 实现删除 passkey 的逻辑
       // await mx.deletePasskey(passkeyId);
-      setPasskeys(passkeys.filter(key => key.id !== passkeyId));
-    } catch (error) {
+    } catch (err) {
       // TODO: 使用错误提示组件
+      console.error(err);
     }
   };
 
@@ -84,7 +90,8 @@ export function Wallet({ requestClose }: Props) {
                   className={SequenceCardStyle}
                   variant="SurfaceVariant"
                   direction="Column"
-                  gap="400">
+                  gap="400"
+                >
                   <SettingTile
                     title="Recovery Key"
                     description="If you lose this device, or delete the passkey from the system, you risk losing your assets and message data. To protect your account, please establish a recovery key now!"
@@ -104,11 +111,16 @@ export function Wallet({ requestClose }: Props) {
                   direction="Column"
                   gap="400"
                 >
-                  {passkeys.map((passkey) => (
-                    <Box key={passkey.id} direction="Row" justifyContent="SpaceBetween" alignItems="Center">
-                      <Text>{passkey.publicKey}</Text>
-                      {passkey.id !== currentPasskeyId && (
-                        <Button variant="Critical" onClick={() => handleDeletePasskey(passkey.id)}>
+                  {passkeys.map((item: PasskeyItem) => (
+                    <Box
+                      key={item.id}
+                      direction="Row"
+                      justifyContent="SpaceBetween"
+                      alignItems="Center"
+                    >
+                      <Text>{item.publicKey}</Text>
+                      {item.publicKey !== currentPublicKey && (
+                        <Button variant="Critical" onClick={() => handleDeletePasskey(item.id)}>
                           Delete
                         </Button>
                       )}
@@ -120,7 +132,6 @@ export function Wallet({ requestClose }: Props) {
           </PageContent>
         </Scroll>
       </Box>
-
 
       <Overlay open={isRecoveryDialogOpen} backdrop={<OverlayBackdrop />}>
         <OverlayCenter>
@@ -144,19 +155,11 @@ export function Wallet({ requestClose }: Props) {
                 <Box grow="Yes">
                   <Text size="H4">Recovery Key</Text>
                 </Box>
-                <IconButton
-                  size="300"
-                  onClick={() => setIsRecoveryDialogOpen(false)}
-                  radii="300"
-                >
+                <IconButton size="300" onClick={() => setIsRecoveryDialogOpen(false)} radii="300">
                   <Icon src={Icons.Cross} />
                 </IconButton>
               </Header>
-              <Box
-                style={{ padding: config.space.S400 }}
-                direction="Column"
-                gap="400"
-              >
+              <Box style={{ padding: config.space.S400 }} direction="Column" gap="400">
                 <Box direction="Column" gap="200">
                   <Text>Please save this recovery key in a safe place:</Text>
                   <Text style={{ wordBreak: 'break-all' }}>{recoveryKey}</Text>
