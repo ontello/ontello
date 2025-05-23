@@ -47,30 +47,54 @@ import { ModalWide } from '../../../styles/Modal.css';
 import { createUploadAtom, UploadSuccess } from '../../../state/upload';
 import { CompactUploadCardRenderer } from '../../../components/upload-card';
 import { useCapabilities } from '../../../hooks/useCapabilities';
+import { mxidToOntid } from '../../../utils/ontid';
 
 function MatrixId() {
   const mx = useMatrixClient();
   const userId = mx.getUserId()!;
+  const ontId = mxidToOntid(userId);
+  console.log('ontId', ontId);
+
 
   return (
-    <Box direction="Column" gap="100">
-      <Text size="L400">Matrix ID</Text>
-      <SequenceCard
-        className={SequenceCardStyle}
-        variant="SurfaceVariant"
-        direction="Column"
-        gap="400"
-      >
-        <SettingTile
-          title={userId}
-          after={
-            <Chip variant="Secondary" radii="Pill" onClick={() => copyToClipboard(userId)}>
-              <Text size="T200">Copy</Text>
-            </Chip>
-          }
-        />
-      </SequenceCard>
-    </Box>
+    <>
+      <Box direction="Column" gap="100">
+        <Text size="L400">Matrix ID</Text>
+        <SequenceCard
+          className={SequenceCardStyle}
+          variant="SurfaceVariant"
+          direction="Column"
+          gap="400"
+        >
+          <SettingTile
+            title={userId}
+            after={
+              <Chip variant="Secondary" radii="Pill" onClick={() => copyToClipboard(userId)}>
+                <Text size="T200">Copy</Text>
+              </Chip>
+            }
+          />
+        </SequenceCard>
+      </Box>
+      <Box direction="Column" gap="100">
+        <Text size="L400">ONT ID</Text>
+        <SequenceCard
+          className={SequenceCardStyle}
+          variant="SurfaceVariant"
+          direction="Column"
+          gap="400"
+        >
+          <SettingTile
+            title={ontId}
+            after={
+              <Chip variant="Secondary" radii="Pill" onClick={() => copyToClipboard(ontId ?? '')}>
+                <Text size="T200">Copy</Text>
+              </Chip>
+            }
+          />
+        </SequenceCard>
+      </Box>
+    </>
   );
 }
 

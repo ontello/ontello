@@ -19,6 +19,7 @@ import { useRoomNavigate } from '../../hooks/useRoomNavigate';
 import { getDMRoomFor } from '../../utils/matrix';
 import { useMatrixClient } from '../../hooks/useMatrixClient';
 import { useMediaAuthentication } from '../../hooks/useMediaAuthentication';
+import { isValidOntid, ontidToMxid } from '../../utils/ontid';
 
 function InviteUser({ isOpen, roomId, searchTerm, onRequestClose }) {
   const [isSearching, updateIsSearching] = useState(false);
@@ -245,7 +246,9 @@ function InviteUser({ isOpen, roomId, searchTerm, onRequestClose }) {
   }
 
   useEffect(() => {
-    if (isOpen && typeof searchTerm === 'string') searchUser(searchTerm);
+    if (isOpen && typeof searchTerm === 'string') {
+      searchUser(isValidOntid(searchTerm) ? ontidToMxid(searchTerm) : searchTerm);
+    }
     return () => {
       updateIsSearching(false);
       updateSearchQuery({});
@@ -270,7 +273,11 @@ function InviteUser({ isOpen, roomId, searchTerm, onRequestClose }) {
           className="invite-user__form"
           onSubmit={(e) => {
             e.preventDefault();
-            searchUser(usernameRef.current.value);
+            searchUser(
+              isValidOntid(usernameRef.current.value)
+                ? ontidToMxid(usernameRef.current.value)
+                : usernameRef.current.value
+            );
           }}
         >
           <Input value={searchTerm} forwardRef={usernameRef} label="Name or userId" />
