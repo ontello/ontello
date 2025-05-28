@@ -1,6 +1,9 @@
 /* eslint-disable no-await-in-loop */
-import { type MatrixClient } from "matrix-js-sdk";
-import { getPasskeyCredentials } from "../extendApis";
+import { type MatrixClient } from 'matrix-js-sdk';
+import { keccak256, stringToBytes, toBytes, toHex } from 'viem';
+import { getPasskeyCredentials } from '../extendApis';
+
+const RPID = 'localhost';
 
 export function hexToArrayBuffer(hex: string): ArrayBuffer {
   const buffer = new Uint8Array(hex.length / 2);
@@ -11,20 +14,9 @@ export function hexToArrayBuffer(hex: string): ArrayBuffer {
 }
 
 export function toBase64Url(input: ArrayBuffer): string {
-  let base64 = btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(input))))
+  let base64 = btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(input))));
   base64 = base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
   return base64;
-}
-export function parsePublicKeyPoints(spkiBuffer: ArrayBuffer): { x: ArrayBuffer; y: ArrayBuffer, xy: ArrayBuffer } {
-  const bytes = new Uint8Array(spkiBuffer);
-  const PUBKEY_LENGTH = 64;
-  const pubKeyBytes = bytes.slice(-PUBKEY_LENGTH);
-
-  return {
-    x: pubKeyBytes.slice(0, 32).buffer,
-    y: pubKeyBytes.slice(32).buffer,
-    xy: pubKeyBytes.buffer,
-  };
 }
 export function fromBase64Url(base64url: string): ArrayBuffer {
   let base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
@@ -39,21 +31,22 @@ export function fromBase64Url(base64url: string): ArrayBuffer {
 
   return buffer.buffer;
 }
+
 export function parseDER(derBytes: Uint8Array): {
   r: Uint8Array;
   s: Uint8Array;
 } {
-  if (derBytes[0] !== 0x30) throw new Error("Invalid DER format: missing SEQUENCE");
+  if (derBytes[0] !== 0x30) throw new Error('Invalid DER format: missing SEQUENCE');
 
   let offset = 2; // 跳过 SEQUENCE (0x30) 和总长度
 
-  if (derBytes[offset] !== 0x02) throw new Error("Invalid DER format: missing INTEGER for r");
+  if (derBytes[offset] !== 0x02) throw new Error('Invalid DER format: missing INTEGER for r');
   const rLen = derBytes[offset + 1]; // r 的长度
   let r = derBytes.slice(offset + 2, offset + 2 + rLen);
 
   offset += 2 + rLen;
 
-  if (derBytes[offset] !== 0x02) throw new Error("Invalid DER format: missing INTEGER for s");
+  if (derBytes[offset] !== 0x02) throw new Error('Invalid DER format: missing INTEGER for s');
   const sLen = derBytes[offset + 1]; // s 的长度
   let s = derBytes.slice(offset + 2, offset + 2 + sLen);
 
@@ -66,6 +59,38 @@ export function parseDER(derBytes: Uint8Array): {
 
   return { r, s };
 }
+export function parsePublicKeyPoints(spkiBuffer: ArrayBuffer): {
+  x: ArrayBuffer;
+  y: ArrayBuffer;
+  xy: ArrayBuffer;
+} {
+  const bytes = new Uint8Array(spkiBuffer);
+  const PUBKEY_LENGTH = 64;
+  const pubKeyBytes = bytes.slice(-PUBKEY_LENGTH);
+
+  return {
+    x: pubKeyBytes.slice(0, 32).buffer,
+    y: pubKeyBytes.slice(32).buffer,
+    xy: pubKeyBytes.buffer,
+  };
+}
+export async function importPublicKey(publicKeyBytes: ArrayBuffer): Promise<CryptoKey> {
+  try {
+    return await crypto.subtle.importKey(
+      'spki',
+      publicKeyBytes,
+      {
+        name: 'ECDSA',
+        namedCurve: 'P-256', // secp256r1
+      },
+      true,
+      ['verify']
+    );
+  } catch (error) {
+    console.error('导入公钥失败:', error);
+    throw error;
+  }
+}
 
 async function recoverPublicKey(publicKeyBase64Url: string): Promise<CryptoKey> {
   const xy = fromBase64Url(publicKeyBase64Url);
@@ -74,20 +99,25 @@ async function recoverPublicKey(publicKeyBase64Url: string): Promise<CryptoKey> 
   uncompressedPubkey.set(new Uint8Array(xy), 1);
 
   const publicKey = await crypto.subtle.importKey(
-    "raw",
+    'raw',
     uncompressedPubkey,
     {
-      name: "ECDSA",
-      namedCurve: "P-256"
+      name: 'ECDSA',
+      namedCurve: 'P-256',
     },
     true,
-    ["verify"]
+    ['verify']
   );
 
   return publicKey;
 }
 
-async function verifySignature(publicKey: CryptoKey, signature: ArrayBuffer, clientDataJSON: ArrayBuffer, authenticatorData: ArrayBuffer): Promise<boolean> {
+async function verifySignature(
+  publicKey: CryptoKey,
+  signature: ArrayBuffer,
+  clientDataJSON: ArrayBuffer,
+  authenticatorData: ArrayBuffer
+): Promise<boolean> {
   try {
     const derSig = new Uint8Array(signature);
     const { r, s } = parseDER(derSig);
@@ -95,51 +125,65 @@ async function verifySignature(publicKey: CryptoKey, signature: ArrayBuffer, cli
     rawSignature.set(r);
     rawSignature.set(s, r.length);
 
-    const clientDataHash = await crypto.subtle.digest("SHA-256", clientDataJSON);
+    const clientDataHash = await crypto.subtle.digest('SHA-256', clientDataJSON);
     const verifyData = new Uint8Array(authenticatorData.byteLength + clientDataHash.byteLength);
     verifyData.set(new Uint8Array(authenticatorData), 0);
     verifyData.set(new Uint8Array(clientDataHash), authenticatorData.byteLength);
 
     const isValid = await crypto.subtle.verify(
       {
-        name: "ECDSA",
-        hash: { name: "SHA-256" },
+        name: 'ECDSA',
+        hash: { name: 'SHA-256' },
       },
       publicKey,
       rawSignature.buffer,
-      verifyData.buffer,
+      verifyData.buffer
     );
-    return isValid
+    return isValid;
   } catch (error) {
     console.error('Signature verification failed:', error);
     return false;
   }
 }
 
+export const signWithPasskey = async (challenge: ArrayBuffer): Promise<PublicKeyCredential> => {
+  const publicKeyCredentialRequestOptions = {
+    challenge,
+    rpId: RPID,
+    timeout: 60000,
+    userVerification: 'required' as const,
+  };
+  const credential = (await navigator.credentials.get({
+    publicKey: publicKeyCredentialRequestOptions,
+  })) as PublicKeyCredential;
+
+  return credential;
+};
+
 const genChallenge = (user: string, prefix: string): ArrayBuffer => {
   const timestampInSeconds = Math.floor(Date.now() / 1000);
-  const challenge = `${prefix} ${user}.ont.im at ${timestampInSeconds}`
-  return (new TextEncoder).encode(challenge).buffer
-}
-const genLoginChallenge = (username: string): ArrayBuffer => genChallenge(username, "Login")
+  const challenge = `${prefix} ${user}.ont.im at ${timestampInSeconds}`;
+  return new TextEncoder().encode(challenge).buffer;
+};
+const genLoginChallenge = (username: string): ArrayBuffer => genChallenge(username, 'Login');
 
-const genRegisterChallenge = (user: string): ArrayBuffer => genChallenge(user, "Register")
+const genRegisterChallenge = (user: string): ArrayBuffer => genChallenge(user, 'Register');
 
-
-export const registerWithPasskey = async (name: string): Promise<{
+export const registerWithPasskey = async (
+  name: string
+): Promise<{
   password: string;
   publicKey: string;
 }> => {
   try {
-
     const userIdArray = new TextEncoder().encode(name);
 
     const publicKeyCredentialCreationOptions = {
       challenge: genRegisterChallenge(name),
       // TODO
       rp: {
-        name: "Name",
-        id: "localhost",
+        name: 'Name',
+        id: RPID,
       },
       user: {
         id: userIdArray,
@@ -148,14 +192,14 @@ export const registerWithPasskey = async (name: string): Promise<{
       },
       pubKeyCredParams: [
         {
-          type: "public-key",
+          type: 'public-key',
           alg: -7,
         },
       ],
       authenticatorSelection: {
-        authenticatorAttachment: "platform",
-        userVerification: "required",
-        residentKey: "required",
+        authenticatorAttachment: 'platform',
+        userVerification: 'required',
+        residentKey: 'required',
       },
       timeout: 60000,
     };
@@ -168,54 +212,62 @@ export const registerWithPasskey = async (name: string): Promise<{
 
     const publicKey = response.getPublicKey();
     if (!publicKey) {
-      throw new Error("Failed to get public key");
+      throw new Error('Failed to get public key');
     }
     const { xy } = parsePublicKeyPoints(publicKey);
     const publicKeyBase64Url = toBase64Url(xy);
     // console.log('publicKeyBase64Url', publicKeyBase64Url);
 
-    const password = JSON.stringify(
-      {
-        attestation: {
-          type: credential.type,
-          rawId: toBase64Url(credential.rawId),
-          id: credential.id,
-          response: {
-            attestationObject: toBase64Url(response.attestationObject),
-            clientDataJSON: toBase64Url(response.clientDataJSON),
-          }
-        }
-      }
-    )
+    const password = JSON.stringify({
+      attestation: {
+        type: credential.type,
+        rawId: toBase64Url(credential.rawId),
+        id: credential.id,
+        response: {
+          attestationObject: toBase64Url(response.attestationObject),
+          clientDataJSON: toBase64Url(response.clientDataJSON),
+        },
+      },
+    });
     return { password, publicKey: publicKeyBase64Url };
   } catch (error) {
-    throw new Error("Failed to register passkey");
+    throw new Error('Failed to register passkey');
   }
 };
-export const loginWithPasskey = async (name: string, cl: MatrixClient, serverName: string): Promise<{
+export const loginWithPasskey = async (
+  name: string,
+  cl: MatrixClient,
+  serverName: string
+): Promise<{
   password: string;
   publicKey: string;
 }> => {
   try {
-    const publicKeyCredentialRequestOptions = {
-      challenge: genLoginChallenge(name),
-      rpId: "localhost",
-      timeout: 60000,
-      userVerification: "required",
-    };
+    // const publicKeyCredentialRequestOptions = {
+    //   challenge: genLoginChallenge(name),
+    //   rpId: RPID,
+    //   timeout: 60000,
+    //   userVerification: 'required',
+    // };
+    // const credential = (await navigator.credentials.get({
+    //   publicKey: publicKeyCredentialRequestOptions as any,
+    // })) as PublicKeyCredential;
 
-    const credential = (await navigator.credentials.get({
-      publicKey: publicKeyCredentialRequestOptions as any,
-    })) as PublicKeyCredential;
-
+    // const response = credential.response as AuthenticatorAssertionResponse;
+    const credential = await signWithPasskey(genLoginChallenge(name));
     const response = credential.response as AuthenticatorAssertionResponse;
     const addedPublicks = await getPasskeyCredentials(cl, `@${name}:${serverName}`);
 
-    let choseCredential = null
+    let choseCredential = null;
     // eslint-disable-next-line no-restricted-syntax
     for (const addedPublick of addedPublicks) {
       const pk = await recoverPublicKey(addedPublick.publicKey);
-      const res = await verifySignature(pk, response.signature, response.clientDataJSON, response.authenticatorData);
+      const res = await verifySignature(
+        pk,
+        response.signature,
+        response.clientDataJSON,
+        response.authenticatorData
+      );
 
       if (res) {
         choseCredential = addedPublick;
@@ -224,28 +276,104 @@ export const loginWithPasskey = async (name: string, cl: MatrixClient, serverNam
     }
     if (!choseCredential) {
       console.log('err');
-      throw new Error("Failed to verify passkey");
+      throw new Error('Failed to verify passkey');
     }
 
-    const password = JSON.stringify(
-      {
-        publicKey: choseCredential.publicKey,
-        assertion: {
-          type: credential.type,
-          rawId: toBase64Url(credential.rawId),
-          id: credential.id,
-          response: {
-            authenticatorData: toBase64Url(response.authenticatorData),
-            clientDataJSON: toBase64Url(response.clientDataJSON),
-            signature: toBase64Url(response.signature),
-          }
-        }
-      }
-    )
+    const password = JSON.stringify({
+      publicKey: choseCredential.publicKey,
+      assertion: {
+        type: credential.type,
+        rawId: toBase64Url(credential.rawId),
+        id: credential.id,
+        response: {
+          authenticatorData: toBase64Url(response.authenticatorData),
+          clientDataJSON: toBase64Url(response.clientDataJSON),
+          signature: toBase64Url(response.signature),
+        },
+      },
+    });
     return { password, publicKey: choseCredential.publicKey };
   } catch (error: any) {
     // console.error(error)
-    throw new Error("Failed to login passkey");
+    throw new Error('Failed to login passkey');
     // throw new Error(error.message);
   }
+};
+
+export interface WebAuthnSignature {
+  authenticatorData: ArrayBuffer;
+  clientDataJSON: ArrayBuffer;
+  challengeIndex: number;
+  typeIndex: number;
+  r: Uint8Array;
+  s: Uint8Array;
 }
+
+export const signMessageWithPasskey = async (message: string): Promise<WebAuthnSignature> => {
+  try {
+    const prefix = '\x19Ethereum Signed Message:\n';
+    const messageBytes = toBytes(message);
+    const prefixBytes = stringToBytes(prefix);
+    const messageBytesLength = messageBytes.length.toString();
+    const messageBytesLengthBytes = stringToBytes(messageBytesLength);
+    const prefixedMessageBytes = new Uint8Array(
+      prefixBytes.length + messageBytesLengthBytes.length + messageBytes.length
+    );
+    prefixedMessageBytes.set(prefixBytes);
+    prefixedMessageBytes.set(messageBytesLengthBytes, prefixBytes.length);
+    prefixedMessageBytes.set(messageBytes, prefixBytes.length + messageBytesLengthBytes.length);
+
+    const prefixedMessageHash = keccak256(prefixedMessageBytes);
+
+    console.log('prefixedMessageHash', prefixedMessageHash);
+    const challenge = toBytes(prefixedMessageHash);
+    console.log('challenge', challenge.buffer);
+
+    const { response } = await signWithPasskey(challenge);
+    const { signature, authenticatorData, clientDataJSON } =
+      response as AuthenticatorAssertionResponse;
+    // 获取签名数据并解析 DER 格式
+    const derSig = new Uint8Array(signature);
+    const { r, s } = parseDER(derSig);
+
+    const clientDataString = new TextDecoder().decode(clientDataJSON);
+
+    // test isValid
+    // const publicKey = await importPublicKey(
+    //   hexToArrayBuffer(
+    //     '3059301306072a8648ce3d020106082a8648ce3d03010703420004a9b2ec447b6586e82a80d18207cc8d5e7da1e7482211c45c4e2f40c8ceaac4c5b910591efc7283a09f9cd8f30f265f57469928144de833accf011d2500737823'
+    //   )
+    // );
+    // const rawSignature = new Uint8Array(r.length + s.length);
+    // rawSignature.set(r);
+    // rawSignature.set(s, r.length);
+    // const clientDataHash = await crypto.subtle.digest('SHA-256', clientDataJSON);
+    // const verifyData = new Uint8Array(authenticatorData.byteLength + clientDataHash.byteLength);
+    // verifyData.set(new Uint8Array(authenticatorData), 0);
+    // verifyData.set(new Uint8Array(clientDataHash), authenticatorData.byteLength);
+    // console.log('verifyData', toHex(rawSignature), toHex(verifyData));
+
+    // const isValid = await crypto.subtle.verify(
+    //   {
+    //     name: 'ECDSA',
+    //     hash: { name: 'SHA-256' },
+    //   },
+    //   publicKey,
+    //   rawSignature.buffer,
+    //   verifyData.buffer
+    // );
+    // console.log('isValid', isValid);
+
+    return {
+      authenticatorData,
+      clientDataJSON,
+      challengeIndex: clientDataString.indexOf('"challenge"'),
+      typeIndex: clientDataString.indexOf('"type"'),
+      r,
+      s,
+    };
+  } catch (error) {
+    console.error('签名失败:', error);
+    throw error;
+  }
+};

@@ -1,7 +1,4 @@
-// # Copyright 2024 New Vector Ltd.
 import { MatrixClient, Method } from "matrix-js-sdk";
-
-
 
 const requestPrefix = "/_matrix/client/v3";
 

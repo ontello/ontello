@@ -53,8 +53,6 @@ function MatrixId() {
   const mx = useMatrixClient();
   const userId = mx.getUserId()!;
   const ontId = mxidToOntid(userId);
-  console.log('ontId', ontId);
-
 
   return (
     <>
