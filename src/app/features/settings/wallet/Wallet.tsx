@@ -17,7 +17,6 @@ import {
 import FocusTrap from 'focus-trap-react';
 import { english, generateMnemonic, mnemonicToAccount } from 'viem/accounts';
 import { Address, encodeFunctionData, getContract, Hex, hexToBigInt, keccak256, toHex } from 'viem';
-import { V06 } from 'userop';
 import { Page, PageContent, PageHeader } from '../../../components/page';
 import { SequenceCard } from '../../../components/sequence-card';
 import { SequenceCardStyle } from '../styles.css';
@@ -26,9 +25,9 @@ import { SettingTile } from '../../../components/setting-tile';
 import { getSecret } from '../../../../client/state/auth';
 import { useFetchPasskeyList } from '../../../hooks/useFetchPasskeyList';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
-import PassKeyAccountAbi from '../../../static/abis/PassKeyAccount.json';
 import { useWeb3PublicClient } from '../../../hooks/web3/useWeb3Client';
-import { signMessageWithPasskey } from '../../../utils/passkey';
+import { useAbstractAccount } from '../../../hooks/web3/useAbstractAccount';
+import { AccountCallType } from '../../../hooks/web3/types';
 
 interface PasskeyItem {
   id: string;
@@ -42,51 +41,57 @@ type Props = {
 export function Wallet({ requestClose }: Props) {
   const [isRecoveryDialogOpen, setIsRecoveryDialogOpen] = useState(false);
   const [recoveryKey, setRecoveryKey] = useState('');
-
   const { publicKey: currentPublicKey } = getSecret();
   const mx = useMatrixClient();
   const userId = mx.getUserId();
-
   const [passkeys, refetch] = useFetchPasskeyList(userId!);
   const publicClient = useWeb3PublicClient();
 
+  const aaAddress: Address = '0xcc03c29d4603490a8dbdda1cb84065b23cd5d13a'; // @testuser20:ont.network
+  const { buildUserOperation } = useAbstractAccount(publicClient, aaAddress);
   const handleGenerateRecovery = async () => {
-    const aaAddress: Address = '0xcc03c29d4603490a8dbdda1cb84065b23cd5d13a'; // @testuser20:ont.network
     try {
       const mnemonic = generateMnemonic(english);
       const account = mnemonicToAccount(mnemonic);
-      const passKeyAccountContract = getContract({
-        address: aaAddress,
-        abi: PassKeyAccountAbi,
-        client: publicClient,
-      });
-      const addOwnerAddressFunctionData = encodeFunctionData({
-        abi: PassKeyAccountAbi,
+
+      // const passKeyAccountContract = getContract({
+      //   address: aaAddress,
+      //   abi: PassKeyAccountAbi,
+      //   client: publicClient,
+      // });
+      // const addOwnerAddressFunctionData = encodeFunctionData({
+      //   abi: PassKeyAccountAbi,
+      //   functionName: 'addOwnerAddress',
+      //   args: [account.address],
+      // });
+      // const feeData = await publicClient.estimateFeesPerGas();
+
+      // const passKeyAccountContractNonce = (await passKeyAccountContract.read.getNonce()) as bigint;
+      // const userOp = {
+      //   sender: aaAddress,
+      //   nonce: passKeyAccountContractNonce,
+      //   initCode: '0x' as Hex,
+      //   callData: addOwnerAddressFunctionData,
+      //   callGasLimit: hexToBigInt('0x55555'),
+      //   verificationGasLimit: hexToBigInt('0x55555'),
+      //   preVerificationGas: hexToBigInt('0x15555'),
+      //   maxFeePerGas: feeData.maxFeePerGas,
+      //   maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
+      //   paymasterAndData: '0x' as Hex,
+      //   signature: '0x' as Hex,
+      // };
+      // const userOpHash = V06.EntryPoint.calculateUserOpHash(
+      //   userOp,
+      //   aaAddress,
+      //   publicClient.chain.id
+      // );
+      // const signature = signMessageWithPasskey(userOpHash);
+
+      const { userOp, userOpHash } = await buildUserOperation({
+        type: AccountCallType.Direct,
         functionName: 'addOwnerAddress',
         args: [account.address],
       });
-      const feeData = await publicClient.estimateFeesPerGas();
-
-      const passKeyAccountContractNonce = (await passKeyAccountContract.read.getNonce()) as bigint;
-      const userOp = {
-        sender: aaAddress,
-        nonce: passKeyAccountContractNonce,
-        initCode: '0x' as Hex,
-        callData: addOwnerAddressFunctionData,
-        callGasLimit: hexToBigInt('0x55555'),
-        verificationGasLimit: hexToBigInt('0x55555'),
-        preVerificationGas: hexToBigInt('0x15555'),
-        maxFeePerGas: feeData.maxFeePerGas,
-        maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
-        paymasterAndData: '0x' as Hex,
-        signature: '0x' as Hex,
-      };
-      const userOpHash = V06.EntryPoint.calculateUserOpHash(
-        userOp,
-        aaAddress,
-        publicClient.chain.id
-      );
-      const signature = signMessageWithPasskey(userOpHash);
 
       // setRecoveryKey(mnemonic);
       // setIsRecoveryDialogOpen(true);
