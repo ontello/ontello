@@ -8,6 +8,7 @@ import {
   encodeAbiParameters,
   fromBytes,
 } from 'viem';
+import { mnemonicToAccount } from 'viem/accounts';
 import AccountAbi from '../../static/abis/PassKeyAccount.json';
 import { signMessageWithPasskey } from '../../utils/passkey';
 import {
@@ -118,6 +119,9 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
     };
   };
 
+  const recoveryAccount = async (mnemonic: string) => {
+    const mnemonicAccount = mnemonicToAccount(mnemonic);
+  };
   return {
     buildUserOperation,
   };

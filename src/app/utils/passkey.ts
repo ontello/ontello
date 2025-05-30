@@ -169,6 +169,40 @@ const genLoginChallenge = (username: string): ArrayBuffer => genChallenge(userna
 
 const genRegisterChallenge = (user: string): ArrayBuffer => genChallenge(user, 'Register');
 
+export const createPasskey = async (name: string, challenge: ArrayBuffer) => {
+  const userIdArray = new TextEncoder().encode(name);
+  const publicKeyCredentialCreationOptions = {
+    // challenge: genRegisterChallenge(name),
+    challenge,
+    // TODO
+    rp: {
+      name: 'Name',
+      id: RPID,
+    },
+    user: {
+      id: userIdArray,
+      name,
+      displayName: name,
+    },
+    pubKeyCredParams: [
+      {
+        type: 'public-key',
+        alg: -7,
+      },
+    ],
+    authenticatorSelection: {
+      authenticatorAttachment: 'platform',
+      userVerification: 'required',
+      residentKey: 'required',
+    },
+    timeout: 60000,
+  };
+  const credential = (await navigator.credentials.create({
+    publicKey: publicKeyCredentialCreationOptions as any,
+  })) as PublicKeyCredential;
+  return credential;
+};
+
 export const registerWithPasskey = async (
   name: string
 ): Promise<{
@@ -176,38 +210,39 @@ export const registerWithPasskey = async (
   publicKey: string;
 }> => {
   try {
-    const userIdArray = new TextEncoder().encode(name);
+    // const userIdArray = new TextEncoder().encode(name);
 
-    const publicKeyCredentialCreationOptions = {
-      challenge: genRegisterChallenge(name),
-      // TODO
-      rp: {
-        name: 'Name',
-        id: RPID,
-      },
-      user: {
-        id: userIdArray,
-        name,
-        displayName: name,
-      },
-      pubKeyCredParams: [
-        {
-          type: 'public-key',
-          alg: -7,
-        },
-      ],
-      authenticatorSelection: {
-        authenticatorAttachment: 'platform',
-        userVerification: 'required',
-        residentKey: 'required',
-      },
-      timeout: 60000,
-    };
+    // const publicKeyCredentialCreationOptions = {
+    //   challenge: genRegisterChallenge(name),
+    //   // TODO
+    //   rp: {
+    //     name: 'Name',
+    //     id: RPID,
+    //   },
+    //   user: {
+    //     id: userIdArray,
+    //     name,
+    //     displayName: name,
+    //   },
+    //   pubKeyCredParams: [
+    //     {
+    //       type: 'public-key',
+    //       alg: -7,
+    //     },
+    //   ],
+    //   authenticatorSelection: {
+    //     authenticatorAttachment: 'platform',
+    //     userVerification: 'required',
+    //     residentKey: 'required',
+    //   },
+    //   timeout: 60000,
+    // };
 
-    const credential = (await navigator.credentials.create({
-      publicKey: publicKeyCredentialCreationOptions as any,
-    })) as PublicKeyCredential;
-    console.log('credential', credential);
+    // const credential = (await navigator.credentials.create({
+    //   publicKey: publicKeyCredentialCreationOptions as any,
+    // })) as PublicKeyCredential;
+    // console.log('credential', credential);
+    const credential = await createPasskey(name, genRegisterChallenge(name));
     const response = credential.response as AuthenticatorAttestationResponse;
 
     const publicKey = response.getPublicKey();
