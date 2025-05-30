@@ -1,4 +1,3 @@
-import { V06 } from 'userop';
 import {
   Hex,
   Address,
@@ -17,6 +16,7 @@ import {
   BuildUserOperationResult,
   UserOperation,
 } from './types';
+import { calculateUserOpHash } from '../../utils/web3';
 
 export const useAbstractAccount = (ethClient: PublicClient, address: Address) => {
   const passKeyAccountContract = getContract({
@@ -74,7 +74,7 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
     if (!chainId) {
       throw new Error('无法获取链 ID');
     }
-    const userOpHash = V06.EntryPoint.calculateUserOpHash(userOp, address, chainId);
+    const userOpHash = calculateUserOpHash(userOp, address, chainId);
 
     const passkeySignature = await signMessageWithPasskey(userOpHash);
 

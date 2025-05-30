@@ -80,7 +80,6 @@
     "slate-react": "0.112.1",
     "tippy.js": "6.3.7",
     "ua-parser-js": "1.0.35",
-    "userop": "0.4.0-beta.5",
     "viem": "2.30.0"
   },
   "devDependencies": {
