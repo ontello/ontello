@@ -28,6 +28,8 @@ import { useMatrixClient } from '../../../hooks/useMatrixClient';
 import { useWeb3PublicClient } from '../../../hooks/web3/useWeb3Client';
 import { useAbstractAccount } from '../../../hooks/web3/useAbstractAccount';
 import { AccountCallType } from '../../../hooks/web3/types';
+import cons from '../../../../client/state/cons';
+import { recoverPublicKey, fromBase64Url } from '../../../utils/passkey';
 
 interface PasskeyItem {
   id: string;
@@ -48,7 +50,10 @@ export function Wallet({ requestClose }: Props) {
   const publicClient = useWeb3PublicClient();
 
   const aaAddress: Address = '0xcc03c29d4603490a8dbdda1cb84065b23cd5d13a'; // @testuser20:ont.network
-  const { buildUserOperation } = useAbstractAccount(publicClient, aaAddress);
+  const { buildUserOperation, getKeyIndexThroughXy, getCurrentKeyIndex } = useAbstractAccount(
+    publicClient,
+    aaAddress
+  );
   const handleGenerateRecovery = async () => {
     try {
       const mnemonic = generateMnemonic(english);
@@ -87,11 +92,15 @@ export function Wallet({ requestClose }: Props) {
       // );
       // const signature = signMessageWithPasskey(userOpHash);
 
-      const { userOp, userOpHash } = await buildUserOperation({
-        type: AccountCallType.Direct,
-        functionName: 'addOwnerAddress',
-        args: [account.address],
-      });
+      const keyIndex = await getCurrentKeyIndex();
+      const { userOp, userOpHash } = await buildUserOperation(
+        {
+          type: AccountCallType.Direct,
+          functionName: 'addOwnerPublicKey',
+          args: [account.address],
+        },
+        keyIndex
+      );
 
       // setRecoveryKey(mnemonic);
       // setIsRecoveryDialogOpen(true);

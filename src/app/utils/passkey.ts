@@ -92,7 +92,7 @@ export async function importPublicKey(publicKeyBytes: ArrayBuffer): Promise<Cryp
   }
 }
 
-async function recoverPublicKey(publicKeyBase64Url: string): Promise<CryptoKey> {
+export async function recoverPublicKey(publicKeyBase64Url: string): Promise<CryptoKey> {
   const xy = fromBase64Url(publicKeyBase64Url);
   const uncompressedPubkey = new Uint8Array(65);
   uncompressedPubkey[0] = 0x04;
@@ -207,7 +207,10 @@ export const registerWithPasskey = async (
   name: string
 ): Promise<{
   password: string;
-  publicKey: string;
+  publicKeyBase64Url: string;
+  x: ArrayBuffer;
+  y: ArrayBuffer;
+  xy: ArrayBuffer;
 }> => {
   try {
     // const userIdArray = new TextEncoder().encode(name);
@@ -249,7 +252,7 @@ export const registerWithPasskey = async (
     if (!publicKey) {
       throw new Error('Failed to get public key');
     }
-    const { xy } = parsePublicKeyPoints(publicKey);
+    const { x, y, xy } = parsePublicKeyPoints(publicKey);
     const publicKeyBase64Url = toBase64Url(xy);
     // console.log('publicKeyBase64Url', publicKeyBase64Url);
 
@@ -264,7 +267,7 @@ export const registerWithPasskey = async (
         },
       },
     });
-    return { password, publicKey: publicKeyBase64Url };
+    return { password, publicKeyBase64Url, x, y, xy };
   } catch (error) {
     throw new Error('Failed to register passkey');
   }

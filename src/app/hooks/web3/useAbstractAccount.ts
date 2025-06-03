@@ -10,7 +10,7 @@ import {
 } from 'viem';
 import { mnemonicToAccount } from 'viem/accounts';
 import AccountAbi from '../../static/abis/PassKeyAccount.json';
-import { signMessageWithPasskey } from '../../utils/passkey';
+import { fromBase64Url, registerWithPasskey, signMessageWithPasskey } from '../../utils/passkey';
 import {
   AccountCallType,
   BuildUserOperationParams,
@@ -18,6 +18,7 @@ import {
   UserOperation,
 } from './types';
 import { calculateUserOpHash } from '../../utils/web3';
+import cons from '../../../client/state/cons';
 
 export const useAbstractAccount = (ethClient: PublicClient, address: Address) => {
   const passKeyAccountContract = getContract({
@@ -25,9 +26,39 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
     abi: AccountAbi,
     client: ethClient,
   });
+  const getKeyIndexThroughAddress = async (ownerAddress: Address): Promise<bigint> => {
+    const input = encodeAbiParameters([{ name: 'address', type: 'string' }], [ownerAddress]);
+    const keyIndex = (await passKeyAccountContract.read.indexOfOwnerBytes([input])) as bigint;
+    return keyIndex;
+  };
+  const getKeyIndexThroughXy = async (x: Hex, y: Hex): Promise<bigint> => {
+    const input = encodeAbiParameters(
+      [
+        { name: 'x', type: 'bytes' },
+        { name: 'y', type: 'bytes' },
+      ],
+      [x, y]
+    );
+    const keyIndex = (await passKeyAccountContract.read.indexOfOwnerBytes([input])) as bigint;
+    return keyIndex;
+  };
+
+  const getCurrentKeyIndex = async () => {
+    const publicKeyBase64 = localStorage.getItem(cons.secretKey.PUBLIC_KEY);
+    if (!publicKeyBase64) {
+      throw new Error('Public key not found in local storage');
+    }
+    const xy = fromBase64Url(publicKeyBase64);
+    const keyIndex = await getKeyIndexThroughXy(
+      toHex(new Uint8Array(xy.slice(0, 32))),
+      toHex(new Uint8Array(xy.slice(32)))
+    );
+    return keyIndex;
+  };
 
   const buildUserOperation = async (
-    params: BuildUserOperationParams
+    params: BuildUserOperationParams,
+    keyIndex: bigint
   ): Promise<BuildUserOperationResult> => {
     let callData: Hex;
     if (params.type === AccountCallType.Direct) {
@@ -101,7 +132,7 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
     webauthnSignatureEncoded = `0x0000000000000000000000000000000000000000000000000000000000000020${webauthnSignatureEncoded.slice(
       2
     )}`;
-    const keyIndex = 0; // 暂时写0，可以从合约取
+    // const keyIndex = 0; // 暂时写0，可以从合约取
 
     const signatureWrapper = encodeAbiParameters(
       [
@@ -119,10 +150,46 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
     };
   };
 
-  const recoveryAccount = async (mnemonic: string) => {
+  const recoveryAccount = async (mnemonic: string, username: string) => {
     const mnemonicAccount = mnemonicToAccount(mnemonic);
+    const { x, y } = await registerWithPasskey(username);
+    const keyIndex = await getKeyIndexThroughAddress(mnemonicAccount.address);
+    const { userOp, userOpHash } = await buildUserOperation(
+      {
+        type: AccountCallType.Direct,
+        functionName: 'addOwnerPublicKey',
+        args: [toHex(new Uint8Array(x)), toHex(new Uint8Array(y))],
+      },
+      keyIndex
+    );
+  };
+  const removeOwner = async (targetPublicKeyBase64: string) => {
+    const keyIndex = await getCurrentKeyIndex();
+
+    const xy = fromBase64Url(targetPublicKeyBase64);
+    const input = encodeAbiParameters(
+      [
+        { name: 'x', type: 'bytes' },
+        { name: 'y', type: 'bytes' },
+      ],
+      [toHex(new Uint8Array(xy.slice(0, 32))), toHex(new Uint8Array(xy.slice(32)))]
+    );
+    const targetKeyIndex = (await passKeyAccountContract.read.indexOfOwnerBytes([input])) as bigint;
+
+    const { userOp, userOpHash } = await buildUserOperation(
+      {
+        type: AccountCallType.Direct,
+        functionName: 'removeOwnerAtIndex',
+        args: [targetKeyIndex, input],
+      },
+      keyIndex
+    );
   };
   return {
     buildUserOperation,
+    getKeyIndexThroughAddress,
+    getKeyIndexThroughXy,
+    getCurrentKeyIndex,
+    recoveryAccount,
   };
 };

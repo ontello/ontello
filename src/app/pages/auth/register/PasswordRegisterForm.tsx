@@ -226,7 +226,7 @@ export function PasswordRegisterForm({
     // if (password !== confirmPassword) {
     //   return;
     // }
-    const { password, publicKey } = await registerWithPasskey(username)
+    const { password, publicKeyBase64Url } = await registerWithPasskey(username);
     const email = emailInput?.value.trim();
     const terms = termsInput?.value === 'on';
 
@@ -255,7 +255,7 @@ export function PasswordRegisterForm({
       },
       initial_device_display_name: 'Cinny Web',
     });
-    localStorage.setItem(cons.secretKey.PUBLIC_KEY, publicKey);
+    localStorage.setItem(cons.secretKey.PUBLIC_KEY, publicKeyBase64Url);
   };
 
   return (
