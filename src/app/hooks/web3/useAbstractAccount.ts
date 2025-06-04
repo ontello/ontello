@@ -58,7 +58,8 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
 
   const buildUserOperation = async (
     params: BuildUserOperationParams,
-    keyIndex: bigint
+    keyIndex: bigint,
+    signMessageFunc?: (message: Hex) => Promise<Hex>
   ): Promise<BuildUserOperationResult> => {
     let callData: Hex;
     if (params.type === AccountCallType.Direct) {
@@ -108,41 +109,45 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
     }
     const userOpHash = calculateUserOpHash(userOp, address, chainId);
 
-    const passkeySignature = await signMessageWithPasskey(userOpHash);
+    if (signMessageFunc) {
+      const signature = await signMessageFunc(userOpHash);
+      userOp.signature = signature;
+    } else {
+      const passkeySignature = await signMessageWithPasskey(userOpHash);
+      let webauthnSignatureEncoded = encodeAbiParameters(
+        [
+          { type: 'bytes', name: 'authenticatorData' },
+          { type: 'bytes', name: 'clientDataJSON' },
+          { type: 'uint256', name: 'challengeIndex' },
+          { type: 'uint256', name: 'typeIndex' },
+          { type: 'uint256', name: 'r' },
+          { type: 'uint256', name: 's' },
+        ],
+        [
+          toHex(new Uint8Array(passkeySignature.authenticatorData)),
+          toHex(new Uint8Array(passkeySignature.clientDataJSON)),
+          BigInt(passkeySignature.challengeIndex),
+          BigInt(passkeySignature.typeIndex),
+          BigInt(fromBytes(passkeySignature.r, 'bigint')),
+          BigInt(fromBytes(passkeySignature.s, 'bigint')),
+        ]
+      ) as Hex;
 
-    let webauthnSignatureEncoded = encodeAbiParameters(
-      [
-        { type: 'bytes', name: 'authenticatorData' },
-        { type: 'bytes', name: 'clientDataJSON' },
-        { type: 'uint256', name: 'challengeIndex' },
-        { type: 'uint256', name: 'typeIndex' },
-        { type: 'uint256', name: 'r' },
-        { type: 'uint256', name: 's' },
-      ],
-      [
-        toHex(new Uint8Array(passkeySignature.authenticatorData)),
-        toHex(new Uint8Array(passkeySignature.clientDataJSON)),
-        BigInt(passkeySignature.challengeIndex),
-        BigInt(passkeySignature.typeIndex),
-        BigInt(fromBytes(passkeySignature.r, 'bigint')),
-        BigInt(fromBytes(passkeySignature.s, 'bigint')),
-      ]
-    ) as Hex;
+      webauthnSignatureEncoded = `0x0000000000000000000000000000000000000000000000000000000000000020${webauthnSignatureEncoded.slice(
+        2
+      )}`;
+      // const keyIndex = 0; // 暂时写0，可以从合约取
 
-    webauthnSignatureEncoded = `0x0000000000000000000000000000000000000000000000000000000000000020${webauthnSignatureEncoded.slice(
-      2
-    )}`;
-    // const keyIndex = 0; // 暂时写0，可以从合约取
+      const signatureWrapper = encodeAbiParameters(
+        [
+          { type: 'uint256', name: 'keyIndex' },
+          { type: 'bytes', name: 'signature' },
+        ],
+        [BigInt(keyIndex), webauthnSignatureEncoded]
+      );
 
-    const signatureWrapper = encodeAbiParameters(
-      [
-        { type: 'uint256', name: 'keyIndex' },
-        { type: 'bytes', name: 'signature' },
-      ],
-      [BigInt(keyIndex), webauthnSignatureEncoded]
-    );
-
-    userOp.signature = signatureWrapper;
+      userOp.signature = signatureWrapper;
+    }
 
     return {
       userOp,
@@ -160,7 +165,8 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
         functionName: 'addOwnerPublicKey',
         args: [toHex(new Uint8Array(x)), toHex(new Uint8Array(y))],
       },
-      keyIndex
+      keyIndex,
+      (message) => mnemonicAccount.signMessage({ message: { raw: message } })
     );
   };
   const removeOwner = async (targetPublicKeyBase64: string) => {
@@ -191,5 +197,6 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
     getKeyIndexThroughXy,
     getCurrentKeyIndex,
     recoveryAccount,
+    removeOwner,
   };
 };
