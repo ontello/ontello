@@ -7,6 +7,7 @@ import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfil
 import inject from '@rollup/plugin-inject';
 import topLevelAwait from 'vite-plugin-top-level-await';
 import { VitePWA } from 'vite-plugin-pwa';
+import { resolve } from 'path';
 import buildConfig from './build.config';
 
 const copyFiles = {
@@ -93,6 +94,13 @@ export default defineConfig({
     copyPublicDir: false,
     rollupOptions: {
       plugins: [inject({ Buffer: ['buffer', 'Buffer'] })],
+    },
+  },
+  resolve: {
+    alias: {
+      '@src': resolve(__dirname, './src'),
+      '@app': resolve(__dirname, './src/app'),
+      '@hooks': resolve(__dirname, './src/app/hooks'),
     },
   },
 });

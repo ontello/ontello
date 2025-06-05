@@ -3,6 +3,7 @@ import { Hex, Address } from 'viem';
 export enum AccountCallType {
   Direct = 'direct',
   Execute = 'execute',
+  ExecuteBatch = 'executeBatch',
 }
 
 export type DirectCallParams = {
@@ -17,8 +18,12 @@ export type ExecuteCallParams = {
   value?: bigint;
   data: Hex;
 };
+export type ExecuteBatchParams = {
+  type: AccountCallType.ExecuteBatch;
+  args: (DirectCallParams | ExecuteCallParams)[];
+};
 
-export type BuildUserOperationParams = DirectCallParams | ExecuteCallParams;
+export type BuildUserOperationParams = DirectCallParams | ExecuteCallParams | ExecuteBatchParams;
 
 export type UserOperation = {
   sender: Address;

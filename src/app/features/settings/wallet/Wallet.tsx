@@ -49,62 +49,38 @@ export function Wallet({ requestClose }: Props) {
   const [passkeys, refetch] = useFetchPasskeyList(userId!);
   const publicClient = useWeb3PublicClient();
 
-  const aaAddress: Address = '0xcc03c29d4603490a8dbdda1cb84065b23cd5d13a'; // @testuser20:ont.network
-  const { buildUserOperation, getKeyIndexThroughXy, getCurrentKeyIndex } = useAbstractAccount(
-    publicClient,
-    aaAddress
-  );
+  const aaAddress: Address = '0xcc03c29d4603490a8dbdda1cb84065b23cd5d13a'; // TODO @testuser20:ont.network
+  const {
+    buildUserOperation,
+    getKeyIndexThroughXy,
+    getCurrentKeyIndex,
+    buildCallData,
+    addOwnerByAddress,
+  } = useAbstractAccount(publicClient, aaAddress);
   const handleGenerateRecovery = async () => {
     try {
       const mnemonic = generateMnemonic(english);
-      const account = mnemonicToAccount(mnemonic);
+      const mnemonicAccount = mnemonicToAccount(mnemonic);
 
-      // const passKeyAccountContract = getContract({
-      //   address: aaAddress,
-      //   abi: PassKeyAccountAbi,
-      //   client: publicClient,
+      // const keyIndex = await getCurrentKeyIndex();
+      // const callData = await buildCallData({
+      //   type: AccountCallType.ExecuteBatch,
+      //   args: [
+      //     {},
+      //     {
+      //       type: AccountCallType.Direct,
+      //       functionName: 'addOwnerAddress',
+      //       args: [mnemonicAccount.address],
+      //     },
+      //   ],
       // });
-      // const addOwnerAddressFunctionData = encodeFunctionData({
-      //   abi: PassKeyAccountAbi,
-      //   functionName: 'addOwnerAddress',
-      //   args: [account.address],
-      // });
-      // const feeData = await publicClient.estimateFeesPerGas();
 
-      // const passKeyAccountContractNonce = (await passKeyAccountContract.read.getNonce()) as bigint;
-      // const userOp = {
-      //   sender: aaAddress,
-      //   nonce: passKeyAccountContractNonce,
-      //   initCode: '0x' as Hex,
-      //   callData: addOwnerAddressFunctionData,
-      //   callGasLimit: hexToBigInt('0x55555'),
-      //   verificationGasLimit: hexToBigInt('0x55555'),
-      //   preVerificationGas: hexToBigInt('0x15555'),
-      //   maxFeePerGas: feeData.maxFeePerGas,
-      //   maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
-      //   paymasterAndData: '0x' as Hex,
-      //   signature: '0x' as Hex,
-      // };
-      // const userOpHash = V06.EntryPoint.calculateUserOpHash(
-      //   userOp,
-      //   aaAddress,
-      //   publicClient.chain.id
-      // );
-      // const signature = signMessageWithPasskey(userOpHash);
-
-      const keyIndex = await getCurrentKeyIndex();
-      const { userOp, userOpHash } = await buildUserOperation(
-        {
-          type: AccountCallType.Direct,
-          functionName: 'addOwnerPublicKey',
-          args: [account.address],
-        },
-        keyIndex
-      );
-
+      // const { userOp, userOpHash } = await buildUserOperation(callData, keyIndex);
+      await addOwnerByAddress(mnemonicAccount.address);
       // setRecoveryKey(mnemonic);
       // setIsRecoveryDialogOpen(true);
     } catch (error) {
+      console.error('Error generating recovery key:', error);
       // TODO: 使用错误提示组件
     }
   };
