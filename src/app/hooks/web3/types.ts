@@ -3,7 +3,7 @@ import { Hex, Address } from 'viem';
 export enum AccountCallType {
   Direct = 'direct',
   Execute = 'execute',
-  ExecuteBatch = 'executeBatch',
+  // ExecuteBatch = 'executeBatch',
 }
 
 export type DirectCallParams = {

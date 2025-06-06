@@ -32,3 +32,11 @@ export const calculateUserOpHash = (
 
   return keccak256(enc);
 };
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const bigIntSerializer = (key: string, value: any) => {
+  if (typeof value === 'bigint') {
+    return value.toString();
+  }
+  return value;
+};

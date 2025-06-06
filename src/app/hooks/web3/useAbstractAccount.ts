@@ -19,13 +19,13 @@ import {
   BuildUserOperationResult,
   UserOperation,
 } from './types';
-import { calculateUserOpHash } from '../../utils/web3';
+import { bigIntSerializer, calculateUserOpHash } from '../../utils/web3';
 import cons from '../../../client/state/cons';
-import { getPaymasterSign } from '../../extendApis';
 
 // TODO
 const GAS_ADDRESS = '0xd878dfE2b33A07E7FB290c1578A0b3cbc8aDadEA';
 const PAYMASTERE_ADDRESS = '0xfe86e45222e784a40a2c5e94b58c41b910d7e9ca';
+const ENTRY_POINT_ADDRESS = '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789';
 
 export const useAbstractAccount = (ethClient: PublicClient, address: Address) => {
   const passKeyAccountContract = getContract({
@@ -57,25 +57,44 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
     return keyIndex;
   };
 
+  const getPaymasterSign = async (
+    userOp: UserOperation,
+    chainId: number,
+    gasTokenAddress: string
+  ): Promise<Hex> => {
+    const response = await fetch(
+      `https://service-test.onto.app/S5/v2/ontoservice/aa/paymaster_sign`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(
+          {
+            init_code: userOp.initCode,
+            chain_id: chainId,
+            token_hash: gasTokenAddress,
+            max_priority_fee_per_gas: userOp.maxPriorityFeePerGas,
+            sender: userOp.sender,
+            call_data: userOp.callData,
+            verification_gas_limit: userOp.verificationGasLimit,
+            max_fee_per_gas: userOp.maxFeePerGas,
+            pre_verification_gas: userOp.preVerificationGas,
+            call_gas_limit: userOp.callGasLimit,
+            nonce: userOp.nonce,
+          },
+          bigIntSerializer
+        ),
+      }
+    );
+    const res = await response.json();
+    if (res.Error !== 0) {
+      throw new Error(`获取 Paymaster 签名失败: ${res.ErrorMessage}`);
+    }
+    return res.Result;
+  };
+
   const buildCallData = async (data: BuildUserOperationParams): Promise<Hex> => {
-    // if (data.type === AccountCallType.Direct) {
-    //   return encodeFunctionData({
-    //     abi: AccountAbi,
-    //     functionName: data.functionName,
-    //     args: data.args,
-    //   });
-    // }
-
-    // if (data.type === AccountCallType.Execute) {
-    //   return encodeFunctionData({
-    //     abi: AccountAbi,
-    //     functionName: 'execute',
-    //     args: [data.target, data.value ?? BigInt(0), data.data],
-    //   });
-    // }
-
-    // if (data.type === AccountCallType.ExecuteBatch) {
-    // 构建Call结构体数组
     const calls = data.map((arg) => {
       if (arg.type === AccountCallType.Direct) {
         const callData = encodeFunctionData({
@@ -84,12 +103,11 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
           args: arg.args,
         });
         return {
-          target: address, // 对于Direct调用，目标是合约自身
+          target: address,
           value: BigInt(0),
           data: callData,
         };
       }
-      // Execute调用
       return {
         target: arg.target,
         value: arg.value ?? BigInt(0),
@@ -97,13 +115,11 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
       };
     });
 
-    // 使用Call结构体数组调用executeBatch
     return encodeFunctionData({
       abi: AccountAbi,
       functionName: 'executeBatch',
       args: [calls],
     });
-    // }
   };
 
   const buildUserOperation = async (
@@ -200,8 +216,25 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
     }
   };
 
-  const sendUserOperationWithClient = async (userOp: UserOperation) => {
-    // ethClient.transport.request();
+  const sendUserOperation = async (userOp: UserOperation) => {
+    const response = await fetch(`http://35.240.165.243:3000/rpc`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(
+        {
+          jsonrpc: '2.0',
+          id: 1,
+          method: 'eth_sendUserOperation',
+          params: [userOp, ENTRY_POINT_ADDRESS],
+        },
+        bigIntSerializer
+      ),
+    });
+    const res = await response.json();
+
+    return res;
   };
 
   const addOwnerByAddress = async (ownerAddress: Address) => {
@@ -226,6 +259,8 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
     const { userOp, userOpHash } = await buildUserOperation(callData, keyIndex);
     console.log('userOpHash:', userOpHash);
     console.log('userOp:', userOp);
+    const res = await sendUserOperation(userOp);
+    console.log('sendUserOperation res:', res);
   };
 
   const recoveryAccount = async (mnemonic: string, username: string) => {
