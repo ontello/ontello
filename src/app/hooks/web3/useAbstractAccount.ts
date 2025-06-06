@@ -58,54 +58,52 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
   };
 
   const buildCallData = async (data: BuildUserOperationParams): Promise<Hex> => {
-    if (data.type === AccountCallType.Direct) {
-      return encodeFunctionData({
-        abi: AccountAbi,
-        functionName: data.functionName,
-        args: data.args,
-      });
-    }
+    // if (data.type === AccountCallType.Direct) {
+    //   return encodeFunctionData({
+    //     abi: AccountAbi,
+    //     functionName: data.functionName,
+    //     args: data.args,
+    //   });
+    // }
 
-    if (data.type === AccountCallType.Execute) {
-      return encodeFunctionData({
-        abi: AccountAbi,
-        functionName: 'execute',
-        args: [data.target, data.value ?? BigInt(0), data.data],
-      });
-    }
+    // if (data.type === AccountCallType.Execute) {
+    //   return encodeFunctionData({
+    //     abi: AccountAbi,
+    //     functionName: 'execute',
+    //     args: [data.target, data.value ?? BigInt(0), data.data],
+    //   });
+    // }
 
-    if (data.type === AccountCallType.ExecuteBatch) {
-      // 构建Call结构体数组
-      const calls = data.args.map((arg) => {
-        if (arg.type === AccountCallType.Direct) {
-          const callData = encodeFunctionData({
-            abi: AccountAbi,
-            functionName: arg.functionName,
-            args: arg.args,
-          });
-          return {
-            target: address, // 对于Direct调用，目标是合约自身
-            value: BigInt(0),
-            data: callData,
-          };
-        }
-        // Execute调用
+    // if (data.type === AccountCallType.ExecuteBatch) {
+    // 构建Call结构体数组
+    const calls = data.map((arg) => {
+      if (arg.type === AccountCallType.Direct) {
+        const callData = encodeFunctionData({
+          abi: AccountAbi,
+          functionName: arg.functionName,
+          args: arg.args,
+        });
         return {
-          target: arg.target,
-          value: arg.value ?? BigInt(0),
-          data: arg.data,
+          target: address, // 对于Direct调用，目标是合约自身
+          value: BigInt(0),
+          data: callData,
         };
-      });
+      }
+      // Execute调用
+      return {
+        target: arg.target,
+        value: arg.value ?? BigInt(0),
+        data: arg.data,
+      };
+    });
 
-      // 使用Call结构体数组调用executeBatch
-      return encodeFunctionData({
-        abi: AccountAbi,
-        functionName: 'executeBatch',
-        args: [calls],
-      });
-    }
-
-    throw new Error('不支持的调用类型');
+    // 使用Call结构体数组调用executeBatch
+    return encodeFunctionData({
+      abi: AccountAbi,
+      functionName: 'executeBatch',
+      args: [calls],
+    });
+    // }
   };
 
   const buildUserOperation = async (
@@ -208,25 +206,22 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
 
   const addOwnerByAddress = async (ownerAddress: Address) => {
     const keyIndex = await getCurrentKeyIndex();
-    const callData = await buildCallData({
-      type: AccountCallType.ExecuteBatch,
-      args: [
-        {
-          type: AccountCallType.Execute,
-          target: GAS_ADDRESS,
-          data: encodeFunctionData({
-            abi: ERC20Abi,
-            functionName: 'approve',
-            args: [PAYMASTERE_ADDRESS, maxUint256],
-          }),
-        },
-        {
-          type: AccountCallType.Direct,
-          functionName: 'addOwnerAddress',
-          args: [ownerAddress],
-        },
-      ],
-    });
+    const callData = await buildCallData([
+      {
+        type: AccountCallType.Execute,
+        target: GAS_ADDRESS,
+        data: encodeFunctionData({
+          abi: ERC20Abi,
+          functionName: 'approve',
+          args: [PAYMASTERE_ADDRESS, maxUint256],
+        }),
+      },
+      {
+        type: AccountCallType.Direct,
+        functionName: 'addOwnerAddress',
+        args: [ownerAddress],
+      },
+    ]);
 
     const { userOp, userOpHash } = await buildUserOperation(callData, keyIndex);
     console.log('userOpHash:', userOpHash);
