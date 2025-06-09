@@ -377,30 +377,27 @@ export const signMessageWithPasskey = async (message: string): Promise<WebAuthnS
     const clientDataString = new TextDecoder().decode(clientDataJSON);
 
     // test isValid
-    // const publicKey = await importPublicKey(
-    //   hexToArrayBuffer(
-    //     '3059301306072a8648ce3d020106082a8648ce3d03010703420004a9b2ec447b6586e82a80d18207cc8d5e7da1e7482211c45c4e2f40c8ceaac4c5b910591efc7283a09f9cd8f30f265f57469928144de833accf011d2500737823'
-    //   )
-    // );
-    // const rawSignature = new Uint8Array(r.length + s.length);
-    // rawSignature.set(r);
-    // rawSignature.set(s, r.length);
-    // const clientDataHash = await crypto.subtle.digest('SHA-256', clientDataJSON);
-    // const verifyData = new Uint8Array(authenticatorData.byteLength + clientDataHash.byteLength);
-    // verifyData.set(new Uint8Array(authenticatorData), 0);
-    // verifyData.set(new Uint8Array(clientDataHash), authenticatorData.byteLength);
-    // console.log('verifyData', toHex(rawSignature), toHex(verifyData));
-
-    // const isValid = await crypto.subtle.verify(
-    //   {
-    //     name: 'ECDSA',
-    //     hash: { name: 'SHA-256' },
-    //   },
-    //   publicKey,
-    //   rawSignature.buffer,
-    //   verifyData.buffer
-    // );
-    // console.log('isValid', isValid);
+    const publicKey = await recoverPublicKey(
+      'ux2etJpi71eNNu1KLLOfIpf0kXX7ZVwM6focwCp9HBka0jEowBHiTuFtAQUrt2hou8e2Bg-nqQkVIseY3R8UEQ'
+    );
+    const rawSignature = new Uint8Array(r.length + s.length);
+    rawSignature.set(r);
+    rawSignature.set(s, r.length);
+    const clientDataHash = await crypto.subtle.digest('SHA-256', clientDataJSON);
+    const verifyData = new Uint8Array(authenticatorData.byteLength + clientDataHash.byteLength);
+    verifyData.set(new Uint8Array(authenticatorData), 0);
+    verifyData.set(new Uint8Array(clientDataHash), authenticatorData.byteLength);
+    console.log('verifyData', toHex(rawSignature), toHex(verifyData));
+    const isValid = await crypto.subtle.verify(
+      {
+        name: 'ECDSA',
+        hash: { name: 'SHA-256' },
+      },
+      publicKey,
+      rawSignature.buffer,
+      verifyData.buffer
+    );
+    console.log('isValid', isValid);
 
     return {
       authenticatorData,

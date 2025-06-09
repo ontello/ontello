@@ -10,8 +10,7 @@ import {
   maxUint256,
 } from 'viem';
 import { mnemonicToAccount } from 'viem/accounts';
-import ERC20Abi from '@app/static/abis/ERC20.json';
-import AccountAbi from '../../static/abis/PassKeyAccount.json';
+import { EntryPointAbi, Erc20Abi, AccountAbi, PaymasterAbi } from '@src/app/static/abis';
 import { fromBase64Url, registerWithPasskey, signMessageWithPasskey } from '../../utils/passkey';
 import {
   AccountCallType,
@@ -99,8 +98,8 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
       if (arg.type === AccountCallType.Direct) {
         const callData = encodeFunctionData({
           abi: AccountAbi,
-          functionName: arg.functionName,
-          args: arg.args,
+          functionName: arg.functionName as any,
+          args: arg.args as any,
         });
         return {
           target: address,
@@ -239,12 +238,14 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
 
   const addOwnerByAddress = async (ownerAddress: Address) => {
     const keyIndex = await getCurrentKeyIndex();
+    console.log('keyIndex:', keyIndex);
+
     const callData = await buildCallData([
       {
         type: AccountCallType.Execute,
         target: GAS_ADDRESS,
         data: encodeFunctionData({
-          abi: ERC20Abi,
+          abi: Erc20Abi,
           functionName: 'approve',
           args: [PAYMASTERE_ADDRESS, maxUint256],
         }),
@@ -259,6 +260,50 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
     const { userOp, userOpHash } = await buildUserOperation(callData, keyIndex);
     console.log('userOpHash:', userOpHash);
     console.log('userOp:', userOp);
+    // const paymasterContract = getContract({
+    //   address: PAYMASTERE_ADDRESS,
+    //   abi: PaymasterAbi,
+    //   client: ethClient,
+    // });
+
+    // 调用 validatePaymasterUserOp 方法
+    // const [context, validationData] = await paymasterContract.read.validatePaymasterUserOp([
+    //   userOp,
+    //   userOpHash,
+    //   BigInt(1e18), // maxCost, 设置一个较大的值作为最大成本
+    // ]);
+    // const result = await ethClient.readContract({
+    //   address: PAYMASTERE_ADDRESS,
+    //   abi: PaymasterAbi,
+    //   functionName: 'validatePaymasterUserOp',
+    //   args: [userOp, userOpHash, BigInt(0)],
+    //   account: ENTRY_POINT_ADDRESS,
+    // });
+
+    // const result = await ethClient.readContract({
+    //   address: ENTRY_POINT_ADDRESS,
+    //   abi: EntryPointAbi,
+    //   functionName: 'simulateValidation',
+    //   args: [userOp],
+    // });
+
+    // const result = await passKeyAccountContract.read.validateUserOp([
+    //   userOp,
+    //   userOpHash,
+    //   BigInt(0),
+    // ]);
+
+    // const result = await ethClient.readContract({
+    //   address,
+    //   abi: AccountAbi,
+    //   // functionName: 'validateUserOp',
+    //   functionName: AccountAbi[31].name,
+    //   args: [userOp, userOpHash, BigInt(0)],
+    //   account: ENTRY_POINT_ADDRESS,
+    // });
+
+    // console.log('Paymaster validation result:', result);
+
     const res = await sendUserOperation(userOp);
     console.log('sendUserOperation res:', res);
   };

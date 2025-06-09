@@ -41,5 +41,5 @@ export type UserOperation = {
 };
 export type BuildUserOperationResult = {
   userOp: UserOperation;
-  userOpHash: string;
+  userOpHash: Hex;
 };
