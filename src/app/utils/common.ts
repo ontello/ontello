@@ -125,3 +125,31 @@ export const suffixRename = (name: string, validator: (newName: string) => boole
 };
 
 export const replaceSpaceWithDash = (str: string): string => str.replace(/ /g, '-');
+
+export const polling = <T>(
+  action: () => Promise<T>,
+  condition: (result: T) => boolean, // 判断条件
+  options: { maxRetries?: number; delay?: number } = {}
+): Promise<T> => {
+  const { maxRetries = 20, delay = 3000 } = options;
+  let retryCount = 0;
+
+  const execute = async (): Promise<T> => {
+    const result = await action();
+    if (condition(result)) {
+      return result; // 满足条件时返回结果
+    }
+
+    if (retryCount >= maxRetries) {
+      throw new Error('Max retry attempts reached');
+    }
+
+    retryCount += 1;
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, delay);
+    }); // 延迟后重试
+    return execute();
+  };
+
+  return execute();
+};

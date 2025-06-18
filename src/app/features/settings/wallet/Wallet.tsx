@@ -62,25 +62,12 @@ export function Wallet({ requestClose }: Props) {
       const mnemonic = generateMnemonic(english);
       const mnemonicAccount = mnemonicToAccount(mnemonic);
 
-      // const keyIndex = await getCurrentKeyIndex();
-      // const callData = await buildCallData({
-      //   type: AccountCallType.ExecuteBatch,
-      //   args: [
-      //     {},
-      //     {
-      //       type: AccountCallType.Direct,
-      //       functionName: 'addOwnerAddress',
-      //       args: [mnemonicAccount.address],
-      //     },
-      //   ],
-      // });
-
-      // const { userOp, userOpHash } = await buildUserOperation(callData, keyIndex);
       await addOwnerByAddress(mnemonicAccount.address);
+
       // setRecoveryKey(mnemonic);
       // setIsRecoveryDialogOpen(true);
     } catch (error) {
-      console.error('Error generating recovery key:', error);
+      // console.error('Error generating recovery key:', error);
       // TODO: 使用错误提示组件
     }
   };

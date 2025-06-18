@@ -363,41 +363,39 @@ export const signMessageWithPasskey = async (message: string): Promise<WebAuthnS
 
     const prefixedMessageHash = keccak256(prefixedMessageBytes);
 
-    console.log('prefixedMessageHash', prefixedMessageHash);
     const challenge = toBytes(prefixedMessageHash);
-    console.log('challenge', challenge.buffer);
 
     const { response } = await signWithPasskey(challenge);
     const { signature, authenticatorData, clientDataJSON } =
       response as AuthenticatorAssertionResponse;
-    // 获取签名数据并解析 DER 格式
+
     const derSig = new Uint8Array(signature);
     const { r, s } = parseDER(derSig);
 
     const clientDataString = new TextDecoder().decode(clientDataJSON);
 
     // test isValid
-    const publicKey = await recoverPublicKey(
-      'ux2etJpi71eNNu1KLLOfIpf0kXX7ZVwM6focwCp9HBka0jEowBHiTuFtAQUrt2hou8e2Bg-nqQkVIseY3R8UEQ'
-    );
-    const rawSignature = new Uint8Array(r.length + s.length);
-    rawSignature.set(r);
-    rawSignature.set(s, r.length);
-    const clientDataHash = await crypto.subtle.digest('SHA-256', clientDataJSON);
-    const verifyData = new Uint8Array(authenticatorData.byteLength + clientDataHash.byteLength);
-    verifyData.set(new Uint8Array(authenticatorData), 0);
-    verifyData.set(new Uint8Array(clientDataHash), authenticatorData.byteLength);
-    console.log('verifyData', toHex(rawSignature), toHex(verifyData));
-    const isValid = await crypto.subtle.verify(
-      {
-        name: 'ECDSA',
-        hash: { name: 'SHA-256' },
-      },
-      publicKey,
-      rawSignature.buffer,
-      verifyData.buffer
-    );
-    console.log('isValid', isValid);
+    // const publicKey = await recoverPublicKey(
+    //   'ux2etJpi71eNNu1KLLOfIpf0kXX7ZVwM6focwCp9HBka0jEowBHiTuFtAQUrt2hou8e2Bg-nqQkVIseY3R8UEQ'
+    // );
+    // const rawSignature = new Uint8Array(r.length + s.length);
+    // rawSignature.set(r);
+    // rawSignature.set(s, r.length);
+    // const clientDataHash = await crypto.subtle.digest('SHA-256', clientDataJSON);
+    // const verifyData = new Uint8Array(authenticatorData.byteLength + clientDataHash.byteLength);
+    // verifyData.set(new Uint8Array(authenticatorData), 0);
+    // verifyData.set(new Uint8Array(clientDataHash), authenticatorData.byteLength);
+    // console.log('verifyData', toHex(rawSignature), toHex(verifyData));
+    // const isValid = await crypto.subtle.verify(
+    //   {
+    //     name: 'ECDSA',
+    //     hash: { name: 'SHA-256' },
+    //   },
+    //   publicKey,
+    //   rawSignature.buffer,
+    //   verifyData.buffer
+    // );
+    // console.log('isValid', isValid);
 
     return {
       authenticatorData,

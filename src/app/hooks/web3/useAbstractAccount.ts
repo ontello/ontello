@@ -9,8 +9,10 @@ import {
   fromBytes,
   maxUint256,
 } from 'viem';
-import { mnemonicToAccount } from 'viem/accounts';
+import { mnemonicToAccount, privateKeyToAccount } from 'viem/accounts';
 import { EntryPointAbi, Erc20Abi, AccountAbi, PaymasterAbi } from '@src/app/static/abis';
+import { bscTestnet } from 'viem/chains';
+import { polling } from '@src/app/utils/common';
 import { fromBase64Url, registerWithPasskey, signMessageWithPasskey } from '../../utils/passkey';
 import {
   AccountCallType,
@@ -18,10 +20,18 @@ import {
   BuildUserOperationResult,
   UserOperation,
 } from './types';
-import { bigIntSerializer, calculateUserOpHash } from '../../utils/web3';
+import {
+  bigIntSerializer,
+  calculateCallGasLimit,
+  calculateGasFees,
+  calculateUserOpHash,
+  serializerToHex,
+} from '../../utils/web3';
 import cons from '../../../client/state/cons';
 
 // TODO
+const BUNDLER_RPC = 'http://35.240.165.243:4337/rpc';
+
 const GAS_ADDRESS = '0xd878dfE2b33A07E7FB290c1578A0b3cbc8aDadEA';
 const PAYMASTERE_ADDRESS = '0xfe86e45222e784a40a2c5e94b58c41b910d7e9ca';
 const ENTRY_POINT_ADDRESS = '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789';
@@ -56,6 +66,7 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
     return keyIndex;
   };
 
+  // paymaster
   const getPaymasterSign = async (
     userOp: UserOperation,
     chainId: number,
@@ -93,8 +104,104 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
     return res.Result;
   };
 
-  const buildCallData = async (data: BuildUserOperationParams): Promise<Hex> => {
-    const calls = data.map((arg) => {
+  // bundler
+  const estimateUserOperationGas = async (
+    userOp: UserOperation
+  ): Promise<{
+    preVerificationGas: Hex;
+    verificationGasLimit: Hex;
+    callGasLimit: Hex;
+    // paymasterVerificationGasLimit: Hex;
+  }> => {
+    const response = await fetch(BUNDLER_RPC, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(
+        {
+          jsonrpc: '2.0',
+          id: 1,
+          method: 'eth_estimateUserOperationGas',
+          params: [userOp, ENTRY_POINT_ADDRESS],
+        },
+        serializerToHex
+      ),
+    });
+    const res = await response.json();
+    if (res.error) {
+      throw new Error(`估算用户操作 gas 失败: ${res.error.message}`);
+    }
+    return res.result;
+  };
+  const sendUserOperation = async (userOp: UserOperation): Promise<Hex> => {
+    const response = await fetch(BUNDLER_RPC, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(
+        {
+          jsonrpc: '2.0',
+          id: 1,
+          method: 'eth_sendUserOperation',
+          params: [userOp, ENTRY_POINT_ADDRESS],
+        },
+        serializerToHex
+      ),
+    });
+    const res = await response.json();
+    return res.result;
+  };
+  const getUserOperationReceipt = async (userOpHash: Hex) => {
+    const getFunc = async () => {
+      const response = await fetch(BUNDLER_RPC, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: 1,
+          method: 'eth_getUserOperationReceipt',
+          params: [userOpHash],
+        }),
+      });
+      const res = await response.json();
+      if (res.error) {
+        return null;
+      }
+      return res.result;
+    };
+    const receipt = await polling(getFunc, (res) => !!res);
+    if (receipt) {
+      return receipt;
+    }
+    throw new Error('Failed to get user operation receipt');
+  };
+
+  //
+  const buildCallData = async (operations: BuildUserOperationParams): Promise<Hex> => {
+    const allowance = await ethClient.readContract({
+      address: GAS_ADDRESS,
+      abi: Erc20Abi,
+      functionName: 'allowance',
+      args: [address, PAYMASTERE_ADDRESS],
+    });
+
+    if (allowance === BigInt(0)) {
+      operations.unshift({
+        type: AccountCallType.Execute,
+        target: GAS_ADDRESS,
+        data: encodeFunctionData({
+          abi: Erc20Abi,
+          functionName: 'approve',
+          args: [PAYMASTERE_ADDRESS, maxUint256],
+        }),
+      });
+    }
+
+    const calls = operations.map((arg) => {
       if (arg.type === AccountCallType.Direct) {
         const callData = encodeFunctionData({
           abi: AccountAbi,
@@ -128,33 +235,34 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
     signMessageFunc?: (message: Hex) => Promise<Hex>
   ): Promise<BuildUserOperationResult> => {
     try {
-      const feeData = await ethClient.estimateFeesPerGas();
-
-      if (!feeData.maxFeePerGas || !feeData.maxPriorityFeePerGas) {
-        throw new Error('无法获取 gas 费用数据');
-      }
-
       const nonce = (await passKeyAccountContract.read.getNonce()) as bigint;
+      const feeData = await calculateGasFees(ethClient);
 
-      const callGasLimit = await ethClient.estimateGas({
-        account: address,
-        to: address,
-        data: callData,
-        value: BigInt(0),
-      });
       const userOp = {
         sender: address,
         nonce,
         initCode: '0x' as Hex,
         callData,
-        callGasLimit,
-        verificationGasLimit: BigInt(100000),
-        preVerificationGas: BigInt(21000),
+        callGasLimit: await calculateCallGasLimit(
+          ethClient,
+          ENTRY_POINT_ADDRESS,
+          address,
+          callData
+        ),
+        verificationGasLimit: BigInt(500_000),
+        preVerificationGas: BigInt(200_000),
         maxFeePerGas: feeData.maxFeePerGas,
         maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
         paymasterAndData: '0x' as Hex,
+        // eslint-disable-next-line prefer-template
         signature: '0x' as Hex,
       };
+      console.log('init userOp:', userOp);
+
+      // const estimatedGas = await estimateUserOperationGas(userOp);
+      // console.log('estimatedGas:', estimatedGas);
+      // userOp.preVerificationGas = BigInt(estimatedGas.preVerificationGas);
+      // userOp.verificationGasLimit = BigInt(estimatedGas.verificationGasLimit);
 
       const chainId = await ethClient.getChainId();
       if (!chainId) {
@@ -163,45 +271,53 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
       const paymasterAndData = await getPaymasterSign(userOp, chainId, GAS_ADDRESS);
       userOp.paymasterAndData = paymasterAndData;
 
-      const userOpHash = calculateUserOpHash(userOp, address, chainId);
-      console.log('userOpHash:', userOpHash);
+      const userOpHash = await calculateUserOpHash(ethClient, userOp, ENTRY_POINT_ADDRESS, chainId);
 
       if (signMessageFunc) {
         const signature = await signMessageFunc(userOpHash);
         userOp.signature = signature;
       } else {
         const passkeySignature = await signMessageWithPasskey(userOpHash);
-        let webauthnSignatureEncoded = encodeAbiParameters(
+        const webauthnSignatureEncoded = encodeAbiParameters(
           [
-            { type: 'bytes', name: 'authenticatorData' },
-            { type: 'bytes', name: 'clientDataJSON' },
-            { type: 'uint256', name: 'challengeIndex' },
-            { type: 'uint256', name: 'typeIndex' },
-            { type: 'uint256', name: 'r' },
-            { type: 'uint256', name: 's' },
+            {
+              components: [
+                { type: 'bytes', name: 'authenticatorData' },
+                { type: 'bytes', name: 'clientDataJSON' },
+                { type: 'uint256', name: 'challengeIndex' },
+                { type: 'uint256', name: 'typeIndex' },
+                { type: 'uint256', name: 'r' },
+                { type: 'uint256', name: 's' },
+              ],
+              type: 'tuple',
+            },
           ],
           [
-            toHex(new Uint8Array(passkeySignature.authenticatorData)),
-            toHex(new Uint8Array(passkeySignature.clientDataJSON)),
-            BigInt(passkeySignature.challengeIndex),
-            BigInt(passkeySignature.typeIndex),
-            BigInt(fromBytes(passkeySignature.r, 'bigint')),
-            BigInt(fromBytes(passkeySignature.s, 'bigint')),
+            {
+              authenticatorData: toHex(new Uint8Array(passkeySignature.authenticatorData)),
+              clientDataJSON: toHex(new Uint8Array(passkeySignature.clientDataJSON)),
+              challengeIndex: BigInt(passkeySignature.challengeIndex),
+              typeIndex: BigInt(passkeySignature.typeIndex),
+              r: BigInt(fromBytes(passkeySignature.r, 'bigint')),
+              s: BigInt(fromBytes(passkeySignature.s, 'bigint')),
+            },
           ]
         ) as Hex;
 
-        webauthnSignatureEncoded = `0x0000000000000000000000000000000000000000000000000000000000000020${webauthnSignatureEncoded.slice(
-          2
-        )}`;
-
         const signatureWrapper = encodeAbiParameters(
           [
-            { type: 'uint256', name: 'keyIndex' },
-            { type: 'bytes', name: 'signature' },
+            {
+              components: [
+                { type: 'uint256', name: 'keyIndex' },
+                { type: 'bytes', name: 'signature' },
+              ],
+              type: 'tuple',
+            },
           ],
-          [BigInt(keyIndex), webauthnSignatureEncoded]
+          [{ keyIndex, signature: webauthnSignatureEncoded }]
         );
 
+        console.log('signatureWrapper:', signatureWrapper);
         userOp.signature = signatureWrapper;
       }
 
@@ -210,30 +326,9 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
         userOpHash,
       };
     } catch (error) {
-      console.error('构建用户操作失败:', error);
+      console.error('build UserOperation failed:', error);
       throw error;
     }
-  };
-
-  const sendUserOperation = async (userOp: UserOperation) => {
-    const response = await fetch(`http://35.240.165.243:3000/rpc`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(
-        {
-          jsonrpc: '2.0',
-          id: 1,
-          method: 'eth_sendUserOperation',
-          params: [userOp, ENTRY_POINT_ADDRESS],
-        },
-        bigIntSerializer
-      ),
-    });
-    const res = await response.json();
-
-    return res;
   };
 
   const addOwnerByAddress = async (ownerAddress: Address) => {
@@ -241,15 +336,6 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
     console.log('keyIndex:', keyIndex);
 
     const callData = await buildCallData([
-      {
-        type: AccountCallType.Execute,
-        target: GAS_ADDRESS,
-        data: encodeFunctionData({
-          abi: Erc20Abi,
-          functionName: 'approve',
-          args: [PAYMASTERE_ADDRESS, maxUint256],
-        }),
-      },
       {
         type: AccountCallType.Direct,
         functionName: 'addOwnerAddress',
@@ -260,52 +346,19 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
     const { userOp, userOpHash } = await buildUserOperation(callData, keyIndex);
     console.log('userOpHash:', userOpHash);
     console.log('userOp:', userOp);
-    // const paymasterContract = getContract({
-    //   address: PAYMASTERE_ADDRESS,
-    //   abi: PaymasterAbi,
-    //   client: ethClient,
-    // });
 
-    // 调用 validatePaymasterUserOp 方法
-    // const [context, validationData] = await paymasterContract.read.validatePaymasterUserOp([
-    //   userOp,
-    //   userOpHash,
-    //   BigInt(1e18), // maxCost, 设置一个较大的值作为最大成本
-    // ]);
-    // const result = await ethClient.readContract({
-    //   address: PAYMASTERE_ADDRESS,
-    //   abi: PaymasterAbi,
-    //   functionName: 'validatePaymasterUserOp',
-    //   args: [userOp, userOpHash, BigInt(0)],
-    //   account: ENTRY_POINT_ADDRESS,
-    // });
-
-    // const result = await ethClient.readContract({
-    //   address: ENTRY_POINT_ADDRESS,
-    //   abi: EntryPointAbi,
-    //   functionName: 'simulateValidation',
-    //   args: [userOp],
-    // });
-
-    // const result = await passKeyAccountContract.read.validateUserOp([
-    //   userOp,
-    //   userOpHash,
-    //   BigInt(0),
-    // ]);
-
-    // const result = await ethClient.readContract({
+    // const validateUserOp = await ethClient.readContract({
     //   address,
     //   abi: AccountAbi,
-    //   // functionName: 'validateUserOp',
-    //   functionName: AccountAbi[31].name,
+    //   functionName: 'validateUserOp',
     //   args: [userOp, userOpHash, BigInt(0)],
     //   account: ENTRY_POINT_ADDRESS,
     // });
-
-    // console.log('Paymaster validation result:', result);
+    // console.log('validateUserOp:', validateUserOp);
 
     const res = await sendUserOperation(userOp);
     console.log('sendUserOperation res:', res);
+    const receipt = await getUserOperationReceipt(userOpHash);
   };
 
   const recoveryAccount = async (mnemonic: string, username: string) => {
