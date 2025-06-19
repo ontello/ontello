@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   Box,
   Text,
@@ -13,10 +13,12 @@ import {
   Header,
   config,
   Scroll,
+  Spinner,
 } from 'folds';
 import FocusTrap from 'focus-trap-react';
 import { english, generateMnemonic, mnemonicToAccount } from 'viem/accounts';
 import { Address, encodeFunctionData, getContract, Hex, hexToBigInt, keccak256, toHex } from 'viem';
+import { UserOperationReceipt } from '@src/app/hooks/web3/types';
 import { Page, PageContent, PageHeader } from '../../../components/page';
 import { SequenceCard } from '../../../components/sequence-card';
 import { SequenceCardStyle } from '../styles.css';
@@ -27,9 +29,9 @@ import { useFetchPasskeyList } from '../../../hooks/useFetchPasskeyList';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
 import { useWeb3PublicClient } from '../../../hooks/web3/useWeb3Client';
 import { useAbstractAccount } from '../../../hooks/web3/useAbstractAccount';
-import { AccountCallType } from '../../../hooks/web3/types';
 import cons from '../../../../client/state/cons';
 import { recoverPublicKey, fromBase64Url } from '../../../utils/passkey';
+import { useAsyncCallback, AsyncStatus } from '../../../hooks/useAsyncCallback';
 
 interface PasskeyItem {
   id: string;
@@ -41,7 +43,7 @@ type Props = {
 };
 
 export function Wallet({ requestClose }: Props) {
-  const [isRecoveryDialogOpen, setIsRecoveryDialogOpen] = useState(false);
+  const [isRecoveryDialogOpen, setIsRecoveryDialogOpen] = useState(true);
   const [recoveryKey, setRecoveryKey] = useState('');
   const { publicKey: currentPublicKey } = getSecret();
   const mx = useMatrixClient();
@@ -50,22 +52,21 @@ export function Wallet({ requestClose }: Props) {
   const publicClient = useWeb3PublicClient();
 
   const aaAddress: Address = '0xcc03c29d4603490a8dbdda1cb84065b23cd5d13a'; // TODO @testuser20:ont.network
-  const {
-    buildUserOperation,
-    getKeyIndexThroughXy,
-    getCurrentKeyIndex,
-    buildCallData,
-    addOwnerByAddress,
-  } = useAbstractAccount(publicClient, aaAddress);
+  const { addOwnerByAddress } = useAbstractAccount(publicClient, aaAddress);
+
+  const [addState, startAddOwnerByAddress] = useAsyncCallback<
+    UserOperationReceipt,
+    Error,
+    Parameters<typeof addOwnerByAddress>
+  >(useCallback(addOwnerByAddress, [addOwnerByAddress]));
+
   const handleGenerateRecovery = async () => {
     try {
       const mnemonic = generateMnemonic(english);
       const mnemonicAccount = mnemonicToAccount(mnemonic);
-
-      await addOwnerByAddress(mnemonicAccount.address);
-
-      // setRecoveryKey(mnemonic);
-      // setIsRecoveryDialogOpen(true);
+      setIsRecoveryDialogOpen(true);
+      const receipt = await startAddOwnerByAddress(mnemonicAccount.address);
+      setRecoveryKey(mnemonic);
     } catch (error) {
       // console.error('Error generating recovery key:', error);
       // TODO: 使用错误提示组件
@@ -114,8 +115,17 @@ export function Wallet({ requestClose }: Props) {
                     title="Recovery Key"
                     description="If you lose this device, or delete the passkey from the system, you risk losing your assets and message data. To protect your account, please establish a recovery key now!"
                     after={
-                      <Button size="300" radii="300" onClick={handleGenerateRecovery}>
+                      <Button
+                        size="300"
+                        radii="300"
+                        onClick={handleGenerateRecovery}
+                        // disabled={addState.status === 'loading'}
+                      >
+                        {/* {addState.status === 'loading' ? (
+                          <Icon src={Icons.Reload} />
+                        ) : ( */}
                         <Text size="B300">Generate</Text>
+                        {/* )} */}
                       </Button>
                     }
                   />
@@ -173,23 +183,37 @@ export function Wallet({ requestClose }: Props) {
                 <Box grow="Yes">
                   <Text size="H4">Recovery Key</Text>
                 </Box>
-                <IconButton size="300" onClick={() => setIsRecoveryDialogOpen(false)} radii="300">
+                {/* <IconButton size="300" onClick={() => setIsRecoveryDialogOpen(false)} radii="300">
                   <Icon src={Icons.Cross} />
-                </IconButton>
+                </IconButton> */}
               </Header>
-              <Box style={{ padding: config.space.S400 }} direction="Column" gap="400">
-                <Box direction="Column" gap="200">
-                  <Text>Please save this recovery key in a safe place:</Text>
-                  <Text style={{ wordBreak: 'break-all' }}>{recoveryKey}</Text>
+              {addState.status === AsyncStatus.Success ? (
+                <Box style={{ padding: config.space.S400 }} direction="Column" gap="400">
+                  <Box direction="Column" gap="200">
+                    <Text>Please save this recovery key in a safe place:</Text>
+                    <Text size="B500" style={{ wordBreak: 'break-all' }}>
+                      {recoveryKey}
+                    </Text>
+                  </Box>
+                  <Button
+                    variant="Secondary"
+                    fill="Soft"
+                    onClick={() => setIsRecoveryDialogOpen(false)}
+                  >
+                    <Text size="B400">Close</Text>
+                  </Button>
                 </Box>
-                <Button
-                  variant="Secondary"
-                  fill="Soft"
-                  onClick={() => setIsRecoveryDialogOpen(false)}
+              ) : (
+                <Box
+                  justifyContent="Center"
+                  alignItems="Center"
+                  style={{
+                    margin: ` ${config.space.S600} 0 ${config.space.S600} 0`,
+                  }}
                 >
-                  <Text size="B400">Close</Text>
-                </Button>
-              </Box>
+                  <Spinner />
+                </Box>
+              )}
             </Dialog>
           </FocusTrap>
         </OverlayCenter>

@@ -6,10 +6,8 @@ import {
   Hex,
   PublicClient,
   toHex,
-  getContract,
 } from 'viem';
 import { UserOperation } from '../hooks/web3/types';
-import { EntryPointAbi } from '../static/abis';
 
 export const calculateUserOpHash = async (
   ethClient: PublicClient,
@@ -40,15 +38,12 @@ export const calculateUserOpHash = async (
     BigInt(chainId),
   ]);
   const hash = keccak256(enc);
-  // console.log('111111', hash);
-
   // const entryPointContract = getContract({
   //   address: entryPoint,
   //   abi: EntryPointAbi,
   //   client: ethClient,
   // });
   // const hash2 = await entryPointContract.read.getUserOpHash([userop]);
-  // console.log('111112', hash2);
 
   return hash;
 };
@@ -112,9 +107,6 @@ export const calculateGasFees = async (
     ethClient.getBlock(),
     ethClient.estimateMaxPriorityFeePerGas().catch(() => fallbackPriorityFee),
   ]);
-  console.log('block', block);
-  console.log('estimatedPriorityFee', estimatedPriorityFee);
-
   const baseFee = block.baseFeePerGas ?? BigInt(0);
   const priorityFee = estimatedPriorityFee ?? fallbackPriorityFee;
 

@@ -43,3 +43,26 @@ export type BuildUserOperationResult = {
   userOp: UserOperation;
   userOpHash: Hex;
 };
+
+export type UserOperationReceipt = {
+  userOpHash: Hex;
+  sender: Address;
+  paymaster: Address;
+  nonce: bigint;
+  success: boolean;
+  actualGasCost: bigint;
+  actualGasUsed: bigint;
+  from: Address;
+  receipt: {
+    blockHash: Hex;
+    blockNumber: Hex;
+    from: Address;
+    cumulativeGasUsed: Hex;
+    gasUsed: Hex;
+    transactionHash: Hex;
+    transactionIndex: Hex;
+    logs: any[];
+    logsBloom: string;
+    effectiveGasPrice: Hex;
+  };
+};

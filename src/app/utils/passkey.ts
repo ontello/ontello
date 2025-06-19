@@ -75,21 +75,17 @@ export function parsePublicKeyPoints(spkiBuffer: ArrayBuffer): {
   };
 }
 export async function importPublicKey(publicKeyBytes: ArrayBuffer): Promise<CryptoKey> {
-  try {
-    return await crypto.subtle.importKey(
-      'spki',
-      publicKeyBytes,
-      {
-        name: 'ECDSA',
-        namedCurve: 'P-256', // secp256r1
-      },
-      true,
-      ['verify']
-    );
-  } catch (error) {
-    console.error('导入公钥失败:', error);
-    throw error;
-  }
+  const key = await crypto.subtle.importKey(
+    'spki',
+    publicKeyBytes,
+    {
+      name: 'ECDSA',
+      namedCurve: 'P-256', // secp256r1
+    },
+    true,
+    ['verify']
+  );
+  return key;
 }
 
 export async function recoverPublicKey(publicKeyBase64Url: string): Promise<CryptoKey> {
@@ -160,19 +156,18 @@ export const signWithPasskey = async (challenge: ArrayBuffer): Promise<PublicKey
   return credential;
 };
 
-const genChallenge = (user: string, prefix: string): ArrayBuffer => {
+const getChallenge = (user: string, prefix: string): ArrayBuffer => {
   const timestampInSeconds = Math.floor(Date.now() / 1000);
   const challenge = `${prefix} ${user}.ont.im at ${timestampInSeconds}`;
   return new TextEncoder().encode(challenge).buffer;
 };
-const genLoginChallenge = (username: string): ArrayBuffer => genChallenge(username, 'Login');
+const getLoginChallenge = (username: string): ArrayBuffer => getChallenge(username, 'Login');
 
-const genRegisterChallenge = (user: string): ArrayBuffer => genChallenge(user, 'Register');
+const getRegisterChallenge = (user: string): ArrayBuffer => getChallenge(user, 'Register');
 
 export const createPasskey = async (name: string, challenge: ArrayBuffer) => {
   const userIdArray = new TextEncoder().encode(name);
   const publicKeyCredentialCreationOptions = {
-    // challenge: genRegisterChallenge(name),
     challenge,
     // TODO
     rp: {
@@ -213,39 +208,7 @@ export const registerWithPasskey = async (
   xy: ArrayBuffer;
 }> => {
   try {
-    // const userIdArray = new TextEncoder().encode(name);
-
-    // const publicKeyCredentialCreationOptions = {
-    //   challenge: genRegisterChallenge(name),
-    //   // TODO
-    //   rp: {
-    //     name: 'Name',
-    //     id: RPID,
-    //   },
-    //   user: {
-    //     id: userIdArray,
-    //     name,
-    //     displayName: name,
-    //   },
-    //   pubKeyCredParams: [
-    //     {
-    //       type: 'public-key',
-    //       alg: -7,
-    //     },
-    //   ],
-    //   authenticatorSelection: {
-    //     authenticatorAttachment: 'platform',
-    //     userVerification: 'required',
-    //     residentKey: 'required',
-    //   },
-    //   timeout: 60000,
-    // };
-
-    // const credential = (await navigator.credentials.create({
-    //   publicKey: publicKeyCredentialCreationOptions as any,
-    // })) as PublicKeyCredential;
-    // console.log('credential', credential);
-    const credential = await createPasskey(name, genRegisterChallenge(name));
+    const credential = await createPasskey(name, getRegisterChallenge(name));
     const response = credential.response as AuthenticatorAttestationResponse;
 
     const publicKey = response.getPublicKey();
@@ -281,18 +244,7 @@ export const loginWithPasskey = async (
   publicKey: string;
 }> => {
   try {
-    // const publicKeyCredentialRequestOptions = {
-    //   challenge: genLoginChallenge(name),
-    //   rpId: RPID,
-    //   timeout: 60000,
-    //   userVerification: 'required',
-    // };
-    // const credential = (await navigator.credentials.get({
-    //   publicKey: publicKeyCredentialRequestOptions as any,
-    // })) as PublicKeyCredential;
-
-    // const response = credential.response as AuthenticatorAssertionResponse;
-    const credential = await signWithPasskey(genLoginChallenge(name));
+    const credential = await signWithPasskey(getLoginChallenge(name));
     const response = credential.response as AuthenticatorAssertionResponse;
     const addedPublicks = await getPasskeyCredentials(cl, `@${name}:${serverName}`);
 
@@ -334,7 +286,6 @@ export const loginWithPasskey = async (
   } catch (error: any) {
     // console.error(error)
     throw new Error('Failed to login passkey');
-    // throw new Error(error.message);
   }
 };
 
@@ -406,7 +357,7 @@ export const signMessageWithPasskey = async (message: string): Promise<WebAuthnS
       s,
     };
   } catch (error) {
-    console.error('签名失败:', error);
+    console.error('signMessageWithPasskey failed:', error);
     throw error;
   }
 };

@@ -19,6 +19,7 @@ import {
   BuildUserOperationParams,
   BuildUserOperationResult,
   UserOperation,
+  UserOperationReceipt,
 } from './types';
 import {
   bigIntSerializer,
@@ -99,7 +100,7 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
     );
     const res = await response.json();
     if (res.Error !== 0) {
-      throw new Error(`获取 Paymaster 签名失败: ${res.ErrorMessage}`);
+      throw new Error(`Get paymaster sign failed: ${res.ErrorMessage}`);
     }
     return res.Result;
   };
@@ -130,7 +131,7 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
     });
     const res = await response.json();
     if (res.error) {
-      throw new Error(`估算用户操作 gas 失败: ${res.error.message}`);
+      throw new Error(`Estimate failed: ${res.error.message}`);
     }
     return res.result;
   };
@@ -153,7 +154,7 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
     const res = await response.json();
     return res.result;
   };
-  const getUserOperationReceipt = async (userOpHash: Hex) => {
+  const getUserOperationReceipt = async (userOpHash: Hex): Promise<UserOperationReceipt> => {
     const getFunc = async () => {
       const response = await fetch(BUNDLER_RPC, {
         method: 'POST',
@@ -173,7 +174,7 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
       }
       return res.result;
     };
-    const receipt = await polling(getFunc, (res) => !!res);
+    const receipt = await polling(getFunc, (res) => res, { maxRetries: 10 });
     if (receipt) {
       return receipt;
     }
@@ -205,7 +206,9 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
       if (arg.type === AccountCallType.Direct) {
         const callData = encodeFunctionData({
           abi: AccountAbi,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           functionName: arg.functionName as any,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           args: arg.args as any,
         });
         return {
@@ -229,7 +232,6 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
   };
 
   const buildUserOperation = async (
-    // params: BuildUserOperationParams,
     callData: Hex,
     keyIndex: bigint,
     signMessageFunc?: (message: Hex) => Promise<Hex>
@@ -254,10 +256,8 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
         maxFeePerGas: feeData.maxFeePerGas,
         maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
         paymasterAndData: '0x' as Hex,
-        // eslint-disable-next-line prefer-template
         signature: '0x' as Hex,
       };
-      console.log('init userOp:', userOp);
 
       // const estimatedGas = await estimateUserOperationGas(userOp);
       // console.log('estimatedGas:', estimatedGas);
@@ -317,7 +317,6 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
           [{ keyIndex, signature: webauthnSignatureEncoded }]
         );
 
-        console.log('signatureWrapper:', signatureWrapper);
         userOp.signature = signatureWrapper;
       }
 
@@ -347,18 +346,19 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
     console.log('userOpHash:', userOpHash);
     console.log('userOp:', userOp);
 
-    // const validateUserOp = await ethClient.readContract({
-    //   address,
-    //   abi: AccountAbi,
-    //   functionName: 'validateUserOp',
-    //   args: [userOp, userOpHash, BigInt(0)],
-    //   account: ENTRY_POINT_ADDRESS,
-    // });
-    // console.log('validateUserOp:', validateUserOp);
+    const validateUserOp = await ethClient.readContract({
+      address,
+      abi: AccountAbi,
+      functionName: 'validateUserOp',
+      args: [userOp, userOpHash, BigInt(0)],
+      account: ENTRY_POINT_ADDRESS,
+    });
+    console.log('validateUserOp:', validateUserOp);
 
     const res = await sendUserOperation(userOp);
     console.log('sendUserOperation res:', res);
     const receipt = await getUserOperationReceipt(userOpHash);
+    return receipt;
   };
 
   const recoveryAccount = async (mnemonic: string, username: string) => {
