@@ -246,7 +246,7 @@ export const loginWithPasskey = async (
   try {
     const credential = await signWithPasskey(getLoginChallenge(name));
     const response = credential.response as AuthenticatorAssertionResponse;
-    const addedPublicks = await getPasskeyCredentials(cl, `@${name}:${serverName}`);
+    const addedPublicks = (await getPasskeyCredentials(cl, `@${name}:${serverName}`)).credentials;
 
     let choseCredential = null;
     // eslint-disable-next-line no-restricted-syntax
@@ -327,7 +327,7 @@ export const signMessageWithPasskey = async (message: string): Promise<WebAuthnS
 
     // test isValid
     // const publicKey = await recoverPublicKey(
-    //   'ux2etJpi71eNNu1KLLOfIpf0kXX7ZVwM6focwCp9HBka0jEowBHiTuFtAQUrt2hou8e2Bg-nqQkVIseY3R8UEQ'
+    //   'N5Z0j5waV4NEx9SguS9PADPnQM0DjVO2aEVmUIYd2BnKsCNj0kcHhKH4-MGFkvT6cwwKYpc6otazk5jdE10s0w'
     // );
     // const rawSignature = new Uint8Array(r.length + s.length);
     // rawSignature.set(r);

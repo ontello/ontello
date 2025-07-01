@@ -174,7 +174,7 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
       }
       return res.result;
     };
-    const receipt = await polling(getFunc, (res) => res, { maxRetries: 10 });
+    const receipt = await polling(getFunc, (res) => !!res);
     if (receipt) {
       return receipt;
     }
@@ -239,18 +239,19 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
     try {
       const nonce = (await passKeyAccountContract.read.getNonce()) as bigint;
       const feeData = await calculateGasFees(ethClient);
+      const callGasLimit = await calculateCallGasLimit(
+        ethClient,
+        ENTRY_POINT_ADDRESS,
+        address,
+        callData
+      );
 
       const userOp = {
         sender: address,
         nonce,
         initCode: '0x' as Hex,
         callData,
-        callGasLimit: await calculateCallGasLimit(
-          ethClient,
-          ENTRY_POINT_ADDRESS,
-          address,
-          callData
-        ),
+        callGasLimit,
         verificationGasLimit: BigInt(500_000),
         preVerificationGas: BigInt(200_000),
         maxFeePerGas: feeData.maxFeePerGas,
@@ -320,6 +321,18 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
         userOp.signature = signatureWrapper;
       }
 
+      console.log('userOp', userOp);
+      console.log('userOpHash', userOpHash);
+
+      const validateUserOp = await ethClient.readContract({
+        address,
+        abi: AccountAbi,
+        functionName: 'validateUserOp' as any,
+        args: [userOp, userOpHash, BigInt(0)] as any,
+        account: ENTRY_POINT_ADDRESS,
+      });
+      console.log('validateUserOp:', validateUserOp);
+
       return {
         userOp,
         userOpHash,
@@ -332,7 +345,6 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
 
   const addOwnerByAddress = async (ownerAddress: Address) => {
     const keyIndex = await getCurrentKeyIndex();
-    console.log('keyIndex:', keyIndex);
 
     const callData = await buildCallData([
       {
@@ -343,20 +355,8 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
     ]);
 
     const { userOp, userOpHash } = await buildUserOperation(callData, keyIndex);
-    console.log('userOpHash:', userOpHash);
-    console.log('userOp:', userOp);
-
-    const validateUserOp = await ethClient.readContract({
-      address,
-      abi: AccountAbi,
-      functionName: 'validateUserOp',
-      args: [userOp, userOpHash, BigInt(0)],
-      account: ENTRY_POINT_ADDRESS,
-    });
-    console.log('validateUserOp:', validateUserOp);
 
     const res = await sendUserOperation(userOp);
-    console.log('sendUserOperation res:', res);
     const receipt = await getUserOperationReceipt(userOpHash);
     return receipt;
   };
@@ -365,37 +365,44 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
     const mnemonicAccount = mnemonicToAccount(mnemonic);
     const { x, y } = await registerWithPasskey(username);
     const keyIndex = await getKeyIndexThroughAddress(mnemonicAccount.address);
-    // const { userOp, userOpHash } = await buildUserOperation(
-    //   {
-    //     type: AccountCallType.Direct,
-    //     functionName: 'addOwnerPublicKey',
-    //     args: [toHex(new Uint8Array(x)), toHex(new Uint8Array(y))],
-    //   },
-    //   keyIndex,
-    //   (message) => mnemonicAccount.signMessage({ message: { raw: message } })
-    // );
+    const callData = await buildCallData([
+      {
+        type: AccountCallType.Direct,
+        functionName: 'addOwnerPublicKey',
+        args: [toHex(new Uint8Array(x)), toHex(new Uint8Array(y))],
+      },
+    ]);
+    const { userOp, userOpHash } = await buildUserOperation(callData, keyIndex, (message) =>
+      mnemonicAccount.signMessage({ message: { raw: message } })
+    );
+    await sendUserOperation(userOp);
+    const receipt = await getUserOperationReceipt(userOpHash);
+    return receipt;
   };
+
   const removeOwner = async (targetPublicKeyBase64: string) => {
     const keyIndex = await getCurrentKeyIndex();
 
     const xy = fromBase64Url(targetPublicKeyBase64);
-    const input = encodeAbiParameters(
-      [
-        { name: 'x', type: 'bytes' },
-        { name: 'y', type: 'bytes' },
-      ],
-      [toHex(new Uint8Array(xy.slice(0, 32))), toHex(new Uint8Array(xy.slice(32)))]
-    );
-    const targetKeyIndex = (await passKeyAccountContract.read.indexOfOwnerBytes([input])) as bigint;
+    const xyHex = toHex(new Uint8Array(xy));
+    console.log('targetPublicKeyBase64', targetPublicKeyBase64);
 
-    // const { userOp, userOpHash } = await buildUserOperation(
-    //   {
-    //     type: AccountCallType.Direct,
-    //     functionName: 'removeOwnerAtIndex',
-    //     args: [targetKeyIndex, input],
-    //   },
-    //   keyIndex
-    // );
+    console.log('xyHex', xyHex);
+
+    const targetKeyIndex = (await passKeyAccountContract.read.indexOfOwnerBytes([xyHex])) as bigint;
+    console.log('targetKeyIndex', targetKeyIndex);
+
+    const callData = await buildCallData([
+      {
+        type: AccountCallType.Direct,
+        functionName: 'removeOwnerAtIndex',
+        args: [targetKeyIndex, xyHex],
+      },
+    ]);
+    const { userOp, userOpHash } = await buildUserOperation(callData, keyIndex);
+    await sendUserOperation(userOp);
+    const receipt = await getUserOperationReceipt(userOpHash);
+    return receipt;
   };
   return {
     buildCallData,

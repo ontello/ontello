@@ -17,8 +17,11 @@ import {
 } from 'folds';
 import FocusTrap from 'focus-trap-react';
 import { english, generateMnemonic, mnemonicToAccount } from 'viem/accounts';
-import { Address, encodeFunctionData, getContract, Hex, hexToBigInt, keccak256, toHex } from 'viem';
+import { Address } from 'viem';
 import { UserOperationReceipt } from '@src/app/hooks/web3/types';
+import { CredentialItem } from '@src/app/extendApis';
+import { ellipsisMiddle } from '@src/app/utils/common';
+import { timeDayMonthYear } from '@src/app/utils/time';
 import { Page, PageContent, PageHeader } from '../../../components/page';
 import { SequenceCard } from '../../../components/sequence-card';
 import { SequenceCardStyle } from '../styles.css';
@@ -29,30 +32,23 @@ import { useFetchPasskeyList } from '../../../hooks/useFetchPasskeyList';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
 import { useWeb3PublicClient } from '../../../hooks/web3/useWeb3Client';
 import { useAbstractAccount } from '../../../hooks/web3/useAbstractAccount';
-import cons from '../../../../client/state/cons';
-import { recoverPublicKey, fromBase64Url } from '../../../utils/passkey';
 import { useAsyncCallback, AsyncStatus } from '../../../hooks/useAsyncCallback';
-
-interface PasskeyItem {
-  id: string;
-  publicKey: string;
-}
 
 type Props = {
   requestClose: () => void;
 };
 
 export function Wallet({ requestClose }: Props) {
-  const [isRecoveryDialogOpen, setIsRecoveryDialogOpen] = useState(true);
+  const [isRecoveryDialogOpen, setIsRecoveryDialogOpen] = useState(false);
   const [recoveryKey, setRecoveryKey] = useState('');
   const { publicKey: currentPublicKey } = getSecret();
   const mx = useMatrixClient();
   const userId = mx.getUserId();
-  const [passkeys, refetch] = useFetchPasskeyList(userId!);
+  const [passkeyData, refetch] = useFetchPasskeyList(userId!);
   const publicClient = useWeb3PublicClient();
 
-  const aaAddress: Address = '0xcc03c29d4603490a8dbdda1cb84065b23cd5d13a'; // TODO @testuser20:ont.network
-  const { addOwnerByAddress } = useAbstractAccount(publicClient, aaAddress);
+  const aaAddress: Address = '0x1a372366093d623ab831ebdef3020aaed362ce42'; // TODO @testuser21:ont.network
+  const { addOwnerByAddress, removeOwner } = useAbstractAccount(publicClient, aaAddress);
 
   const [addState, startAddOwnerByAddress] = useAsyncCallback<
     UserOperationReceipt,
@@ -60,27 +56,24 @@ export function Wallet({ requestClose }: Props) {
     Parameters<typeof addOwnerByAddress>
   >(useCallback(addOwnerByAddress, [addOwnerByAddress]));
 
+  const [removeState, startRemoveOwner] = useAsyncCallback<
+    UserOperationReceipt,
+    Error,
+    Parameters<typeof removeOwner>
+  >(useCallback(removeOwner, [removeOwner]));
+
   const handleGenerateRecovery = async () => {
-    try {
-      const mnemonic = generateMnemonic(english);
-      const mnemonicAccount = mnemonicToAccount(mnemonic);
-      setIsRecoveryDialogOpen(true);
-      const receipt = await startAddOwnerByAddress(mnemonicAccount.address);
-      setRecoveryKey(mnemonic);
-    } catch (error) {
-      // console.error('Error generating recovery key:', error);
-      // TODO: 使用错误提示组件
-    }
+    const mnemonic = generateMnemonic(english);
+    const mnemonicAccount = mnemonicToAccount(mnemonic);
+    setIsRecoveryDialogOpen(true);
+    const receipt = await startAddOwnerByAddress(mnemonicAccount.address);
+    setRecoveryKey(mnemonic);
+    await refetch();
   };
 
-  const handleDeletePasskey = async (passkeyId: string) => {
-    try {
-      // TODO: 实现删除 passkey 的逻辑
-      // await mx.deletePasskey(passkeyId);
-    } catch (err) {
-      // TODO: 使用错误提示组件
-      console.error(err);
-    }
+  const handleDeletePasskey = async (publicKeyBase64: string) => {
+    const receipt = await startRemoveOwner(publicKeyBase64);
+    await refetch();
   };
 
   return (
@@ -115,41 +108,41 @@ export function Wallet({ requestClose }: Props) {
                     title="Recovery Key"
                     description="If you lose this device, or delete the passkey from the system, you risk losing your assets and message data. To protect your account, please establish a recovery key now!"
                     after={
-                      <Button
-                        size="300"
-                        radii="300"
-                        onClick={handleGenerateRecovery}
-                        // disabled={addState.status === 'loading'}
-                      >
-                        {/* {addState.status === 'loading' ? (
-                          <Icon src={Icons.Reload} />
-                        ) : ( */}
+                      <Button size="300" radii="300" onClick={handleGenerateRecovery}>
                         <Text size="B300">Generate</Text>
-                        {/* )} */}
                       </Button>
                     }
                   />
                 </SequenceCard>
               </Box>
               <Box direction="Column" gap="100">
-                <Text size="L400">Passkeys</Text>
+                <Text size="L400">Owners</Text>
                 <SequenceCard
                   className={SequenceCardStyle}
                   variant="SurfaceVariant"
                   direction="Column"
                   gap="400"
                 >
-                  {passkeys.map((item: PasskeyItem) => (
+                  {passkeyData?.credentials.map((item: CredentialItem) => (
                     <Box
-                      key={item.id}
+                      key={item.publicKey}
                       direction="Row"
                       justifyContent="SpaceBetween"
                       alignItems="Center"
                     >
-                      <Text>{item.publicKey}</Text>
+                      <Box direction="Column">
+                        <Text>{ellipsisMiddle(item.publicKey)}</Text>
+                        <Text>{timeDayMonthYear(item.timestamp)}</Text>
+                      </Box>
+
                       {item.publicKey !== currentPublicKey && (
-                        <Button variant="Critical" onClick={() => handleDeletePasskey(item.id)}>
-                          Delete
+                        <Button
+                          size="300"
+                          radii="300"
+                          variant="Critical"
+                          onClick={() => handleDeletePasskey(item.publicKey)}
+                        >
+                          <Text size="B300">Delete</Text>
                         </Button>
                       )}
                     </Box>
@@ -212,6 +205,12 @@ export function Wallet({ requestClose }: Props) {
                   }}
                 >
                   <Spinner />
+                  <button
+                    type="button"
+                    tabIndex={0}
+                    style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}
+                    aria-hidden="true"
+                  />
                 </Box>
               )}
             </Dialog>

@@ -3,8 +3,9 @@ import { useQuery } from '@tanstack/react-query';
 import { getPasskeyCredentials, IPasskeyCredential } from '../extendApis';
 import { useMatrixClient } from './useMatrixClient';
 
-
-export function useFetchPasskeyList(userId: string): [IPasskeyCredential[], () => Promise<void>] {
+export function useFetchPasskeyList(
+  userId: string
+): [IPasskeyCredential | undefined, () => Promise<void>] {
   const mx = useMatrixClient();
 
   const fetchPasskeys = useCallback(async () => {
@@ -12,8 +13,8 @@ export function useFetchPasskeyList(userId: string): [IPasskeyCredential[], () =
     return data;
   }, [mx, userId]);
 
-  const { data: passkeyList, refetch } = useQuery({
-    queryKey: ['passkeys'],
+  const { data, refetch } = useQuery({
+    queryKey: ['passkeys', userId],
     queryFn: fetchPasskeys,
     staleTime: 0,
     gcTime: Infinity,
@@ -24,5 +25,6 @@ export function useFetchPasskeyList(userId: string): [IPasskeyCredential[], () =
     await refetch();
   }, [refetch]);
 
-  return [passkeyList ?? [], refreshPasskeyList];
+  // return [data ?? { credentials: [], walletAddress: '0x' }, refreshPasskeyList];
+  return [data, refreshPasskeyList];
 }

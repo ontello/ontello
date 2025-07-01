@@ -153,3 +153,7 @@ export const polling = <T>(
 
   return execute();
 };
+export const ellipsisMiddle = (str: string, headLen = 6, tailLen = 6): string => {
+  if (str.length <= headLen + tailLen + 3) return str;
+  return `${str.slice(0, headLen)}...${str.slice(-tailLen)}`;
+};
