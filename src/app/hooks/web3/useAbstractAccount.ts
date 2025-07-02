@@ -395,12 +395,8 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
 
     const xy = fromBase64Url(targetPublicKeyBase64);
     const xyHex = toHex(new Uint8Array(xy));
-    console.log('targetPublicKeyBase64', targetPublicKeyBase64);
-
-    console.log('xyHex', xyHex);
 
     const targetKeyIndex = (await passKeyAccountContract.read.indexOfOwnerBytes([xyHex])) as bigint;
-    console.log('targetKeyIndex', targetKeyIndex);
 
     const callData = await buildCallData([
       {

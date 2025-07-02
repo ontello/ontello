@@ -18,6 +18,7 @@ export type ResetPasswordPathSearchParams = {
   email?: string;
 };
 export const RESET_PASSWORD_PATH = '/reset-password/:server?/';
+export const RECOVERY_ACCOUNT_PATH = '/recovery-account/:server?/';
 
 export const _CREATE_PATH = 'create/';
 export const _JOIN_PATH = 'join/';

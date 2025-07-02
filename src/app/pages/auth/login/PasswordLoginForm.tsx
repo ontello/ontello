@@ -36,7 +36,7 @@ import {
 } from './loginUtil';
 import { PasswordInput } from '../../../components/password-input';
 import { FieldError } from '../FiledError';
-import { getResetPasswordPath } from '../../pathUtils';
+import { getRecoveryAccountPath, getResetPasswordPath } from '../../pathUtils';
 import { stopPropagation } from '../../../utils/keyboard';
 import { loginWithPasskey } from '../../../utils/passkey';
 import cons from '../../../../client/state/cons';
@@ -129,9 +129,8 @@ export function PasswordLoginForm({ defaultUsername, defaultEmail }: PasswordLog
 
   useLoginComplete(loginState.status === AsyncStatus.Success ? loginState.data : undefined);
 
-
   const [passkeyState, startPasskeyLogin] = useAsyncCallback<
-    { password: string; publicKey: string; },
+    { password: string; publicKey: string },
     Error,
     Parameters<typeof loginWithPasskey>
   >(useCallback(loginWithPasskey, []));
@@ -146,7 +145,6 @@ export function PasswordLoginForm({ defaultUsername, defaultEmail }: PasswordLog
       password,
       initial_device_display_name: 'Cinny Web',
     });
-
   };
 
   const handleMxIdLogin = async (mxId: string, password: string) => {
@@ -197,17 +195,16 @@ export function PasswordLoginForm({ defaultUsername, defaultEmail }: PasswordLog
     //   return;
     // }
     const serverName = clientDefaultServer(clientConfig);
-    let password: string
-    let publicKey: string
+    let password: string;
+    let publicKey: string;
 
     try {
       const res = await startPasskeyLogin(username, mx, serverName);
       password = res.password;
       publicKey = res.publicKey;
     } catch (error) {
-      return
+      return;
     }
-
 
     // if (isUserId(username)) {
     //   handleMxIdLogin(username, password);
@@ -275,7 +272,8 @@ export function PasswordLoginForm({ defaultUsername, defaultEmail }: PasswordLog
           )}
           <Box grow="Yes" shrink="No" justifyContent="End">
             <Text as="span" size="T200" priority="400" align="Right">
-              <Link to={getResetPasswordPath(server)}>Forget Password?</Link>
+              {/* <Link to={getResetPasswordPath(server)}>Forget Password?</Link> */}
+              <Link to={getRecoveryAccountPath(server)}>Recovery Account</Link>
             </Text>
           </Box>
         </Box>
@@ -285,7 +283,9 @@ export function PasswordLoginForm({ defaultUsername, defaultEmail }: PasswordLog
           Login
         </Text>
       </Button>
-      {passkeyState.status === AsyncStatus.Error && <FieldError message={passkeyState.error.message} />}
+      {passkeyState.status === AsyncStatus.Error && (
+        <FieldError message={passkeyState.error.message} />
+      )}
 
       <Overlay
         open={

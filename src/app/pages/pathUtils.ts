@@ -22,6 +22,7 @@ import {
   SPACE_PATH,
   SPACE_ROOM_PATH,
   SPACE_SEARCH_PATH,
+  RECOVERY_ACCOUNT_PATH,
 } from './paths';
 import { trimLeadingSlash, trimTrailingSlash } from '../utils/common';
 import { HashRouterConfig } from '../hooks/useClientConfig';
@@ -84,6 +85,10 @@ export const getRegisterPath = (server?: string): string => {
 export const getResetPasswordPath = (server?: string): string => {
   const params = server ? { server: encodeURIComponent(server) } : undefined;
   return generatePath(RESET_PASSWORD_PATH, params);
+};
+export const getRecoveryAccountPath = (server?: string): string => {
+  const params = server ? { server: encodeURIComponent(server) } : undefined;
+  return generatePath(RECOVERY_ACCOUNT_PATH, params);
 };
 
 export const getHomePath = (): string => HOME_PATH;
