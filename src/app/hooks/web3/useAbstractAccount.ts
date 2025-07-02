@@ -245,6 +245,7 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
         address,
         callData
       );
+      console.log('nonce', nonce);
 
       const userOp = {
         sender: address,
@@ -273,6 +274,15 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
       userOp.paymasterAndData = paymasterAndData;
 
       const userOpHash = await calculateUserOpHash(ethClient, userOp, ENTRY_POINT_ADDRESS, chainId);
+
+      const validatePaymasterAndData = await ethClient.readContract({
+        address: PAYMASTERE_ADDRESS,
+        abi: PaymasterAbi,
+        functionName: 'validatePaymasterUserOp' as any,
+        args: [userOp, userOpHash, BigInt(0)] as any,
+        account: ENTRY_POINT_ADDRESS,
+      });
+      console.log('validatePaymasterAndData:', validatePaymasterAndData);
 
       if (signMessageFunc) {
         const signature = await signMessageFunc(userOpHash);

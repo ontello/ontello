@@ -20,8 +20,6 @@ import { english, generateMnemonic, mnemonicToAccount } from 'viem/accounts';
 import { Address } from 'viem';
 import { UserOperationReceipt } from '@src/app/hooks/web3/types';
 import { CredentialItem } from '@src/app/extendApis';
-import { ellipsisMiddle } from '@src/app/utils/common';
-import { timeDayMonthYear } from '@src/app/utils/time';
 import { Page, PageContent, PageHeader } from '../../../components/page';
 import { SequenceCard } from '../../../components/sequence-card';
 import { SequenceCardStyle } from '../styles.css';
@@ -33,6 +31,7 @@ import { useMatrixClient } from '../../../hooks/useMatrixClient';
 import { useWeb3PublicClient } from '../../../hooks/web3/useWeb3Client';
 import { useAbstractAccount } from '../../../hooks/web3/useAbstractAccount';
 import { useAsyncCallback, AsyncStatus } from '../../../hooks/useAsyncCallback';
+import { OwnerItem } from './OwnerItem';
 
 type Props = {
   requestClose: () => void;
@@ -56,23 +55,12 @@ export function Wallet({ requestClose }: Props) {
     Parameters<typeof addOwnerByAddress>
   >(useCallback(addOwnerByAddress, [addOwnerByAddress]));
 
-  const [removeState, startRemoveOwner] = useAsyncCallback<
-    UserOperationReceipt,
-    Error,
-    Parameters<typeof removeOwner>
-  >(useCallback(removeOwner, [removeOwner]));
-
   const handleGenerateRecovery = async () => {
     const mnemonic = generateMnemonic(english);
     const mnemonicAccount = mnemonicToAccount(mnemonic);
     setIsRecoveryDialogOpen(true);
     const receipt = await startAddOwnerByAddress(mnemonicAccount.address);
     setRecoveryKey(mnemonic);
-    await refetch();
-  };
-
-  const handleDeletePasskey = async (publicKeyBase64: string) => {
-    const receipt = await startRemoveOwner(publicKeyBase64);
     await refetch();
   };
 
@@ -124,28 +112,12 @@ export function Wallet({ requestClose }: Props) {
                   gap="400"
                 >
                   {passkeyData?.credentials.map((item: CredentialItem) => (
-                    <Box
-                      key={item.publicKey}
-                      direction="Row"
-                      justifyContent="SpaceBetween"
-                      alignItems="Center"
-                    >
-                      <Box direction="Column">
-                        <Text>{ellipsisMiddle(item.publicKey)}</Text>
-                        <Text>{timeDayMonthYear(item.timestamp)}</Text>
-                      </Box>
-
-                      {item.publicKey !== currentPublicKey && (
-                        <Button
-                          size="300"
-                          radii="300"
-                          variant="Critical"
-                          onClick={() => handleDeletePasskey(item.publicKey)}
-                        >
-                          <Text size="B300">Delete</Text>
-                        </Button>
-                      )}
-                    </Box>
+                    <OwnerItem
+                      currentPublicKey={currentPublicKey ?? ''}
+                      credential={item}
+                      aaAddress={aaAddress}
+                      deleteCallback={refetch}
+                    />
                   ))}
                 </SequenceCard>
               </Box>
