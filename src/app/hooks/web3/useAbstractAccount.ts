@@ -8,11 +8,14 @@ import {
   encodeAbiParameters,
   fromBytes,
   maxUint256,
+  recoverMessageAddress,
+  verifyMessage,
 } from 'viem';
 import { mnemonicToAccount, privateKeyToAccount } from 'viem/accounts';
 import { EntryPointAbi, Erc20Abi, AccountAbi, PaymasterAbi } from '@src/app/static/abis';
 import { bscTestnet } from 'viem/chains';
 import { polling } from '@src/app/utils/common';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { fromBase64Url, registerWithPasskey, signMessageWithPasskey } from '../../utils/passkey';
 import {
   AccountCallType,
@@ -37,9 +40,9 @@ const GAS_ADDRESS = '0xd878dfE2b33A07E7FB290c1578A0b3cbc8aDadEA';
 const PAYMASTERE_ADDRESS = '0xfe86e45222e784a40a2c5e94b58c41b910d7e9ca';
 const ENTRY_POINT_ADDRESS = '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789';
 
-export const useAbstractAccount = (ethClient: PublicClient, address: Address) => {
+export const useAbstractAccount = (ethClient: PublicClient, aaAddress: Address) => {
   const passKeyAccountContract = getContract({
-    address,
+    address: aaAddress,
     abi: AccountAbi,
     client: ethClient,
   });
@@ -187,7 +190,7 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
       address: GAS_ADDRESS,
       abi: Erc20Abi,
       functionName: 'allowance',
-      args: [address, PAYMASTERE_ADDRESS],
+      args: [aaAddress, PAYMASTERE_ADDRESS],
     });
 
     if (allowance === BigInt(0)) {
@@ -212,7 +215,7 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
           args: arg.args as any,
         });
         return {
-          target: address,
+          target: aaAddress,
           value: BigInt(0),
           data: callData,
         };
@@ -242,13 +245,13 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
       const callGasLimit = await calculateCallGasLimit(
         ethClient,
         ENTRY_POINT_ADDRESS,
-        address,
+        aaAddress,
         callData
       );
       console.log('nonce', nonce);
 
       const userOp = {
-        sender: address,
+        sender: aaAddress,
         nonce,
         initCode: '0x' as Hex,
         callData,
@@ -286,6 +289,8 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
 
       if (signMessageFunc) {
         const signature = await signMessageFunc(userOpHash);
+        console.log('signature:', signature);
+
         userOp.signature = signature;
       } else {
         const passkeySignature = await signMessageWithPasskey(userOpHash);
@@ -334,14 +339,14 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
       console.log('userOp', userOp);
       console.log('userOpHash', userOpHash);
 
-      const validateUserOp = await ethClient.readContract({
-        address,
-        abi: AccountAbi,
-        functionName: 'validateUserOp' as any,
-        args: [userOp, userOpHash, BigInt(0)] as any,
-        account: ENTRY_POINT_ADDRESS,
-      });
-      console.log('validateUserOp:', validateUserOp);
+      // const validateUserOp = await ethClient.readContract({
+      //   address: aaAddress,
+      //   abi: AccountAbi,
+      //   functionName: 'validateUserOp' as any,
+      //   args: [userOp, userOpHash, BigInt(0)] as any,
+      //   account: ENTRY_POINT_ADDRESS,
+      // });
+      // console.log('validateUserOp:', validateUserOp);
 
       return {
         userOp,
@@ -374,7 +379,11 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
   const recoveryAccount = async (mnemonic: string, username: string) => {
     const mnemonicAccount = mnemonicToAccount(mnemonic);
     const { x, y } = await registerWithPasskey(username);
+    console.log('mnemonicAccount.address', mnemonicAccount.address);
+
     const keyIndex = await getKeyIndexThroughAddress(mnemonicAccount.address);
+    console.log('keyIndex', keyIndex);
+
     const callData = await buildCallData([
       {
         type: AccountCallType.Direct,
@@ -382,9 +391,22 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
         args: [toHex(new Uint8Array(x)), toHex(new Uint8Array(y))],
       },
     ]);
-    const { userOp, userOpHash } = await buildUserOperation(callData, keyIndex, (message) =>
-      mnemonicAccount.signMessage({ message: { raw: message } })
+
+    const { userOp, userOpHash } = await buildUserOperation(
+      callData,
+      keyIndex,
+      // (message) =>mnemonicAccount.signMessage({ message: { raw: message } })
+      (message) => mnemonicAccount.signMessage({ message })
     );
+    console.log('mnemonicAccount', mnemonicAccount.address);
+
+    const valid = await verifyMessage({
+      address: mnemonicAccount.address,
+      message: userOpHash,
+      signature: userOp.signature,
+    });
+    console.log('valid', valid);
+
     await sendUserOperation(userOp);
     const receipt = await getUserOperationReceipt(userOpHash);
     return receipt;
@@ -411,6 +433,7 @@ export const useAbstractAccount = (ethClient: PublicClient, address: Address) =>
     return receipt;
   };
   return {
+    // setAaAddress,
     buildCallData,
     buildUserOperation,
     getKeyIndexThroughAddress,

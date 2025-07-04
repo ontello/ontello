@@ -1,19 +1,46 @@
-import React, { FormEventHandler, useState } from 'react';
+import React, { FormEventHandler, useEffect, useMemo, useState } from 'react';
 import { Box, Button, Input, Text, TextArea } from 'folds';
+import { getPasskeyCredentials } from '@src/app/extendApis';
+import { useAuthServer } from '@src/app/hooks/useAuthServer';
+import { useAbstractAccount } from '@src/app/hooks/web3/useAbstractAccount';
+import { useWeb3PublicClient } from '@src/app/hooks/web3/useWeb3Client';
+import { Address } from 'viem';
+import { createClient } from 'matrix-js-sdk';
+import { useAutoDiscoveryInfo } from '@src/app/hooks/useAutoDiscoveryInfo';
 
 export function RecoveryKeyForm() {
   const [form, setForm] = useState({ username: '', recoveryKey: '' });
+  const server = useAuthServer();
 
+  const serverDiscovery = useAutoDiscoveryInfo();
+  const baseUrl = serverDiscovery['m.homeserver'].base_url;
+  const mx = useMemo(() => createClient({ baseUrl }), [baseUrl]);
+
+  const ethClient = useWeb3PublicClient();
+  const [address, setAddress] = useState<Address>('0x');
+  const [shouldRecover, setShouldRecover] = useState(false); // 控制恢复操作
+  const { recoveryAccount } = useAbstractAccount(ethClient, address);
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit: FormEventHandler<HTMLFormElement> = (evt) => {
+  const handleSubmit: FormEventHandler<HTMLFormElement> = async (evt) => {
+    console.log('server', server);
+    console.log('baseUrl', baseUrl);
+
     evt.preventDefault();
-    // TODO: 执行恢复操作
-    // form.username, form.recoveryKey
+    const aaAddress = (await getPasskeyCredentials(mx, `@${form.username}:${server}`))
+      .walletAddress;
+    setAddress(aaAddress);
+    setShouldRecover(true);
   };
+  useEffect(() => {
+    if (address && shouldRecover) {
+      recoveryAccount(form.recoveryKey, form.username).then((receipt) => console.log(receipt));
+      setShouldRecover(false);
+    }
+  }, [address, shouldRecover, form.recoveryKey, form.username, recoveryAccount]);
 
   return (
     <Box as="form" onSubmit={handleSubmit} direction="Inherit" gap="400">
