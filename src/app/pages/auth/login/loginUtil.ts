@@ -56,10 +56,14 @@ export enum LoginError {
 export type CustomLoginResponse = {
   baseUrl: string;
   response: LoginResponse;
+  publicKey: string;
+  aaAddress: string;
 };
 export const login = async (
   serverBaseUrl: string | (() => Promise<string>),
-  data: LoginRequest
+  data: LoginRequest,
+  publicKey: string,
+  aaAddress: string
 ): Promise<CustomLoginResponse> => {
   const [urlError, url] =
     typeof serverBaseUrl === 'function' ? await to(serverBaseUrl()) : [undefined, serverBaseUrl];
@@ -105,6 +109,8 @@ export const login = async (
   return {
     baseUrl: url,
     response: res,
+    publicKey,
+    aaAddress,
   };
 };
 
@@ -114,7 +120,14 @@ export const useLoginComplete = (data?: CustomLoginResponse) => {
   useEffect(() => {
     if (data) {
       const { response: loginRes, baseUrl: loginBaseUrl } = data;
-      updateLocalStore(loginRes.access_token, loginRes.device_id, loginRes.user_id, loginBaseUrl);
+      updateLocalStore(
+        loginRes.access_token,
+        loginRes.device_id,
+        loginRes.user_id,
+        loginBaseUrl,
+        data.publicKey,
+        data.aaAddress
+      );
       const afterLoginRedirectUrl = getAfterLoginRedirectPath();
       deleteAfterLoginRedirectPath();
       navigate(afterLoginRedirectUrl ?? getHomePath(), { replace: true });

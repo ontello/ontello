@@ -21,6 +21,7 @@ import {
 import FocusTrap from 'focus-trap-react';
 import { Link } from 'react-router-dom';
 import { createClient, MatrixError } from 'matrix-js-sdk';
+import { getPasskeyCredentials } from '@src/app/extendApis';
 import { getMxIdLocalPart, getMxIdServer, isUserId } from '../../../utils/matrix';
 import { EMAIL_REGEX } from '../../../utils/regex';
 import { useAutoDiscoveryInfo } from '../../../hooks/useAutoDiscoveryInfo';
@@ -135,47 +136,57 @@ export function PasswordLoginForm({ defaultUsername, defaultEmail }: PasswordLog
     Parameters<typeof loginWithPasskey>
   >(useCallback(loginWithPasskey, []));
 
-  const handleUsernameLogin = async (username: string, password: string) => {
-    await startLogin(baseUrl, {
-      type: 'm.login.password',
-      identifier: {
-        type: 'm.id.user',
-        user: username,
+  const handleUsernameLogin = async (
+    username: string,
+    password: string,
+    publicKey: string,
+    aaAddress: string
+  ) => {
+    await startLogin(
+      baseUrl,
+      {
+        type: 'm.login.password',
+        identifier: {
+          type: 'm.id.user',
+          user: username,
+        },
+        password,
+        initial_device_display_name: 'Cinny Web',
       },
-      password,
-      initial_device_display_name: 'Cinny Web',
-    });
+      publicKey,
+      aaAddress
+    );
   };
 
-  const handleMxIdLogin = async (mxId: string, password: string) => {
-    const mxIdServer = getMxIdServer(mxId);
-    const mxIdUsername = getMxIdLocalPart(mxId);
-    if (!mxIdServer || !mxIdUsername) return;
+  // const handleMxIdLogin = async (mxId: string, password: string) => {
+  //   const mxIdServer = getMxIdServer(mxId);
+  //   const mxIdUsername = getMxIdLocalPart(mxId);
+  //   if (!mxIdServer || !mxIdUsername) return;
 
-    const getBaseUrl = factoryGetBaseUrl(clientConfig, mxIdServer);
+  //   const getBaseUrl = factoryGetBaseUrl(clientConfig, mxIdServer);
 
-    startLogin(getBaseUrl, {
-      type: 'm.login.password',
-      identifier: {
-        type: 'm.id.user',
-        user: mxIdUsername,
-      },
-      password,
-      initial_device_display_name: 'Cinny Web',
-    });
-  };
-  const handleEmailLogin = (email: string, password: string) => {
-    startLogin(baseUrl, {
-      type: 'm.login.password',
-      identifier: {
-        type: 'm.id.thirdparty',
-        medium: 'email',
-        address: email,
-      },
-      password,
-      initial_device_display_name: 'Cinny Web',
-    });
-  };
+  //   startLogin(getBaseUrl, {
+  //     type: 'm.login.password',
+  //     identifier: {
+  //       type: 'm.id.user',
+  //       user: mxIdUsername,
+  //     },
+  //     password,
+  //     initial_device_display_name: 'Cinny Web',
+  //   });
+  // };
+  // const handleEmailLogin = (email: string, password: string) => {
+  //   startLogin(baseUrl, {
+  //     type: 'm.login.password',
+  //     identifier: {
+  //       type: 'm.id.thirdparty',
+  //       medium: 'email',
+  //       address: email,
+  //     },
+  //     password,
+  //     initial_device_display_name: 'Cinny Web',
+  //   });
+  // };
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = async (evt) => {
     evt.preventDefault();
@@ -214,8 +225,9 @@ export function PasswordLoginForm({ defaultUsername, defaultEmail }: PasswordLog
     //   handleEmailLogin(username, password);
     //   return;
     // }
-    await handleUsernameLogin(username, password);
-    localStorage.setItem(cons.secretKey.PUBLIC_KEY, publicKey);
+    const aaAddress = (await getPasskeyCredentials(mx, `@${username}:${serverName}`)).walletAddress;
+    await handleUsernameLogin(username, password, publicKey, aaAddress);
+    // localStorage.setItem(cons.secretKey.PUBLIC_KEY, publicKey);
   };
 
   return (

@@ -33,11 +33,15 @@ export enum RegisterError {
 export type CustomRegisterResponse = {
   baseUrl: string;
   response: RegisterResponse;
+  publicKey: string;
+  aaAddress: string;
 };
 export type RegisterResult = [IAuthData, undefined] | [undefined, CustomRegisterResponse];
 export const register = async (
   mx: MatrixClient,
-  requestData: RegisterRequest
+  requestData: RegisterRequest,
+  publicKey: string,
+  aaAddress: string
 ): Promise<RegisterResult> => {
   const [err, res] = await to<RegisterResponse, MatrixError>(mx.registerRequest(requestData));
 
@@ -103,6 +107,8 @@ export const register = async (
     {
       baseUrl: mx.baseUrl,
       response: res,
+      publicKey,
+      aaAddress,
     },
   ];
 };
@@ -119,7 +125,7 @@ export const useRegisterComplete = (data?: CustomRegisterResponse) => {
       const deviceId = response.device_id;
 
       if (accessToken && deviceId) {
-        updateLocalStore(accessToken, deviceId, userId, baseUrl);
+        updateLocalStore(accessToken, deviceId, userId, baseUrl, data.publicKey, data.aaAddress);
         const afterLoginRedirectPath = getAfterLoginRedirectPath();
         deleteAfterLoginRedirectPath();
         navigate(afterLoginRedirectPath ?? getHomePath(), { replace: true });

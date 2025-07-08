@@ -6,6 +6,7 @@ const cons = {
     USER_ID: 'cinny_user_id',
     BASE_URL: 'cinny_hs_base_url',
     PUBLIC_KEY: 'cinny_public_key',
+    AA_ADDRESS: 'cinny_aa_address',
   },
   status: {
     PRE_FLIGHT: 'pre-flight',

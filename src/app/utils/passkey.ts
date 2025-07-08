@@ -249,8 +249,6 @@ export const loginWithPasskey = async (
     const addedPublicks = (await getPasskeyCredentials(cl, `@${name}:${serverName}`)).credentials;
 
     let choseCredential = null;
-    console.log('addedPublicks', addedPublicks);
-
     // eslint-disable-next-line no-restricted-syntax
     for (const addedPublick of addedPublicks) {
       try {
@@ -261,8 +259,6 @@ export const loginWithPasskey = async (
           response.clientDataJSON,
           response.authenticatorData
         );
-        console.log(addedPublick.publicKey, res);
-
         if (res) {
           choseCredential = addedPublick;
           break;
