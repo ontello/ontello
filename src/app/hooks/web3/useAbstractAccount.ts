@@ -8,14 +8,10 @@ import {
   encodeAbiParameters,
   fromBytes,
   maxUint256,
-  recoverMessageAddress,
-  verifyMessage,
 } from 'viem';
-import { mnemonicToAccount, privateKeyToAccount } from 'viem/accounts';
+import { mnemonicToAccount } from 'viem/accounts';
 import { EntryPointAbi, Erc20Abi, AccountAbi, PaymasterAbi } from '@src/app/static/abis';
-import { bscTestnet } from 'viem/chains';
 import { polling } from '@src/app/utils/common';
-import { useEffect, useMemo, useRef, useState } from 'react';
 import { fromBase64Url, registerWithPasskey, signMessageWithPasskey } from '../../utils/passkey';
 import {
   AccountCallType,
@@ -271,30 +267,28 @@ export const useAbstractAccount = (ethClient: PublicClient, aaAddress: Address) 
 
       const chainId = await ethClient.getChainId();
       if (!chainId) {
-        throw new Error('无法获取链 ID');
+        throw new Error('Chain ID not found');
       }
       const paymasterAndData = await getPaymasterSign(userOp, chainId, GAS_ADDRESS);
       userOp.paymasterAndData = paymasterAndData;
 
       const userOpHash = await calculateUserOpHash(ethClient, userOp, ENTRY_POINT_ADDRESS, chainId);
 
-      const validatePaymasterAndData = await ethClient.readContract({
-        address: PAYMASTERE_ADDRESS,
-        abi: PaymasterAbi,
-        functionName: 'validatePaymasterUserOp' as any,
-        args: [userOp, userOpHash, BigInt(0)] as any,
-        account: ENTRY_POINT_ADDRESS,
-      });
-      console.log('validatePaymasterAndData:', validatePaymasterAndData);
+      // const validatePaymasterAndData = await ethClient.readContract({
+      //   address: PAYMASTERE_ADDRESS,
+      //   abi: PaymasterAbi,
+      //   functionName: 'validatePaymasterUserOp' as any,
+      //   args: [userOp, userOpHash, BigInt(0)] as any,
+      //   account: ENTRY_POINT_ADDRESS,
+      // });
+      // console.log('validatePaymasterAndData:', validatePaymasterAndData);
 
+      let signature;
       if (signMessageFunc) {
-        const signature = await signMessageFunc(userOpHash);
-        console.log('signature:', signature);
-
-        userOp.signature = signature;
+        signature = await signMessageFunc(userOpHash);
       } else {
         const passkeySignature = await signMessageWithPasskey(userOpHash);
-        const webauthnSignatureEncoded = encodeAbiParameters(
+        signature = encodeAbiParameters(
           [
             {
               components: [
@@ -319,34 +313,47 @@ export const useAbstractAccount = (ethClient: PublicClient, aaAddress: Address) 
             },
           ]
         ) as Hex;
-
-        const signatureWrapper = encodeAbiParameters(
-          [
-            {
-              components: [
-                { type: 'uint256', name: 'keyIndex' },
-                { type: 'bytes', name: 'signature' },
-              ],
-              type: 'tuple',
-            },
-          ],
-          [{ keyIndex, signature: webauthnSignatureEncoded }]
-        );
-
-        userOp.signature = signatureWrapper;
       }
+      console.log('keyIndex', keyIndex);
+      console.log('signature:', signature);
+      const signatureWrapper = encodeAbiParameters(
+        [
+          {
+            components: [
+              { type: 'uint256', name: 'keyIndex' },
+              { type: 'bytes', name: 'signature' },
+            ],
+            type: 'tuple',
+          },
+        ],
+        [{ keyIndex, signature }]
+      );
+
+      userOp.signature = signatureWrapper;
+
+      // const valid = await verifyMessage({
+      //   address: '0xf8c3Abaa5dd97A7Edb5D827938AF1bb15DFB2EA1',
+      //   message: { raw: userOpHash },
+      //   signature,
+      // });
+      // console.log('valid', valid);
+      // const signAddress = await recoverMessageAddress({
+      //   message: { raw: userOpHash },
+      //   signature,
+      // });
+      // console.log('signAddress', signAddress);
 
       console.log('userOp', userOp);
       console.log('userOpHash', userOpHash);
 
-      // const validateUserOp = await ethClient.readContract({
-      //   address: aaAddress,
-      //   abi: AccountAbi,
-      //   functionName: 'validateUserOp' as any,
-      //   args: [userOp, userOpHash, BigInt(0)] as any,
-      //   account: ENTRY_POINT_ADDRESS,
-      // });
-      // console.log('validateUserOp:', validateUserOp);
+      const validateUserOp = await ethClient.readContract({
+        address: aaAddress,
+        abi: AccountAbi,
+        functionName: 'validateUserOp' as any,
+        args: [userOp, userOpHash, BigInt(0)] as any,
+        account: ENTRY_POINT_ADDRESS,
+      });
+      console.log('validateUserOp:', validateUserOp);
 
       return {
         userOp,
@@ -382,7 +389,6 @@ export const useAbstractAccount = (ethClient: PublicClient, aaAddress: Address) 
     console.log('mnemonicAccount.address', mnemonicAccount.address);
 
     const keyIndex = await getKeyIndexThroughAddress(mnemonicAccount.address);
-    console.log('keyIndex', keyIndex);
 
     const callData = await buildCallData([
       {
@@ -392,20 +398,9 @@ export const useAbstractAccount = (ethClient: PublicClient, aaAddress: Address) 
       },
     ]);
 
-    const { userOp, userOpHash } = await buildUserOperation(
-      callData,
-      keyIndex,
-      // (message) =>mnemonicAccount.signMessage({ message: { raw: message } })
-      (message) => mnemonicAccount.signMessage({ message })
+    const { userOp, userOpHash } = await buildUserOperation(callData, keyIndex, (message) =>
+      mnemonicAccount.signMessage({ message: { raw: message } })
     );
-    console.log('mnemonicAccount', mnemonicAccount.address);
-
-    const valid = await verifyMessage({
-      address: mnemonicAccount.address,
-      message: userOpHash,
-      signature: userOp.signature,
-    });
-    console.log('valid', valid);
 
     await sendUserOperation(userOp);
     const receipt = await getUserOperationReceipt(userOpHash);
@@ -433,7 +428,6 @@ export const useAbstractAccount = (ethClient: PublicClient, aaAddress: Address) 
     return receipt;
   };
   return {
-    // setAaAddress,
     buildCallData,
     buildUserOperation,
     getKeyIndexThroughAddress,

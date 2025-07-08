@@ -46,7 +46,7 @@ export function Wallet({ requestClose }: Props) {
   const [passkeyData, refetch] = useFetchPasskeyList(userId!);
   const publicClient = useWeb3PublicClient();
 
-  const aaAddress: Address = '0x1a372366093d623ab831ebdef3020aaed362ce42'; // TODO @testuser21:ont.network
+  const aaAddress: Address = '0x6d12327731d03c2df7bcfa4e361bef43d83f7fef'; // TODO @testuser21:ont.network
   const { addOwnerByAddress, removeOwner } = useAbstractAccount(publicClient, aaAddress);
 
   const [addState, startAddOwnerByAddress] = useAsyncCallback<

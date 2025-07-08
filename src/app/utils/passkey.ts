@@ -249,24 +249,30 @@ export const loginWithPasskey = async (
     const addedPublicks = (await getPasskeyCredentials(cl, `@${name}:${serverName}`)).credentials;
 
     let choseCredential = null;
+    console.log('addedPublicks', addedPublicks);
+
     // eslint-disable-next-line no-restricted-syntax
     for (const addedPublick of addedPublicks) {
-      const pk = await recoverPublicKey(addedPublick.publicKey);
-      const res = await verifySignature(
-        pk,
-        response.signature,
-        response.clientDataJSON,
-        response.authenticatorData
-      );
+      try {
+        const pk = await recoverPublicKey(addedPublick.publicKey);
+        const res = await verifySignature(
+          pk,
+          response.signature,
+          response.clientDataJSON,
+          response.authenticatorData
+        );
+        console.log(addedPublick.publicKey, res);
 
-      if (res) {
-        choseCredential = addedPublick;
-        break;
+        if (res) {
+          choseCredential = addedPublick;
+          break;
+        }
+      } catch (error) {
+        console.error(error);
       }
     }
     if (!choseCredential) {
-      console.log('err');
-      throw new Error('Failed to verify passkey');
+      throw new Error('Publick not found');
     }
 
     const password = JSON.stringify({
@@ -284,7 +290,7 @@ export const loginWithPasskey = async (
     });
     return { password, publicKey: choseCredential.publicKey };
   } catch (error: any) {
-    // console.error(error)
+    console.error(error);
     throw new Error('Failed to login passkey');
   }
 };
