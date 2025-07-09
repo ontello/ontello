@@ -7,6 +7,8 @@ import { useWeb3PublicClient } from '@src/app/hooks/web3/useWeb3Client';
 import { Address } from 'viem';
 import { createClient } from 'matrix-js-sdk';
 import { useAutoDiscoveryInfo } from '@src/app/hooks/useAutoDiscoveryInfo';
+import { useNavigate } from 'react-router-dom';
+import { getLoginPath } from '../../pathUtils';
 
 export function RecoveryKeyForm() {
   const [form, setForm] = useState({ username: '', recoveryKey: '' });
@@ -20,6 +22,8 @@ export function RecoveryKeyForm() {
   const [address, setAddress] = useState<Address>('0x');
   const [shouldRecover, setShouldRecover] = useState(false); // 控制恢复操作
   const { recoveryAccount } = useAbstractAccount(ethClient, address);
+  const navigate = useNavigate();
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -37,10 +41,13 @@ export function RecoveryKeyForm() {
   };
   useEffect(() => {
     if (address && shouldRecover) {
-      recoveryAccount(form.recoveryKey, form.username).then((receipt) => console.log(receipt));
+      recoveryAccount(form.recoveryKey, form.username).then((receipt) => {
+        const loginPath = getLoginPath(server);
+        navigate(loginPath);
+      });
       setShouldRecover(false);
     }
-  }, [address, shouldRecover, form.recoveryKey, form.username, recoveryAccount]);
+  }, [address, shouldRecover, form.recoveryKey, form.username, recoveryAccount, navigate, server]);
 
   return (
     <Box as="form" onSubmit={handleSubmit} direction="Inherit" gap="400">
