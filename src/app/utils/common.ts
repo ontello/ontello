@@ -128,7 +128,7 @@ export const replaceSpaceWithDash = (str: string): string => str.replace(/ /g, '
 
 export const polling = <T>(
   action: () => Promise<T>,
-  condition: (result: T) => boolean, // 判断条件
+  condition: (result: T) => boolean,
   options: { maxRetries?: number; delay?: number } = {}
 ): Promise<T> => {
   const { maxRetries = 20, delay = 3000 } = options;
@@ -137,7 +137,7 @@ export const polling = <T>(
   const execute = async (): Promise<T> => {
     const result = await action();
     if (condition(result)) {
-      return result; // 满足条件时返回结果
+      return result;
     }
 
     if (retryCount >= maxRetries) {
@@ -147,7 +147,7 @@ export const polling = <T>(
     retryCount += 1;
     await new Promise<void>((resolve) => {
       setTimeout(resolve, delay);
-    }); // 延迟后重试
+    });
     return execute();
   };
 

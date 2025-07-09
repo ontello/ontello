@@ -40,14 +40,13 @@ type Props = {
 export function Wallet({ requestClose }: Props) {
   const [isRecoveryDialogOpen, setIsRecoveryDialogOpen] = useState(false);
   const [recoveryKey, setRecoveryKey] = useState('');
-  const { publicKey: currentPublicKey } = getSecret();
+  const { publicKey: currentPublicKey, aaAddress } = getSecret();
   const mx = useMatrixClient();
   const userId = mx.getUserId();
   const [passkeyData, refetch] = useFetchPasskeyList(userId!);
   const publicClient = useWeb3PublicClient();
 
-  const aaAddress: Address = '0x6d12327731d03c2df7bcfa4e361bef43d83f7fef'; // TODO @testuser21:ont.network
-  const { addOwnerByAddress, removeOwner } = useAbstractAccount(publicClient, aaAddress);
+  const { addOwnerByAddress } = useAbstractAccount(publicClient, aaAddress as Address);
 
   const [addState, startAddOwnerByAddress] = useAsyncCallback<
     UserOperationReceipt,
@@ -59,8 +58,13 @@ export function Wallet({ requestClose }: Props) {
     const mnemonic = generateMnemonic(english);
     const mnemonicAccount = mnemonicToAccount(mnemonic);
     setIsRecoveryDialogOpen(true);
-    const receipt = await startAddOwnerByAddress(mnemonicAccount.address);
-    setRecoveryKey(mnemonic);
+    try {
+      const receipt = await startAddOwnerByAddress(mnemonicAccount.address);
+      setRecoveryKey(mnemonic);
+    } catch (error) {
+      // setIsRecoveryDialogOpen(false);
+      return;
+    }
     await refetch();
   };
 
@@ -115,7 +119,7 @@ export function Wallet({ requestClose }: Props) {
                     <OwnerItem
                       currentPublicKey={currentPublicKey ?? ''}
                       credential={item}
-                      aaAddress={aaAddress}
+                      aaAddress={aaAddress as Address}
                       deleteCallback={refetch}
                     />
                   ))}
@@ -148,11 +152,11 @@ export function Wallet({ requestClose }: Props) {
                 <Box grow="Yes">
                   <Text size="H4">Recovery Key</Text>
                 </Box>
-                {/* <IconButton size="300" onClick={() => setIsRecoveryDialogOpen(false)} radii="300">
+                <IconButton size="300" onClick={() => setIsRecoveryDialogOpen(false)} radii="300">
                   <Icon src={Icons.Cross} />
-                </IconButton> */}
+                </IconButton>
               </Header>
-              {addState.status === AsyncStatus.Success ? (
+              {addState.status === AsyncStatus.Success && (
                 <Box style={{ padding: config.space.S400 }} direction="Column" gap="400">
                   <Box direction="Column" gap="200">
                     <Text>Please save this recovery key in a safe place:</Text>
@@ -168,7 +172,8 @@ export function Wallet({ requestClose }: Props) {
                     <Text size="B400">Close</Text>
                   </Button>
                 </Box>
-              ) : (
+              )}
+              {addState.status === AsyncStatus.Loading && (
                 <Box
                   justifyContent="Center"
                   alignItems="Center"
@@ -177,14 +182,20 @@ export function Wallet({ requestClose }: Props) {
                   }}
                 >
                   <Spinner />
-                  <button
-                    type="button"
-                    tabIndex={0}
-                    style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}
-                    aria-hidden="true"
-                  />
                 </Box>
               )}
+              {addState.status === AsyncStatus.Error && (
+                <Box style={{ padding: config.space.S400 }} direction="Column">
+                  <Text size="B400">Error occurred while generating recovery key.</Text>
+                </Box>
+              )}
+              {/* 空元素 */}
+              <button
+                type="button"
+                tabIndex={0}
+                style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}
+                aria-hidden="true"
+              />
             </Dialog>
           </FocusTrap>
         </OverlayCenter>

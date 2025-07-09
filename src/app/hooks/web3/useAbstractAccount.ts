@@ -168,12 +168,21 @@ export const useAbstractAccount = (ethClient: PublicClient, aaAddress: Address) 
         }),
       });
       const res = await response.json();
-      if (res.error) {
-        return null;
+      if (res.error?.code === -32507) {
+        throw new Error(res.error.message);
       }
-      return res.result;
+
+      if (res.result) {
+        return res.result;
+      }
+      return null;
     };
-    const receipt = await polling(getFunc, (res) => !!res);
+    const receipt = await polling(getFunc, (res) => {
+      if (res) {
+        return true;
+      }
+      return false;
+    });
     if (receipt) {
       return receipt;
     }
