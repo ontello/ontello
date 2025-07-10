@@ -117,6 +117,7 @@ export function Wallet({ requestClose }: Props) {
                 >
                   {passkeyData?.credentials.map((item: CredentialItem) => (
                     <OwnerItem
+                      key={item.publicKey}
                       currentPublicKey={currentPublicKey ?? ''}
                       credential={item}
                       aaAddress={aaAddress as Address}

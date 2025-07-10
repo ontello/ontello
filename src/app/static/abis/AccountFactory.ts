@@ -1,14 +1,20 @@
 export const AccountFactoryAbi = [
-  {
-    type: 'constructor',
-    inputs: [{ name: '_entryPoint', type: 'address', internalType: 'contract IEntryPoint' }],
-    stateMutability: 'nonpayable',
-  },
+  { type: 'constructor', inputs: [], stateMutability: 'nonpayable' },
   {
     type: 'function',
     name: 'accountImplementation',
     inputs: [],
     outputs: [{ name: '', type: 'address', internalType: 'contract PassKeyAccount' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    name: 'computeAddress',
+    inputs: [
+      { name: 'owners', type: 'bytes[]', internalType: 'bytes[]' },
+      { name: 'salt', type: 'uint256', internalType: 'uint256' },
+    ],
+    outputs: [{ name: '', type: 'address', internalType: 'address' }],
     stateMutability: 'view',
   },
   {
@@ -20,16 +26,6 @@ export const AccountFactoryAbi = [
     ],
     outputs: [{ name: 'ret', type: 'address', internalType: 'contract PassKeyAccount' }],
     stateMutability: 'nonpayable',
-  },
-  {
-    type: 'function',
-    name: 'getAddress',
-    inputs: [
-      { name: 'owners', type: 'bytes[]', internalType: 'bytes[]' },
-      { name: 'salt', type: 'uint256', internalType: 'uint256' },
-    ],
-    outputs: [{ name: '', type: 'address', internalType: 'address' }],
-    stateMutability: 'view',
   },
   {
     type: 'function',

@@ -20,8 +20,9 @@ import {
   UIAFlow,
   createClient,
 } from 'matrix-js-sdk';
-import { getPasskeyCredentials } from '@src/app/extendApis';
-import { clientDefaultServer, useClientConfig } from '@src/app/hooks/useClientConfig';
+import { useWeb3PublicClient } from '@src/app/hooks/web3/useWeb3Client';
+import { AccountFactoryAbi } from '@src/app/static/abis';
+import { toHex } from 'viem';
 import { PasswordInput } from '../../../components/password-input';
 import {
   getLoginTermUrl,
@@ -46,7 +47,6 @@ import { ConfirmPasswordMatch } from '../../../components/ConfirmPasswordMatch';
 import { UIAFlowOverlay } from '../../../components/UIAFlowOverlay';
 import { RequestEmailTokenCallback, RequestEmailTokenResponse } from '../../../hooks/types';
 import { registerWithPasskey } from '../../../utils/passkey';
-import cons from '../../../../client/state/cons';
 
 export const SUPPORTED_REGISTER_STAGES = [
   AuthType.RegistrationToken,
@@ -85,95 +85,94 @@ const pickStages = (uiaFlows: UIAFlow[], formData: FormData): string[] => {
   return pickedStages;
 };
 
-// 暂时没有多因素认证
-// type RegisterUIAFlowProps = {
-//   formData: FormData;
-//   flow: UIAFlow;
-//   authData: IAuthData;
-//   registerEmailState: AsyncState<RequestEmailTokenResponse, MatrixError>;
-//   registerEmail: RequestEmailTokenCallback;
-//   onRegister: (registerReqData: RegisterRequest) => void;
-// };
-// function RegisterUIAFlow({
-//   formData,
-//   flow,
-//   authData,
-//   registerEmailState,
-//   registerEmail,
-//   onRegister,
-// }: RegisterUIAFlowProps) {
-//   const completed = useUIACompleted(authData);
-//   const { getStageToComplete } = useUIAFlow(authData, flow);
+type RegisterUIAFlowProps = {
+  formData: FormData;
+  flow: UIAFlow;
+  authData: IAuthData;
+  registerEmailState: AsyncState<RequestEmailTokenResponse, MatrixError>;
+  registerEmail: RequestEmailTokenCallback;
+  onRegister: (registerReqData: RegisterRequest) => void;
+};
+function RegisterUIAFlow({
+  formData,
+  flow,
+  authData,
+  registerEmailState,
+  registerEmail,
+  onRegister,
+}: RegisterUIAFlowProps) {
+  const completed = useUIACompleted(authData);
+  const { getStageToComplete } = useUIAFlow(authData, flow);
 
-//   const stageToComplete = getStageToComplete();
+  const stageToComplete = getStageToComplete();
 
-//   const handleAuthDict = useCallback(
-//     (authDict: AuthDict) => {
-//       const { password, username } = formData;
-//       onRegister({
-//         auth: authDict,
-//         password,
-//         username,
-//         initial_device_display_name: 'Cinny Web',
-//       });
-//     },
-//     [onRegister, formData]
-//   );
+  const handleAuthDict = useCallback(
+    (authDict: AuthDict) => {
+      const { password, username } = formData;
+      onRegister({
+        auth: authDict,
+        password,
+        username,
+        initial_device_display_name: 'Cinny Web',
+      });
+    },
+    [onRegister, formData]
+  );
 
-//   const handleCancel = useCallback(() => {
-//     window.location.reload();
-//   }, []);
+  const handleCancel = useCallback(() => {
+    window.location.reload();
+  }, []);
 
-//   if (!stageToComplete) return null;
-//   return (
-//     <UIAFlowOverlay
-//       currentStep={completed.length + 1}
-//       stepCount={flow.stages.length}
-//       onCancel={handleCancel}
-//     >
-//       {stageToComplete.type === AuthType.RegistrationToken && (
-//         <RegistrationTokenStageDialog
-//           token={formData.token}
-//           stageData={stageToComplete}
-//           submitAuthDict={handleAuthDict}
-//           onCancel={handleCancel}
-//         />
-//       )}
-//       {stageToComplete.type === AuthType.Terms && (
-//         <AutoTermsStageDialog
-//           stageData={stageToComplete}
-//           submitAuthDict={handleAuthDict}
-//           onCancel={handleCancel}
-//         />
-//       )}
-//       {stageToComplete.type === AuthType.Recaptcha && (
-//         <ReCaptchaStageDialog
-//           stageData={stageToComplete}
-//           submitAuthDict={handleAuthDict}
-//           onCancel={handleCancel}
-//         />
-//       )}
-//       {stageToComplete.type === AuthType.Email && (
-//         <EmailStageDialog
-//           email={formData.email}
-//           clientSecret={formData.clientSecret}
-//           stageData={stageToComplete}
-//           requestEmailToken={registerEmail}
-//           emailTokenState={registerEmailState}
-//           submitAuthDict={handleAuthDict}
-//           onCancel={handleCancel}
-//         />
-//       )}
-//       {stageToComplete.type === AuthType.Dummy && (
-//         <AutoDummyStageDialog
-//           stageData={stageToComplete}
-//           submitAuthDict={handleAuthDict}
-//           onCancel={handleCancel}
-//         />
-//       )}
-//     </UIAFlowOverlay>
-//   );
-// }
+  if (!stageToComplete) return null;
+  return (
+    <UIAFlowOverlay
+      currentStep={completed.length + 1}
+      stepCount={flow.stages.length}
+      onCancel={handleCancel}
+    >
+      {stageToComplete.type === AuthType.RegistrationToken && (
+        <RegistrationTokenStageDialog
+          token={formData.token}
+          stageData={stageToComplete}
+          submitAuthDict={handleAuthDict}
+          onCancel={handleCancel}
+        />
+      )}
+      {stageToComplete.type === AuthType.Terms && (
+        <AutoTermsStageDialog
+          stageData={stageToComplete}
+          submitAuthDict={handleAuthDict}
+          onCancel={handleCancel}
+        />
+      )}
+      {stageToComplete.type === AuthType.Recaptcha && (
+        <ReCaptchaStageDialog
+          stageData={stageToComplete}
+          submitAuthDict={handleAuthDict}
+          onCancel={handleCancel}
+        />
+      )}
+      {stageToComplete.type === AuthType.Email && (
+        <EmailStageDialog
+          email={formData.email}
+          clientSecret={formData.clientSecret}
+          stageData={stageToComplete}
+          requestEmailToken={registerEmail}
+          emailTokenState={registerEmailState}
+          submitAuthDict={handleAuthDict}
+          onCancel={handleCancel}
+        />
+      )}
+      {stageToComplete.type === AuthType.Dummy && (
+        <AutoDummyStageDialog
+          stageData={stageToComplete}
+          submitAuthDict={handleAuthDict}
+          onCancel={handleCancel}
+        />
+      )}
+    </UIAFlowOverlay>
+  );
+}
 
 type PasswordRegisterFormProps = {
   authData: IAuthData;
@@ -199,13 +198,15 @@ export function PasswordRegisterForm({
   const [ongoingFlow, setOngoingFlow] = useState<UIAFlow>();
 
   const [registerEmailState, registerEmail] = useRegisterEmail(mx);
+  const [publicKey, setPublicKey] = useState<string | undefined>(undefined);
+  const [aaAddress, setAaAddress] = useState<string | undefined>(undefined);
 
   // const [registerState, handleRegister] = useAsyncCallback<
   //   RegisterResult,
   //   MatrixError,
   //   [RegisterRequest]
   // >(useCallback(async (registerReqData) => register(mx, registerReqData), [mx]));
-  const [registerState, startRegister] = useAsyncCallback<
+  const [registerState, handleRegister] = useAsyncCallback<
     RegisterResult,
     MatrixError,
     Parameters<typeof register>
@@ -216,8 +217,7 @@ export function PasswordRegisterForm({
     registerState.status === AsyncStatus.Error ? registerState.error : undefined;
 
   useRegisterComplete(customRegisterResp);
-  const clientConfig = useClientConfig();
-
+  const ethClient = useWeb3PublicClient();
   const handleSubmit: ChangeEventHandler<HTMLFormElement> = async (evt) => {
     evt.preventDefault();
     const {
@@ -235,7 +235,16 @@ export function PasswordRegisterForm({
     // if (password !== confirmPassword) {
     //   return;
     // }
-    const { password, publicKeyBase64Url } = await registerWithPasskey(username);
+    const { password, publicKeyBase64Url, xy } = await registerWithPasskey(username);
+    setPublicKey(publicKeyBase64Url);
+    const address = await ethClient.readContract({
+      address: '0x9Ac10fc0948A05319a3358881741Da38e6dAd182',
+      abi: AccountFactoryAbi,
+      functionName: 'computeAddress',
+      args: [[toHex(new Uint8Array(xy))], BigInt(0)],
+    });
+    setAaAddress(address);
+
     const email = emailInput?.value.trim();
     const terms = termsInput?.value === 'on';
 
@@ -256,9 +265,7 @@ export function PasswordRegisterForm({
     const pickedFlow = getUIAFlowForStages(uiaFlows, pickedStages);
     setOngoingFlow(pickedFlow);
     setFormData(fData);
-    const serverName = clientDefaultServer(clientConfig);
-    const aaAddress = (await getPasskeyCredentials(mx, `@${username}:${serverName}`)).walletAddress;
-    await startRegister(
+    await handleRegister(
       mx,
       {
         username,
@@ -269,9 +276,8 @@ export function PasswordRegisterForm({
         initial_device_display_name: 'Cinny Web',
       },
       publicKeyBase64Url,
-      aaAddress
+      address
     );
-    // localStorage.setItem(cons.secretKey.PUBLIC_KEY, publicKeyBase64Url);
   };
 
   return (
@@ -415,19 +421,23 @@ export function PasswordRegisterForm({
           </Text>
         </Button>
       </Box>
-      {/* {registerState.status === AsyncStatus.Success &&
+      {registerState.status === AsyncStatus.Success &&
         formData &&
         ongoingFlow &&
-        ongoingAuthData && (
+        ongoingAuthData &&
+        publicKey &&
+        aaAddress && (
           <RegisterUIAFlow
             formData={formData}
             flow={ongoingFlow}
             authData={ongoingAuthData}
             registerEmail={registerEmail}
             registerEmailState={registerEmailState}
-            onRegister={handleRegister}
+            onRegister={(registerReqData) =>
+              handleRegister(mx, registerReqData, publicKey, aaAddress)
+            }
           />
-        )} */}
+        )}
       {registerState.status === AsyncStatus.Loading && (
         <Overlay open backdrop={<OverlayBackdrop />}>
           <OverlayCenter>
