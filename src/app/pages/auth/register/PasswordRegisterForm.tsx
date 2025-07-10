@@ -238,6 +238,7 @@ export function PasswordRegisterForm({
     const { password, publicKeyBase64Url, xy } = await registerWithPasskey(username);
     setPublicKey(publicKeyBase64Url);
     const address = await ethClient.readContract({
+      // TODO
       address: '0x9Ac10fc0948A05319a3358881741Da38e6dAd182',
       abi: AccountFactoryAbi,
       functionName: 'computeAddress',

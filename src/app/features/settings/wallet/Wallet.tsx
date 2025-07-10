@@ -63,6 +63,7 @@ export function Wallet({ requestClose }: Props) {
       setRecoveryKey(mnemonic);
     } catch (error) {
       // setIsRecoveryDialogOpen(false);
+      console.error(error);
       return;
     }
     await refetch();
@@ -187,7 +188,9 @@ export function Wallet({ requestClose }: Props) {
               )}
               {addState.status === AsyncStatus.Error && (
                 <Box style={{ padding: config.space.S400 }} direction="Column">
-                  <Text size="B400">Error occurred while generating recovery key.</Text>
+                  <Text size="B400">
+                    Error occurred while generating recovery key. Please try again.
+                  </Text>
                 </Box>
               )}
               {/* 空元素 */}

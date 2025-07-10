@@ -151,7 +151,10 @@ export const useAbstractAccount = (ethClient: PublicClient, aaAddress: Address) 
       ),
     });
     const res = await response.json();
-    return res.result;
+    if (res.result) {
+      return res.result;
+    }
+    throw new Error(res.error?.message);
   };
   const getUserOperationReceipt = async (userOpHash: Hex): Promise<UserOperationReceipt> => {
     const getFunc = async () => {
@@ -168,6 +171,8 @@ export const useAbstractAccount = (ethClient: PublicClient, aaAddress: Address) 
         }),
       });
       const res = await response.json();
+      console.log('getUserOperationReceipt res:', res);
+
       if (res.error?.code === -32507) {
         throw new Error(res.error.message);
       }
@@ -183,6 +188,8 @@ export const useAbstractAccount = (ethClient: PublicClient, aaAddress: Address) 
       }
       return false;
     });
+    console.log('receipt:', receipt);
+
     if (receipt) {
       return receipt;
     }
