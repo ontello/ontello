@@ -62,7 +62,6 @@ export function Wallet({ requestClose }: Props) {
       const receipt = await startAddOwnerByAddress(mnemonicAccount.address);
       setRecoveryKey(mnemonic);
     } catch (error) {
-      // setIsRecoveryDialogOpen(false);
       console.error(error);
       return;
     }

@@ -171,7 +171,6 @@ export const useAbstractAccount = (ethClient: PublicClient, aaAddress: Address) 
         }),
       });
       const res = await response.json();
-      console.log('getUserOperationReceipt res:', res);
 
       if (res.error?.code === -32507) {
         throw new Error(res.error.message);

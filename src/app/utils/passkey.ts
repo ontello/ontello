@@ -3,7 +3,7 @@ import { type MatrixClient } from 'matrix-js-sdk';
 import { keccak256, stringToBytes, toBytes, toHex } from 'viem';
 import { getPasskeyCredentials } from '../extendApis';
 
-const RPID = 'localhost';
+// const RPID = 'localhost';
 
 export function hexToArrayBuffer(hex: string): ArrayBuffer {
   const buffer = new Uint8Array(hex.length / 2);
@@ -145,7 +145,7 @@ async function verifySignature(
 export const signWithPasskey = async (challenge: ArrayBuffer): Promise<PublicKeyCredential> => {
   const publicKeyCredentialRequestOptions = {
     challenge,
-    rpId: RPID,
+    // rpId: RPID,
     timeout: 60000,
     userVerification: 'required' as const,
   };
@@ -156,23 +156,22 @@ export const signWithPasskey = async (challenge: ArrayBuffer): Promise<PublicKey
   return credential;
 };
 
-const getChallenge = (user: string, prefix: string): ArrayBuffer => {
+const getChallenge = (name: string, prefix: string): ArrayBuffer => {
   const timestampInSeconds = Math.floor(Date.now() / 1000);
-  const challenge = `${prefix} ${user}.ont.im at ${timestampInSeconds}`;
+  const challenge = `${prefix} ${name}.ont.im at ${timestampInSeconds}`;
   return new TextEncoder().encode(challenge).buffer;
 };
-const getLoginChallenge = (username: string): ArrayBuffer => getChallenge(username, 'Login');
+const getLoginChallenge = (name: string): ArrayBuffer => getChallenge(name, 'Login');
 
-const getRegisterChallenge = (user: string): ArrayBuffer => getChallenge(user, 'Register');
+const getRegisterChallenge = (name: string): ArrayBuffer => getChallenge(name, 'Register');
 
 export const createPasskey = async (name: string, challenge: ArrayBuffer) => {
   const userIdArray = new TextEncoder().encode(name);
   const publicKeyCredentialCreationOptions = {
     challenge,
-    // TODO
     rp: {
-      name: 'Name',
-      id: RPID,
+      name: 'ONT IM',
+      // id: RPID,
     },
     user: {
       id: userIdArray,
@@ -315,8 +314,10 @@ export const signMessageWithPasskey = async (message: string): Promise<WebAuthnS
     prefixedMessageBytes.set(messageBytes, prefixBytes.length + messageBytesLengthBytes.length);
 
     const prefixedMessageHash = keccak256(prefixedMessageBytes);
+    console.log('prefixedMessageHash', prefixedMessageHash);
 
     const challenge = toBytes(prefixedMessageHash);
+    console.log('challenge', challenge);
 
     const { response } = await signWithPasskey(challenge);
     const { signature, authenticatorData, clientDataJSON } =
@@ -326,27 +327,19 @@ export const signMessageWithPasskey = async (message: string): Promise<WebAuthnS
     const { r, s } = parseDER(derSig);
 
     const clientDataString = new TextDecoder().decode(clientDataJSON);
+    console.log('clientDataString', clientDataString);
 
-    // test isValid
-    // const publicKey = await recoverPublicKey(
-    //   'N5Z0j5waV4NEx9SguS9PADPnQM0DjVO2aEVmUIYd2BnKsCNj0kcHhKH4-MGFkvT6cwwKYpc6otazk5jdE10s0w'
-    // );
-    // const rawSignature = new Uint8Array(r.length + s.length);
-    // rawSignature.set(r);
-    // rawSignature.set(s, r.length);
-    // const clientDataHash = await crypto.subtle.digest('SHA-256', clientDataJSON);
-    // const verifyData = new Uint8Array(authenticatorData.byteLength + clientDataHash.byteLength);
-    // verifyData.set(new Uint8Array(authenticatorData), 0);
-    // verifyData.set(new Uint8Array(clientDataHash), authenticatorData.byteLength);
-    // console.log('verifyData', toHex(rawSignature), toHex(verifyData));
-    // const isValid = await crypto.subtle.verify(
-    //   {
-    //     name: 'ECDSA',
-    //     hash: { name: 'SHA-256' },
-    //   },
-    //   publicKey,
-    //   rawSignature.buffer,
-    //   verifyData.buffer
+    const json = JSON.parse(clientDataString);
+    console.log(json.challenge);
+    console.log(new Uint8Array(fromBase64Url(json.challenge)));
+
+    // const isValid = await verifySignature(
+    //   await recoverPublicKey(
+    //     'P_Y4R9vAvJ-GDbgDY6fNq-hpKgEpOXAppvY4eXro-iafI2emVXaGXmWDomJzv0BNPLowyzKO0iZGSIB9UQzK4A'
+    //   ),
+    //   signature,
+    //   clientDataJSON,
+    //   authenticatorData
     // );
     // console.log('isValid', isValid);
 
