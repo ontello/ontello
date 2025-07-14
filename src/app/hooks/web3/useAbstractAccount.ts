@@ -30,7 +30,7 @@ import {
 import cons from '../../../client/state/cons';
 
 // TODO
-const BUNDLER_RPC = 'http://35.240.165.243:4337/rpc';
+const BUNDLER_RPC = 'https://preview.onto.app/rpc';
 
 const GAS_ADDRESS = '0xd878dfE2b33A07E7FB290c1578A0b3cbc8aDadEA';
 const PAYMASTERE_ADDRESS = '0xfe86e45222e784a40a2c5e94b58c41b910d7e9ca';
