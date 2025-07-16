@@ -1,17 +1,9 @@
 /* eslint-disable no-await-in-loop */
 import { type MatrixClient } from 'matrix-js-sdk';
-import { keccak256, stringToBytes, toBytes, toHex } from 'viem';
+import { hashMessage, Hex, stringToBytes, toBytes, toHex, hexToBytes } from 'viem';
 import { getPasskeyCredentials } from '../extendApis';
 
 // const RPID = 'localhost';
-
-export function hexToArrayBuffer(hex: string): ArrayBuffer {
-  const buffer = new Uint8Array(hex.length / 2);
-  for (let i = 0; i < hex.length; i += 2) {
-    buffer[i / 2] = parseInt(hex.substr(i, 2), 16);
-  }
-  return buffer.buffer;
-}
 
 export function toBase64Url(input: ArrayBuffer): string {
   let base64 = btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(input))));
@@ -56,7 +48,6 @@ export function parseDER(derBytes: Uint8Array): {
   if (s.length === 33 && s[0] === 0) {
     s = s.slice(1);
   }
-
   return { r, s };
 }
 export function parsePublicKeyPoints(spkiBuffer: ArrayBuffer): {
@@ -142,7 +133,7 @@ async function verifySignature(
   }
 }
 
-export const signWithPasskey = async (challenge: ArrayBuffer): Promise<PublicKeyCredential> => {
+export const signWithPasskey = async (challenge: BufferSource): Promise<PublicKeyCredential> => {
   const publicKeyCredentialRequestOptions = {
     challenge,
     // rpId: RPID,
@@ -231,6 +222,7 @@ export const registerWithPasskey = async (
     });
     return { password, publicKeyBase64Url, x, y, xy };
   } catch (error) {
+    console.error(error);
     throw new Error('Failed to register passkey');
   }
 };
@@ -299,25 +291,31 @@ export interface WebAuthnSignature {
   s: Uint8Array;
 }
 
-export const signMessageWithPasskey = async (message: string): Promise<WebAuthnSignature> => {
+export const signMessageWithPasskey = async (message: Hex): Promise<WebAuthnSignature> => {
   try {
-    const prefix = '\x19Ethereum Signed Message:\n';
-    const messageBytes = toBytes(message);
-    const prefixBytes = stringToBytes(prefix);
-    const messageBytesLength = messageBytes.length.toString();
-    const messageBytesLengthBytes = stringToBytes(messageBytesLength);
-    const prefixedMessageBytes = new Uint8Array(
-      prefixBytes.length + messageBytesLengthBytes.length + messageBytes.length
-    );
-    prefixedMessageBytes.set(prefixBytes);
-    prefixedMessageBytes.set(messageBytesLengthBytes, prefixBytes.length);
-    prefixedMessageBytes.set(messageBytes, prefixBytes.length + messageBytesLengthBytes.length);
+    // const prefix = '\x19Ethereum Signed Message:\n';
+    // const messageBytes = toBytes(message);
+    // const prefixBytes = stringToBytes(prefix);
+    // const messageBytesLength = messageBytes.length.toString();
+    // const messageBytesLengthBytes = stringToBytes(messageBytesLength);
+    // const prefixedMessageBytes = new Uint8Array(
+    //   prefixBytes.length + messageBytesLengthBytes.length + messageBytes.length
+    // );
+    // prefixedMessageBytes.set(prefixBytes);
+    // prefixedMessageBytes.set(messageBytesLengthBytes, prefixBytes.length);
+    // prefixedMessageBytes.set(messageBytes, prefixBytes.length + messageBytesLengthBytes.length);
 
-    const prefixedMessageHash = keccak256(prefixedMessageBytes);
+    // const prefixedMessageHash = keccak256(prefixedMessageBytes);
+    // console.log('message', message);
+    const prefixedMessageHash = hashMessage({ raw: message });
     console.log('prefixedMessageHash', prefixedMessageHash);
 
-    const challenge = toBytes(prefixedMessageHash);
+    const challenge = hexToBytes(prefixedMessageHash);
+    // const challenge = hexToArrayBuffer(prefixedMessageHash);
+    // const challenge = hexToUint8Array(prefixedMessageHash);
+
     console.log('challenge', challenge);
+    console.log('challengeBase64Url', toBase64Url(challenge));
 
     const { response } = await signWithPasskey(challenge);
     const { signature, authenticatorData, clientDataJSON } =
@@ -327,15 +325,15 @@ export const signMessageWithPasskey = async (message: string): Promise<WebAuthnS
     const { r, s } = parseDER(derSig);
 
     const clientDataString = new TextDecoder().decode(clientDataJSON);
+    // console.log('signature', signature);
+    // console.log('clientDataJSON', clientDataJSON);
     console.log('clientDataString', clientDataString);
-
-    const json = JSON.parse(clientDataString);
-    console.log(json.challenge);
-    console.log(new Uint8Array(fromBase64Url(json.challenge)));
+    // console.log('authenticatorData', authenticatorData);
+    // console.log('authenticatorDataHex', toHex(new Uint8Array(authenticatorData)));
 
     // const isValid = await verifySignature(
     //   await recoverPublicKey(
-    //     'P_Y4R9vAvJ-GDbgDY6fNq-hpKgEpOXAppvY4eXro-iafI2emVXaGXmWDomJzv0BNPLowyzKO0iZGSIB9UQzK4A'
+    //     'Pjc5MyHMH95_GoRBaioxQXORRmGncGRaOJq3NqhcpxtAkpfibfmTnpfYUpx-38G9VwfAhO9LwFKE2H087q7UJQ'
     //   ),
     //   signature,
     //   clientDataJSON,

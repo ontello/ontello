@@ -99,7 +99,7 @@ export const useAbstractAccount = (ethClient: PublicClient, aaAddress: Address) 
     );
     const res = await response.json();
     if (res.Error !== 0) {
-      throw new Error(`Get paymaster sign failed: ${res.ErrorMessage}`);
+      throw new Error(`Get paymaster sign failed: ${res.Desc}`);
     }
     return res.Result;
   };
@@ -330,7 +330,7 @@ export const useAbstractAccount = (ethClient: PublicClient, aaAddress: Address) 
         ) as Hex;
       }
       console.log('keyIndex', keyIndex);
-      console.log('signature:', signature);
+      // console.log('signature:', signature);
       const signatureWrapper = encodeAbiParameters(
         [
           {
