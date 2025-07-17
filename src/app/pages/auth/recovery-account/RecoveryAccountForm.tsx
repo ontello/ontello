@@ -9,6 +9,7 @@ import { createClient } from 'matrix-js-sdk';
 import { useAutoDiscoveryInfo } from '@src/app/hooks/useAutoDiscoveryInfo';
 import { useNavigate } from 'react-router-dom';
 import { getLoginPath } from '../../pathUtils';
+import { FieldError } from '../FiledError';
 
 export function RecoveryKeyForm() {
   const [form, setForm] = useState({ username: '', recoveryKey: '' });
@@ -24,27 +25,35 @@ export function RecoveryKeyForm() {
   const { recoveryAccount } = useAbstractAccount(ethClient, address);
   const navigate = useNavigate();
 
+  const [errorData, setErrorData] = useState<string | null>(null);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = async (evt) => {
-    console.log('server', server);
-    console.log('baseUrl', baseUrl);
-
     evt.preventDefault();
-    const aaAddress = (await getPasskeyCredentials(mx, `@${form.username}:${server}`))
-      .walletAddress;
-    setAddress(aaAddress);
-    setShouldRecover(true);
+    try {
+      const aaAddress = (await getPasskeyCredentials(mx, `@${form.username}:${server}`))
+        .walletAddress;
+      setAddress(aaAddress);
+      setShouldRecover(true);
+    } catch (error) {
+      setErrorData('Recovery failed, please check the username and mnemonic.');
+    }
   };
   useEffect(() => {
     if (address && shouldRecover) {
-      recoveryAccount(form.recoveryKey, form.username).then((receipt) => {
-        const loginPath = getLoginPath(server);
-        navigate(loginPath);
-      });
+      recoveryAccount(form.recoveryKey, form.username)
+        .then((receipt) => {
+          const loginPath = getLoginPath(server);
+          navigate(loginPath);
+        })
+        .catch((error) => {
+          setErrorData('Recovery failed, please check the username and mnemonic.');
+          console.error('Recovery failed:', error);
+        });
       setShouldRecover(false);
     }
   }, [address, shouldRecover, form.recoveryKey, form.username, recoveryAccount, navigate, server]);
@@ -82,6 +91,9 @@ export function RecoveryKeyForm() {
           style={{ minHeight: 80 }}
         />
       </Box>
+      {errorData && (
+        <FieldError message="Recovery failed, please check the username and mnemonic." />
+      )}
       <span data-spacing-node />
       <Button
         type="submit"

@@ -229,7 +229,7 @@ export const registerWithPasskey = async (
 export const loginWithPasskey = async (
   name: string,
   cl: MatrixClient,
-  serverName: string
+  server: string
 ): Promise<{
   password: string;
   publicKey: string;
@@ -237,7 +237,8 @@ export const loginWithPasskey = async (
   try {
     const credential = await signWithPasskey(getLoginChallenge(name));
     const response = credential.response as AuthenticatorAssertionResponse;
-    const addedPublicks = (await getPasskeyCredentials(cl, `@${name}:${serverName}`)).credentials;
+
+    const addedPublicks = (await getPasskeyCredentials(cl, `@${name}:${server}`)).credentials;
 
     let choseCredential = null;
     // eslint-disable-next-line no-restricted-syntax
@@ -325,11 +326,11 @@ export const signMessageWithPasskey = async (message: Hex): Promise<WebAuthnSign
     const { r, s } = parseDER(derSig);
 
     const clientDataString = new TextDecoder().decode(clientDataJSON);
-    // console.log('signature', signature);
-    // console.log('clientDataJSON', clientDataJSON);
+    console.log('signature', signature);
+    console.log('clientDataJSON', clientDataJSON);
     console.log('clientDataString', clientDataString);
-    // console.log('authenticatorData', authenticatorData);
-    // console.log('authenticatorDataHex', toHex(new Uint8Array(authenticatorData)));
+    console.log('authenticatorData', authenticatorData);
+    console.log('authenticatorDataHex', toHex(new Uint8Array(authenticatorData)));
 
     // const isValid = await verifySignature(
     //   await recoverPublicKey(

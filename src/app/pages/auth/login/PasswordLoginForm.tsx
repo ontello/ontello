@@ -116,7 +116,6 @@ type PasswordLoginFormProps = {
 };
 export function PasswordLoginForm({ defaultUsername, defaultEmail }: PasswordLoginFormProps) {
   const server = useAuthServer();
-  const clientConfig = useClientConfig();
 
   const serverDiscovery = useAutoDiscoveryInfo();
   const baseUrl = serverDiscovery['m.homeserver'].base_url;
@@ -205,12 +204,11 @@ export function PasswordLoginForm({ defaultUsername, defaultEmail }: PasswordLog
     //   passwordInput.focus();
     //   return;
     // }
-    const serverName = clientDefaultServer(clientConfig);
     let password: string;
     let publicKey: string;
 
     try {
-      const res = await startPasskeyLogin(username, mx, serverName);
+      const res = await startPasskeyLogin(username, mx, server);
       password = res.password;
       publicKey = res.publicKey;
     } catch (error) {
@@ -225,7 +223,7 @@ export function PasswordLoginForm({ defaultUsername, defaultEmail }: PasswordLog
     //   handleEmailLogin(username, password);
     //   return;
     // }
-    const aaAddress = (await getPasskeyCredentials(mx, `@${username}:${serverName}`)).walletAddress;
+    const aaAddress = (await getPasskeyCredentials(mx, `@${username}:${server}`)).walletAddress;
     await handleUsernameLogin(username, password, publicKey, aaAddress);
     // localStorage.setItem(cons.secretKey.PUBLIC_KEY, publicKey);
   };

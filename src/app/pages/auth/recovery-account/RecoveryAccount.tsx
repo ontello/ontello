@@ -11,7 +11,7 @@ export function RecoveryAccount() {
   return (
     <Box direction="Column" gap="500">
       <Text size="H2" priority="400">
-        Reset Password
+        Recovery Account
       </Text>
       <RecoveryKeyForm />
       <span data-spacing-node />

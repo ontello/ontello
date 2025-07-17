@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { Box, Text, Button, Spinner } from 'folds';
+import { Box, Text, Button, Spinner, color } from 'folds';
 import { ellipsisMiddle } from '@src/app/utils/common';
 import { timeDayMonthYear } from '@src/app/utils/time';
 import { CredentialItem } from '@src/app/extendApis';
@@ -35,30 +35,38 @@ export function OwnerItem({
   };
 
   return (
-    <Box
-      key={credential.publicKey}
-      direction="Row"
-      justifyContent="SpaceBetween"
-      alignItems="Center"
-    >
-      <Box direction="Column">
-        <Text>{ellipsisMiddle(credential.publicKey)}</Text>
-        <Text>{timeDayMonthYear(credential.timestamp)}</Text>
+    <Box direction="Column">
+      <Box
+        key={credential.publicKey}
+        direction="Row"
+        justifyContent="SpaceBetween"
+        alignItems="Center"
+        grow="Yes"
+      >
+        <Box direction="Column">
+          <Text>{ellipsisMiddle(credential.publicKey)}</Text>
+          <Text>{timeDayMonthYear(credential.timestamp)}</Text>
+        </Box>
+        {credential.publicKey !== currentPublicKey && (
+          <Button
+            size="300"
+            radii="300"
+            variant="Critical"
+            onClick={() => handleDeletePasskey(credential.publicKey)}
+            disabled={removeState.status === AsyncStatus.Loading}
+          >
+            {removeState.status === AsyncStatus.Loading ? (
+              <Spinner />
+            ) : (
+              <Text size="B300">Delete</Text>
+            )}
+          </Button>
+        )}
       </Box>
-      {credential.publicKey !== currentPublicKey && (
-        <Button
-          size="300"
-          radii="300"
-          variant="Critical"
-          onClick={() => handleDeletePasskey(credential.publicKey)}
-          disabled={removeState.status === AsyncStatus.Loading}
-        >
-          {removeState.status === AsyncStatus.Loading ? (
-            <Spinner />
-          ) : (
-            <Text size="B300">Delete</Text>
-          )}
-        </Button>
+      {removeState.status === AsyncStatus.Error && (
+        <Text as="span" style={{ color: color.Critical.Main }} size="T200">
+          Deletion failed, please try again.
+        </Text>
       )}
     </Box>
   );

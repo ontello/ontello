@@ -8,6 +8,7 @@ import {
   encodeAbiParameters,
   fromBytes,
   maxUint256,
+  bytesToBigInt,
 } from 'viem';
 import { mnemonicToAccount } from 'viem/accounts';
 import { EntryPointAbi, Erc20Abi, AccountAbi, PaymasterAbi } from '@src/app/static/abis';
@@ -323,14 +324,21 @@ export const useAbstractAccount = (ethClient: PublicClient, aaAddress: Address) 
               clientDataJSON: toHex(new Uint8Array(passkeySignature.clientDataJSON)),
               challengeIndex: BigInt(passkeySignature.challengeIndex),
               typeIndex: BigInt(passkeySignature.typeIndex),
-              r: BigInt(fromBytes(passkeySignature.r, 'bigint')),
-              s: BigInt(fromBytes(passkeySignature.s, 'bigint')),
+              r: bytesToBigInt(passkeySignature.r),
+              s: bytesToBigInt(passkeySignature.s),
             },
           ]
         ) as Hex;
+        // console.log(toHex(new Uint8Array(passkeySignature.authenticatorData)));
+        // console.log(toHex(new Uint8Array(passkeySignature.clientDataJSON)));
+        // console.log(BigInt(passkeySignature.challengeIndex));
+        // console.log(BigInt(passkeySignature.typeIndex));
+        // console.log(BigInt(fromBytes(passkeySignature.r, 'bigint')));
+        // console.log(BigInt(fromBytes(passkeySignature.s, 'bigint')));
       }
+
       console.log('keyIndex', keyIndex);
-      // console.log('signature:', signature);
+      console.log('signature:', signature);
       const signatureWrapper = encodeAbiParameters(
         [
           {
@@ -358,8 +366,8 @@ export const useAbstractAccount = (ethClient: PublicClient, aaAddress: Address) 
       // });
       // console.log('signAddress', signAddress);
 
-      console.log('userOp', userOp);
-      console.log('userOpHash', userOpHash);
+      // console.log('userOp', userOp);
+      // console.log('userOpHash', userOpHash);
 
       const validateUserOp = await ethClient.readContract({
         address: aaAddress,
@@ -400,9 +408,8 @@ export const useAbstractAccount = (ethClient: PublicClient, aaAddress: Address) 
 
   const recoveryAccount = async (mnemonic: string, username: string) => {
     const mnemonicAccount = mnemonicToAccount(mnemonic);
-    const { x, y } = await registerWithPasskey(username);
     console.log('mnemonicAccount.address', mnemonicAccount.address);
-
+    const { x, y } = await registerWithPasskey(username);
     const keyIndex = await getKeyIndexThroughAddress(mnemonicAccount.address);
 
     const callData = await buildCallData([
