@@ -1,6 +1,7 @@
 /* eslint-disable no-await-in-loop */
 import { type MatrixClient } from 'matrix-js-sdk';
 import { hashMessage, Hex, stringToBytes, toBytes, toHex, hexToBytes } from 'viem';
+import { v4 as uuidv4 } from 'uuid';
 import { getPasskeyCredentials } from '../extendApis';
 
 // const RPID = 'localhost';
@@ -157,7 +158,9 @@ const getLoginChallenge = (name: string): ArrayBuffer => getChallenge(name, 'Log
 const getRegisterChallenge = (name: string): ArrayBuffer => getChallenge(name, 'Register');
 
 export const createPasskey = async (name: string, challenge: ArrayBuffer) => {
-  const userIdArray = new TextEncoder().encode(name);
+  // const userIdArray = new TextEncoder().encode(name);
+  const uuid = uuidv4();
+  const uuidBytes = new TextEncoder().encode(uuid);
   const publicKeyCredentialCreationOptions = {
     challenge,
     rp: {
@@ -165,7 +168,7 @@ export const createPasskey = async (name: string, challenge: ArrayBuffer) => {
       // id: RPID,
     },
     user: {
-      id: userIdArray,
+      id: uuidBytes,
       name,
       displayName: name,
     },
