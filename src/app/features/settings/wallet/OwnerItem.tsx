@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
-import { Box, Text, Button, Spinner, color } from 'folds';
+import { Box, Text, Button, Spinner, color, Badge } from 'folds';
 import { ellipsisMiddle } from '@src/app/utils/common';
-import { timeDayMonthYear } from '@src/app/utils/time';
+import { timeDayMonthYear, timeDayMonYear, timeFullDateTime } from '@src/app/utils/time';
 import { CredentialItem } from '@src/app/extendApis';
 import { UserOperationReceipt } from '@src/app/hooks/web3/types';
 import { AsyncStatus, useAsyncCallback } from '@src/app/hooks/useAsyncCallback';
@@ -33,6 +33,7 @@ export function OwnerItem({
     const receipt = await startRemoveOwner(publicKeyBase64);
     await deleteCallback();
   };
+  const isCurrent = credential.publicKey === currentPublicKey;
 
   return (
     <Box direction="Column">
@@ -44,10 +45,20 @@ export function OwnerItem({
         grow="Yes"
       >
         <Box direction="Column">
-          <Text>{ellipsisMiddle(credential.publicKey)}</Text>
-          <Text>{timeDayMonthYear(credential.timestamp)}</Text>
+          <Box alignItems="Center" gap="200" direction="Row">
+            <Text>{(credential.publicKey.length === 43 && 'Recovery Key') || 'Passkey'}</Text>
+            {isCurrent && (
+              <Badge aria-label="A status badge" role="status">
+                <Text as="span" size="L400">
+                  Current
+                </Text>
+              </Badge>
+            )}
+          </Box>
+          <Text>{timeFullDateTime(credential.timestamp)}</Text>
+          <Text>Public Key: {ellipsisMiddle(credential.publicKey)}</Text>
         </Box>
-        {credential.publicKey !== currentPublicKey && (
+        {!isCurrent && (
           <Button
             size="300"
             radii="300"

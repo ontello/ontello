@@ -15,6 +15,7 @@ import {
   Text,
 } from 'folds';
 import FocusTrap from 'focus-trap-react';
+import WalletIcon from '@src/app/static/icons/WalletIcon';
 import { General } from './general';
 import { PageNav, PageNavContent, PageNavHeader, PageRoot } from '../../components/page';
 import { ScreenSize, useScreenSizeContext } from '../../hooks/useScreenSize';
@@ -43,7 +44,7 @@ export enum SettingsPages {
   EmojisStickersPage,
   DeveloperToolsPage,
   AboutPage,
-  WalletPage
+  WalletPage,
 }
 
 type SettingsMenuItem = {
@@ -59,6 +60,11 @@ const useSettingsMenuItems = (): SettingsMenuItem[] =>
         page: SettingsPages.GeneralPage,
         name: 'General',
         icon: Icons.Setting,
+      },
+      {
+        page: SettingsPages.WalletPage,
+        name: 'Wallet',
+        icon: () => <WalletIcon />,
       },
       {
         page: SettingsPages.AccountPage,
@@ -89,11 +95,6 @@ const useSettingsMenuItems = (): SettingsMenuItem[] =>
         page: SettingsPages.AboutPage,
         name: 'About',
         icon: Icons.Info,
-      },
-      {
-        page: SettingsPages.WalletPage,
-        name: 'Wallet',
-        icon: Icons.Inbox,
       },
     ],
     []
@@ -236,9 +237,7 @@ export function Settings({ initialPage, requestClose }: SettingsProps) {
         <DeveloperTools requestClose={handlePageRequestClose} />
       )}
       {activePage === SettingsPages.AboutPage && <About requestClose={handlePageRequestClose} />}
-      {activePage === SettingsPages.WalletPage && (
-        <Wallet requestClose={handlePageRequestClose} />
-      )}
+      {activePage === SettingsPages.WalletPage && <Wallet requestClose={handlePageRequestClose} />}
     </PageRoot>
   );
 }

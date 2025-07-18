@@ -15,6 +15,7 @@ export const timeDayMonYear = (ts: number): string => dayjs(ts).format('D MMM YY
 
 export const timeDayMonthYear = (ts: number): string => dayjs(ts).format('D MMMM YYYY');
 
+export const timeFullDateTime = (ts: number): string => dayjs(ts).format('YYYY-MM-DD HH:mm:ss');
 export const inSameDay = (ts1: number, ts2: number): boolean => {
   const dt1 = new Date(ts1);
   const dt2 = new Date(ts2);
