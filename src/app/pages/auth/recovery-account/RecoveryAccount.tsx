@@ -17,7 +17,7 @@ export function RecoveryAccount() {
       <span data-spacing-node />
 
       <Text align="Center">
-        <Link to={getLoginPath(server)}>To Login</Link>
+        <Link to={getLoginPath(server)}>Login</Link>
       </Text>
     </Box>
   );

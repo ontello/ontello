@@ -1,5 +1,5 @@
 import React, { FormEventHandler, useEffect, useMemo, useState } from 'react';
-import { Box, Button, Input, Text, TextArea } from 'folds';
+import { Box, Button, Input, Text, TextArea, Spinner } from 'folds';
 import { getPasskeyCredentials } from '@src/app/extendApis';
 import { useAuthServer } from '@src/app/hooks/useAuthServer';
 import { useAbstractAccount } from '@src/app/hooks/web3/useAbstractAccount';
@@ -53,8 +53,8 @@ export function RecoveryKeyForm() {
         .catch((error) => {
           setErrorData('Recovery failed, please check the username and mnemonic.');
           console.error('Recovery failed:', error);
+          setShouldRecover(false);
         });
-      setShouldRecover(false);
     }
   }, [address, shouldRecover, form.recoveryKey, form.username, recoveryAccount, navigate, server]);
 
@@ -99,8 +99,10 @@ export function RecoveryKeyForm() {
         type="submit"
         variant="Primary"
         size="500"
-        disabled={!form.username || !form.recoveryKey}
+        disabled={!form.username || !form.recoveryKey || shouldRecover}
       >
+        {shouldRecover && <Spinner />}
+        {/* <Spinner /> */}
         <Text as="span" size="B500">
           Recover
         </Text>

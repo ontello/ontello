@@ -14,12 +14,16 @@ import {
   config,
   Scroll,
   Spinner,
+  color,
+  Chip,
+  Checkbox,
 } from 'folds';
 import FocusTrap from 'focus-trap-react';
 import { english, generateMnemonic, mnemonicToAccount } from 'viem/accounts';
 import { Address } from 'viem';
 import { UserOperationReceipt } from '@src/app/hooks/web3/types';
 import { CredentialItem } from '@src/app/extendApis';
+import { copyToClipboard } from '@src/app/utils/dom';
 import { Page, PageContent, PageHeader } from '../../../components/page';
 import { SequenceCard } from '../../../components/sequence-card';
 import { SequenceCardStyle } from '../styles.css';
@@ -54,6 +58,7 @@ export function Wallet({ requestClose }: Props) {
     Parameters<typeof addOwnerByAddress>
   >(useCallback(addOwnerByAddress, [addOwnerByAddress]));
 
+  const [copyChecked, setCopyChecked] = useState(false);
   const handleGenerateRecovery = async () => {
     const mnemonic = generateMnemonic(english);
     const mnemonicAccount = mnemonicToAccount(mnemonic);
@@ -108,7 +113,8 @@ export function Wallet({ requestClose }: Props) {
                 </SequenceCard>
               </Box>
               <Box direction="Column" gap="100">
-                <Text size="L400">Owners</Text>
+                <Text size="L400">Manage wallet trusted passkeys</Text>
+                <Text>You can manage account&apos;s passkeys below.</Text>
                 <SequenceCard
                   className={SequenceCardStyle}
                   variant="SurfaceVariant"
@@ -125,6 +131,10 @@ export function Wallet({ requestClose }: Props) {
                     />
                   ))}
                 </SequenceCard>
+                <Text>
+                  Please never modify the key name of Passkey, as doing so may result in a loss of
+                  access.
+                </Text>
               </Box>
             </Box>
           </PageContent>
@@ -161,28 +171,53 @@ export function Wallet({ requestClose }: Props) {
                 <Box style={{ padding: config.space.S400 }} direction="Column" gap="400">
                   <Box direction="Column" gap="200">
                     <Text>Please save this recovery key in a safe place:</Text>
-                    <Text size="B500" style={{ wordBreak: 'break-all' }}>
-                      {recoveryKey}
-                    </Text>
+                    <Box
+                      direction="Column"
+                      gap="100"
+                      alignItems="Start"
+                      style={{
+                        backgroundColor: color.Background.Container,
+                        padding: config.space.S400,
+                        borderRadius: config.radii.R400,
+                      }}
+                    >
+                      <Text size="B500" style={{ wordBreak: 'break-all' }}>
+                        {recoveryKey}
+                      </Text>
+                      <Box alignSelf="End">
+                        <Chip
+                          variant="Secondary"
+                          radii="Pill"
+                          onClick={() => copyToClipboard(recoveryKey)}
+                        >
+                          <Text size="T200">Copy</Text>
+                        </Chip>
+                      </Box>
+                    </Box>
+                  </Box>
+                  <Box gap="100">
+                    <Checkbox checked={copyChecked} onChange={() => setCopyChecked(!copyChecked)} />
+                    <Text>I&apos;ve saved this phrase in a safe place.</Text>
                   </Box>
                   <Button
                     variant="Secondary"
                     fill="Soft"
                     onClick={() => setIsRecoveryDialogOpen(false)}
+                    disabled={!copyChecked}
                   >
-                    <Text size="B400">Close</Text>
+                    <Text size="B400">Done</Text>
                   </Button>
                 </Box>
               )}
               {addState.status === AsyncStatus.Loading && (
                 <Box
-                  justifyContent="Center"
+                  direction="Column"
+                  gap="400"
                   alignItems="Center"
-                  style={{
-                    margin: ` ${config.space.S600} 0 ${config.space.S600} 0`,
-                  }}
+                  style={{ padding: config.space.S400 }}
                 >
                   <Spinner />
+                  <Text>Do not close the window.</Text>
                 </Box>
               )}
               {addState.status === AsyncStatus.Error && (
@@ -192,6 +227,7 @@ export function Wallet({ requestClose }: Props) {
                   </Text>
                 </Box>
               )}
+
               {/* 空元素 */}
               <button
                 type="button"
