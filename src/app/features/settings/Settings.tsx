@@ -64,7 +64,7 @@ const useSettingsMenuItems = (): SettingsMenuItem[] =>
       {
         page: SettingsPages.WalletPage,
         name: 'Wallet',
-        icon: () => <WalletIcon />,
+        icon: WalletIcon,
       },
       {
         page: SettingsPages.AccountPage,

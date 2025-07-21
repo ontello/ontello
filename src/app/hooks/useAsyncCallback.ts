@@ -98,14 +98,19 @@ export const useAsync = <TData, TError, TArgs extends unknown[]>(
 
 export const useAsyncCallback = <TData, TError, TArgs extends unknown[]>(
   asyncCallback: AsyncCallback<TArgs, TData>
-): [AsyncState<TData, TError>, AsyncCallback<TArgs, TData>] => {
+): [AsyncState<TData, TError>, AsyncCallback<TArgs, TData>, () => void] => {
   const [state, setState] = useState<AsyncState<TData, TError>>({
     status: AsyncStatus.Idle,
   });
 
   const callback = useAsync(asyncCallback, setState);
 
-  return [state, callback];
+  const reset = () =>
+    setState({
+      status: AsyncStatus.Idle,
+    });
+
+  return [state, callback, reset];
 };
 
 export const useAsyncCallbackValue = <TData, TError>(

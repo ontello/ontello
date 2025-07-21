@@ -161,7 +161,7 @@ export function Wallet({ requestClose }: Props) {
                 size="500"
               >
                 <Box grow="Yes">
-                  <Text size="H4">Recovery Key</Text>
+                  <Text size="H4">Creating Recovery Key</Text>
                 </Box>
                 <IconButton size="300" onClick={() => setIsRecoveryDialogOpen(false)} radii="300">
                   <Icon src={Icons.Cross} />

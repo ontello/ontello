@@ -41,17 +41,28 @@ export function OwnerItem({
 }: OwnerItemProps) {
   const publicClient = useWeb3PublicClient();
   const { removeOwner } = useAbstractAccount(publicClient, aaAddress);
-  const [removeState, startRemoveOwner] = useAsyncCallback<
+  const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false);
+
+  const [removeState, startRemoveOwner, resetRemoveState] = useAsyncCallback<
     UserOperationReceipt,
     Error,
     Parameters<typeof removeOwner>
   >(useCallback(removeOwner, [removeOwner]));
   const handleDeletePasskey = async () => {
-    const receipt = await startRemoveOwner(credential.publicKey);
-    await deleteCallback();
+    try {
+      const receipt = await startRemoveOwner(credential.publicKey);
+      await deleteCallback();
+    } catch (error) {
+      await deleteCallback();
+    }
   };
   const isCurrent = credential.publicKey === currentPublicKey;
-  const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false);
+  const closeDialogHandler = () => {
+    setIsRemoveDialogOpen(false);
+    if (removeState.status === AsyncStatus.Error) {
+      resetRemoveState();
+    }
+  };
 
   return (
     <>
@@ -95,7 +106,7 @@ export function OwnerItem({
           <FocusTrap
             focusTrapOptions={{
               initialFocus: false,
-              onDeactivate: () => setIsRemoveDialogOpen(false),
+              onDeactivate: closeDialogHandler,
               clickOutsideDeactivates: true,
             }}
           >
@@ -114,7 +125,7 @@ export function OwnerItem({
                   </Text>
                 </Box>
 
-                <IconButton size="300" onClick={() => setIsRemoveDialogOpen(false)} radii="300">
+                <IconButton size="300" onClick={closeDialogHandler} radii="300">
                   <Icon src={Icons.Cross} />
                 </IconButton>
               </Header>
