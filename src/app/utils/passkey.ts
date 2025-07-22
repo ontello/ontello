@@ -310,7 +310,7 @@ export const signMessageWithPasskey = async (message: Hex): Promise<WebAuthnSign
     // prefixedMessageBytes.set(messageBytes, prefixBytes.length + messageBytesLengthBytes.length);
 
     // const prefixedMessageHash = keccak256(prefixedMessageBytes);
-    // console.log('message', message);
+    console.log('message', message);
     const prefixedMessageHash = hashMessage({ raw: message });
     console.log('prefixedMessageHash', prefixedMessageHash);
 
@@ -329,7 +329,7 @@ export const signMessageWithPasskey = async (message: Hex): Promise<WebAuthnSign
     const { r, s } = parseDER(derSig);
 
     const clientDataString = new TextDecoder().decode(clientDataJSON);
-    console.log('signature', signature);
+    console.log('signature', toHex(new Uint8Array(signature)));
     console.log('clientDataJSON', clientDataJSON);
     console.log('clientDataString', clientDataString);
     console.log('authenticatorData', authenticatorData);
@@ -337,7 +337,7 @@ export const signMessageWithPasskey = async (message: Hex): Promise<WebAuthnSign
 
     // const isValid = await verifySignature(
     //   await recoverPublicKey(
-    //     'Pjc5MyHMH95_GoRBaioxQXORRmGncGRaOJq3NqhcpxtAkpfibfmTnpfYUpx-38G9VwfAhO9LwFKE2H087q7UJQ'
+    //     'gu6yIxrv3hPWybt3qqXj_JUeftTVPkzfjxwoodmXTDk5hlWeXMe7CZq5JV1ZrYCnrhrujG2zM7u6r7rTICsgSA'
     //   ),
     //   signature,
     //   clientDataJSON,

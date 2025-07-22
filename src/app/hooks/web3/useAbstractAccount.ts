@@ -329,16 +329,11 @@ export const useAbstractAccount = (ethClient: PublicClient, aaAddress: Address) 
             },
           ]
         ) as Hex;
-        // console.log(toHex(new Uint8Array(passkeySignature.authenticatorData)));
-        // console.log(toHex(new Uint8Array(passkeySignature.clientDataJSON)));
-        // console.log(BigInt(passkeySignature.challengeIndex));
-        // console.log(BigInt(passkeySignature.typeIndex));
-        // console.log(BigInt(fromBytes(passkeySignature.r, 'bigint')));
-        // console.log(BigInt(fromBytes(passkeySignature.s, 'bigint')));
       }
 
-      console.log('keyIndex', keyIndex);
       console.log('signature:', signature);
+      console.log('keyIndex', keyIndex);
+
       const signatureWrapper = encodeAbiParameters(
         [
           {

@@ -6,8 +6,10 @@ import {
   Hex,
   PublicClient,
   toHex,
+  getContract,
 } from 'viem';
 import { UserOperation } from '../hooks/web3/types';
+import { EntryPointAbi } from '../static/abis';
 
 export const calculateUserOpHash = async (
   ethClient: PublicClient,
@@ -15,35 +17,35 @@ export const calculateUserOpHash = async (
   entryPoint: Address,
   chainId: number
 ): Promise<Hex> => {
-  const packed = encodeAbiParameters(
-    parseAbiParameters(
-      'address, uint256, bytes32, bytes32, uint256, uint256, uint256, uint256, uint256, bytes32'
-    ),
-    [
-      userop.sender,
-      userop.nonce,
-      keccak256(userop.initCode),
-      keccak256(userop.callData),
-      userop.callGasLimit,
-      userop.verificationGasLimit,
-      userop.preVerificationGas,
-      userop.maxFeePerGas,
-      userop.maxPriorityFeePerGas,
-      keccak256(userop.paymasterAndData),
-    ]
-  );
-  const enc = encodeAbiParameters(parseAbiParameters('bytes32, address, uint256'), [
-    keccak256(packed),
-    entryPoint,
-    BigInt(chainId),
-  ]);
-  const hash = keccak256(enc);
-  // const entryPointContract = getContract({
-  //   address: entryPoint,
-  //   abi: EntryPointAbi,
-  //   client: ethClient,
-  // });
-  // const hash2 = await entryPointContract.read.getUserOpHash([userop]);
+  // const packed = encodeAbiParameters(
+  //   parseAbiParameters(
+  //     'address, uint256, bytes32, bytes32, uint256, uint256, uint256, uint256, uint256, bytes32'
+  //   ),
+  //   [
+  //     userop.sender,
+  //     userop.nonce,
+  //     keccak256(userop.initCode),
+  //     keccak256(userop.callData),
+  //     userop.callGasLimit,
+  //     userop.verificationGasLimit,
+  //     userop.preVerificationGas,
+  //     userop.maxFeePerGas,
+  //     userop.maxPriorityFeePerGas,
+  //     keccak256(userop.paymasterAndData),
+  //   ]
+  // );
+  // const enc = encodeAbiParameters(parseAbiParameters('bytes32, address, uint256'), [
+  //   keccak256(packed),
+  //   entryPoint,
+  //   BigInt(chainId),
+  // ]);
+  // const hash = keccak256(enc);
+  const entryPointContract = getContract({
+    address: entryPoint,
+    abi: EntryPointAbi,
+    client: ethClient,
+  });
+  const hash = await entryPointContract.read.getUserOpHash([userop]);
 
   return hash;
 };
