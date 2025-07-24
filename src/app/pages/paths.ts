@@ -66,6 +66,10 @@ export const _SERVER_PATH = ':server/';
 export const EXPLORE_PATH = '/explore/';
 export const EXPLORE_FEATURED_PATH = `/explore/${_FEATURED_PATH}`;
 
+export const AGENT_PATH = '/agent/';
+export const STORE_PATH = 'store/';
+export const AGENT_DIRECT_PATH = `${AGENT_PATH}${DIRECT_ROOM_PATH}`;
+
 export type ExploreServerPathSearchParams = {
   limit?: string;
   since?: string;

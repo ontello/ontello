@@ -16,15 +16,16 @@ import {
   Icons,
   OverlayBackdrop,
 } from 'folds';
-import { ellipsisMiddle } from '@src/app/utils/common';
+import { ellipsisMiddle, sleep } from '@src/app/utils/common';
 import { timeFullDateTime } from '@src/app/utils/time';
-import { CredentialItem } from '@src/app/extendApis';
+import { CredentialItem, deleteDevicesByPk } from '@src/app/extendApis';
 import { UserOperationReceipt } from '@src/app/hooks/web3/types';
 import { AsyncStatus, useAsyncCallback } from '@src/app/hooks/useAsyncCallback';
 import { Address } from 'viem';
 import { useAbstractAccount } from '@src/app/hooks/web3/useAbstractAccount';
 import { useWeb3PublicClient } from '@src/app/hooks/web3/useWeb3Client';
 import FocusTrap from 'focus-trap-react';
+import { useMatrixClient } from '@src/app/hooks/useMatrixClient';
 
 interface OwnerItemProps {
   credential: CredentialItem;
@@ -40,22 +41,28 @@ export function OwnerItem({
   deleteCallback,
 }: OwnerItemProps) {
   const publicClient = useWeb3PublicClient();
+  const mx = useMatrixClient();
   const { removeOwner } = useAbstractAccount(publicClient, aaAddress);
   const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false);
 
-  const [removeState, startRemoveOwner, resetRemoveState] = useAsyncCallback<
-    UserOperationReceipt,
-    Error,
-    Parameters<typeof removeOwner>
-  >(useCallback(removeOwner, [removeOwner]));
-  const handleDeletePasskey = async () => {
+  const deletePasskey = async () => {
     try {
-      const receipt = await startRemoveOwner(credential.publicKey);
+      const receipt = await removeOwner(credential.publicKey);
+      await sleep(3000);
+      await deleteDevicesByPk(mx, credential.publicKey);
       await deleteCallback();
     } catch (error) {
-      await deleteCallback();
+      console.log('Error deleting passkey:', error);
+      throw error;
     }
   };
+
+  const [removeState, startRemoveOwner, resetRemoveState] = useAsyncCallback<
+    void,
+    Error,
+    Parameters<typeof deletePasskey>
+  >(useCallback(deletePasskey, [deletePasskey]));
+
   const isCurrent = credential.publicKey === currentPublicKey;
   const closeDialogHandler = () => {
     setIsRemoveDialogOpen(false);
@@ -142,7 +149,7 @@ export function OwnerItem({
                     </Text>
                     <Button
                       variant="Critical"
-                      onClick={handleDeletePasskey}
+                      onClick={startRemoveOwner}
                       disabled={removeState.status === AsyncStatus.Loading}
                     >
                       {removeState.status === AsyncStatus.Loading && <Spinner />}

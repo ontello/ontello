@@ -31,3 +31,14 @@ export async function getPasskeyCredentials(
   }
   return res;
 }
+
+export async function deleteDevicesByPk(cl: MatrixClient, pk: string): Promise<any> {
+  const res = await cl.http.authedRequest(
+    Method.Delete,
+    `/delete_devices_by_pubkey/${encodeURIComponent(pk)}`,
+    undefined,
+    undefined,
+    { prefix: requestPrefix }
+  );
+  return res;
+}

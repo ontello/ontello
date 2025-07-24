@@ -19,6 +19,7 @@ import {
   SettingsTab,
   UnverifiedTab,
 } from './sidebar';
+import { AgentTab } from './sidebar/AgentTab';
 import { openCreateRoom, openSearch } from '../../../client/action/navigation';
 
 export function SidebarNav() {
@@ -32,6 +33,7 @@ export function SidebarNav() {
             <SidebarStack>
               <HomeTab />
               <DirectTab />
+              <AgentTab />
             </SidebarStack>
             <SpaceTabs scrollRef={scrollRef} />
             <SidebarStackSeparator />

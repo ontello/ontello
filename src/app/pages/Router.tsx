@@ -29,6 +29,10 @@ import {
   _SEARCH_PATH,
   _SERVER_PATH,
   RECOVERY_ACCOUNT_PATH,
+  AGENT_PATH,
+  STORE_PATH,
+  DIRECT_ROOM_PATH,
+  AGENT_DIRECT_PATH,
 } from './paths';
 import { isAuthenticated } from '../../client/state/auth';
 import {
@@ -62,6 +66,8 @@ import { AutoRestoreBackupOnVerification } from '../components/BackupRestore';
 import { RoomSettingsRenderer } from '../features/room-settings';
 import { ClientRoomsNotificationPreferences } from './client/ClientRoomsNotificationPreferences';
 import { SpaceSettingsRenderer } from '../features/space-settings';
+import { Agent } from './client/agent/Agent';
+import { AgentStore } from './client/agent/AgentStore';
 
 export const createRouter = (clientConfig: ClientConfig, screenSize: ScreenSize) => {
   const { hashRouter } = clientConfig;
@@ -255,6 +261,33 @@ export const createRouter = (clientConfig: ClientConfig, screenSize: ScreenSize)
           <Route path={_FEATURED_PATH} element={<FeaturedRooms />} />
           <Route path={_SERVER_PATH} element={<PublicRooms />} />
         </Route>
+
+        <Route
+          path={AGENT_PATH}
+          element={
+            <PageRoot
+              nav={
+                <MobileFriendlyPageNav path={AGENT_PATH}>
+                  <Agent />
+                </MobileFriendlyPageNav>
+              }
+            >
+              <Outlet />
+            </PageRoot>
+          }
+        >
+          <Route index element={<AgentStore />} />
+          <Route path={STORE_PATH} element={<AgentStore />} />
+          <Route
+            path={AGENT_DIRECT_PATH}
+            element={
+              <DirectRouteRoomProvider>
+                <Room />
+              </DirectRouteRoomProvider>
+            }
+          />
+        </Route>
+
         <Route
           path={INBOX_PATH}
           element={
