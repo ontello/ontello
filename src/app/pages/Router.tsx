@@ -197,6 +197,33 @@ export const createRouter = (clientConfig: ClientConfig, screenSize: ScreenSize)
             }
           />
         </Route>
+
+        <Route
+          path={AGENT_PATH}
+          element={
+            <PageRoot
+              nav={
+                <MobileFriendlyPageNav path={AGENT_PATH}>
+                  <Agent />
+                </MobileFriendlyPageNav>
+              }
+            >
+              <Outlet />
+            </PageRoot>
+          }
+        >
+          {mobile ? null : <Route index element={<AgentStore />} />}
+          <Route path={STORE_PATH} element={<AgentStore />} />
+          <Route
+            path={AGENT_DIRECT_PATH}
+            element={
+              <DirectRouteRoomProvider>
+                <Room />
+              </DirectRouteRoomProvider>
+            }
+          />
+        </Route>
+
         <Route
           path={SPACE_PATH}
           element={
@@ -260,32 +287,6 @@ export const createRouter = (clientConfig: ClientConfig, screenSize: ScreenSize)
           )}
           <Route path={_FEATURED_PATH} element={<FeaturedRooms />} />
           <Route path={_SERVER_PATH} element={<PublicRooms />} />
-        </Route>
-
-        <Route
-          path={AGENT_PATH}
-          element={
-            <PageRoot
-              nav={
-                <MobileFriendlyPageNav path={AGENT_PATH}>
-                  <Agent />
-                </MobileFriendlyPageNav>
-              }
-            >
-              <Outlet />
-            </PageRoot>
-          }
-        >
-          <Route index element={<AgentStore />} />
-          <Route path={STORE_PATH} element={<AgentStore />} />
-          <Route
-            path={AGENT_DIRECT_PATH}
-            element={
-              <DirectRouteRoomProvider>
-                <Room />
-              </DirectRouteRoomProvider>
-            }
-          />
         </Route>
 
         <Route
