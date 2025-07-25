@@ -1,4 +1,5 @@
 import React, { MouseEventHandler, forwardRef, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAtom, useAtomValue } from 'jotai';
 import {
   Avatar,
@@ -49,6 +50,7 @@ import {
   getRoomNotificationMode,
   useRoomsNotificationPreferencesContext,
 } from '../../../hooks/useRoomsNotificationPreferences';
+import { STORE_PATH } from '../../paths';
 
 // Agent menu (can be extended later)
 type AgentMenuProps = {
@@ -94,6 +96,7 @@ function AgentHeader({
   closedCategories: Set<string>;
   handleCategoryClick: (categoryId: string) => void;
 }) {
+  const navigate = useNavigate();
   const [menuAnchor, setMenuAnchor] = useState<RectCords>();
 
   const handleOpenMenu: MouseEventHandler<HTMLButtonElement> = (evt) => {
@@ -104,13 +107,17 @@ function AgentHeader({
     });
   };
 
+  const handleStoreClick = () => {
+    navigate(STORE_PATH);
+  };
+
   return (
     <>
       <PageNavHeader>
         <Box alignItems="Center" grow="Yes" gap="300">
           <Box grow="Yes">
             <Text size="H4" truncate>
-              Agent Chats
+              Agents
             </Text>
           </Box>
           <Box>
@@ -141,7 +148,26 @@ function AgentHeader({
           </FocusTrap>
         }
       />
-      {/* Chats 分类按钮区域 */}
+      {/* Store button */}
+      <NavCategory>
+        <NavItem variant="Background" radii="400">
+          <NavButton onClick={handleStoreClick}>
+            <NavItemContent>
+              <Box as="span" grow="Yes" alignItems="Center" gap="200">
+                <Avatar size="200" radii="400">
+                  <Icon src={Icons.Bulb} size="100" />
+                </Avatar>
+                <Box as="span" grow="Yes">
+                  <Text as="span" size="Inherit" truncate>
+                    Agent Store
+                  </Text>
+                </Box>
+              </Box>
+            </NavItemContent>
+          </NavButton>
+        </NavItem>
+      </NavCategory>
+      {/* Agents 分类按钮区域 */}
       <NavCategory>
         <NavCategoryHeader>
           <RoomNavCategoryButton
@@ -149,7 +175,7 @@ function AgentHeader({
             data-category-id={DEFAULT_CATEGORY_ID}
             onClick={() => handleCategoryClick(DEFAULT_CATEGORY_ID)}
           >
-            Chats
+            Agents
           </RoomNavCategoryButton>
         </NavCategoryHeader>
       </NavCategory>
