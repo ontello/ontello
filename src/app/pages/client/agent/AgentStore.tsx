@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Avatar,
   Badge,
@@ -11,67 +11,28 @@ import {
   OverlayBackdrop,
   OverlayCenter,
   Scroll,
+  Spinner,
   Text,
   as,
   toRem,
 } from 'folds';
 import FocusTrap from 'focus-trap-react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Page, PageContent, PageContentCenter, PageHeader } from '../../../components/page';
 import { RoomCardBase, RoomCardGrid } from '../../../components/room-card';
-import { useScreenSizeContext, ScreenSize } from '../../../hooks/useScreenSize';
+import { useScreenSizeContext } from '../../../hooks/useScreenSize';
 import { stopPropagation } from '../../../utils/keyboard';
+import { DefaultApi, BotInfo, Configuration } from '../../../externalApis';
+import { useMatrixClient } from '../../../hooks/useMatrixClient';
+import * as roomActions from '../../../../client/action/room';
+import { useRoomNavigate } from '../../../hooks/useRoomNavigate';
 
-// Mock data for agent cards - replace with actual data fetching logic
-const mockAgents = [
-  {
-    id: 'agent1',
-    name: 'Customer Support Agent',
-    description: 'Helps with product inquiries and troubleshooting',
-    avatarUrl: undefined,
-    userCount: 12400,
-    tags: ['Support', 'Troubleshooting', '24/7'],
-  },
-  {
-    id: 'agent2',
-    name: 'Tech Assistant',
-    description: 'Provides technical guidance and code examples',
-    avatarUrl: undefined,
-    userCount: 8900,
-    tags: ['Programming', 'Debugging', 'Documentation'],
-  },
-  {
-    id: 'agent3',
-    name: 'Language Tutor',
-    description: 'Helps practice languages with conversation',
-    avatarUrl: undefined,
-    userCount: 5600,
-    tags: ['Languages', 'Conversation', 'Education'],
-  },
-  {
-    id: 'agent4',
-    name: 'Fitness Coach',
-    description: 'Creates workout plans and tracks progress',
-    avatarUrl: undefined,
-    userCount: 3400,
-    tags: ['Workout', 'Nutrition', 'Progress Tracking'],
-  },
-  {
-    id: 'agent5',
-    name: 'Cooking Expert',
-    description: 'Shares recipes and cooking tips',
-    avatarUrl: undefined,
-    userCount: 7200,
-    tags: ['Recipes', 'Cuisine', 'Techniques'],
-  },
-  {
-    id: 'agent6',
-    name: 'Travel Planner',
-    description: 'Suggests destinations and creates itineraries',
-    avatarUrl: undefined,
-    userCount: 4800,
-    tags: ['Destinations', 'Itineraries', 'Local Tips'],
-  },
-];
+// Create API instance with custom base path
+const api = new DefaultApi(
+  new Configuration({
+    basePath: 'https://chatbotapitest.ont.network/business',
+  })
+);
 
 const AgentCardName = as<'h6'>(({ ...props }, ref) => (
   <Text as="h6" size="H6" truncate {...props} ref={ref} />
@@ -87,10 +48,49 @@ function AgentDetailDialog({
   open,
   onClose,
 }: {
-  agent: typeof mockAgents[0];
+  agent: BotInfo;
   open: boolean;
   onClose: () => void;
 }) {
+  const mx = useMatrixClient();
+  const { navigateRoom } = useRoomNavigate();
+  const queryClient = useQueryClient();
+
+  const [addingToChat, setAddingToChat] = useState(false);
+  const [addError, setAddError] = useState<string | null>(null);
+
+  // Parse sample prompts if exists
+  let samplePrompts: string[] = [];
+  try {
+    samplePrompts = agent.samplePrompts ? JSON.parse(agent.samplePrompts) : [];
+  } catch (e) {
+    // If parsing fails, use as plain text
+    samplePrompts = agent.samplePrompts ? [agent.samplePrompts] : [];
+  }
+
+  const handleAddToChats = async () => {
+    setAddingToChat(true);
+    setAddError(null);
+
+    try {
+      // Create a direct message room with the bot
+      const result = await roomActions.createDM(mx, agent.botName, false);
+
+      // Invalidate query to refresh the room list
+      queryClient.invalidateQueries({ queryKey: ['bots'] });
+
+      // Navigate to the newly created room
+      navigateRoom(result.room_id);
+
+      // Close the dialog
+      onClose();
+    } catch (error: any) {
+      setAddError(error.message || 'Failed to add agent to chats');
+    } finally {
+      setAddingToChat(false);
+    }
+  };
+
   if (!open) return null;
 
   return (
@@ -108,12 +108,20 @@ function AgentDetailDialog({
             <Box style={{ padding: toRem(20) }} direction="Column" gap="300">
               <Box direction="Row" gap="200" alignItems="Center">
                 <Avatar size="500">
-                  <Icon size="400" src={Icons.Bulb} />
+                  {agent.icon ? (
+                    <img
+                      src={agent.icon}
+                      alt={agent.botName}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <Icon size="400" src={Icons.Bulb} />
+                  )}
                 </Avatar>
                 <Box grow="Yes" direction="Column" gap="100">
-                  <AgentCardName>{agent.name}</AgentCardName>
+                  <AgentCardName>{agent.botName}</AgentCardName>
                   <Text size="T200" priority="400">
-                    {agent.userCount.toLocaleString()} users
+                    {agent.users?.toLocaleString() ?? 0} users
                   </Text>
                 </Box>
               </Box>
@@ -121,17 +129,34 @@ function AgentDetailDialog({
               <Box direction="Column" gap="200">
                 <Text size="T300">{agent.description}</Text>
 
-                <Box direction="Column" gap="100">
-                  <Text size="L400">Capabilities</Text>
-                  <Box gap="100" wrap="Wrap">
-                    {agent.tags.map((tag) => (
-                      <Badge key={tag} variant="Secondary" fill="Soft" outlined>
-                        <Text size="T200">{tag}</Text>
-                      </Badge>
-                    ))}
+                {samplePrompts.length > 0 && (
+                  <Box direction="Column" gap="100">
+                    <Text size="L400">Example Prompts</Text>
+                    <Box gap="100" direction="Column">
+                      {samplePrompts.map((prompt) => (
+                        <Box
+                          key={`prompt-${agent.botId}-${prompt}`}
+                          style={{
+                            backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                            padding: toRem(10),
+                            borderRadius: toRem(4),
+                          }}
+                        >
+                          <Text size="T200">{prompt}</Text>
+                        </Box>
+                      ))}
+                    </Box>
                   </Box>
-                </Box>
+                )}
               </Box>
+
+              {addError && (
+                <Box direction="Column" gap="100">
+                  <Text style={{ color: 'red' }} size="T200">
+                    {addError}
+                  </Text>
+                </Box>
+              )}
 
               <Box gap="200">
                 <Button
@@ -140,14 +165,23 @@ function AgentDetailDialog({
                   size="300"
                   onClick={onClose}
                   style={{ flex: 1 }}
+                  disabled={addingToChat}
                 >
                   <Text size="B300" truncate>
                     Close
                   </Text>
                 </Button>
-                <Button variant="Primary" fill="Solid" size="300" style={{ flex: 1 }}>
+                <Button
+                  variant="Primary"
+                  fill="Solid"
+                  size="300"
+                  style={{ flex: 1 }}
+                  onClick={handleAddToChats}
+                  disabled={addingToChat}
+                  before={addingToChat ? <Spinner size="200" variant="Secondary" /> : undefined}
+                >
                   <Text size="B300" truncate>
-                    Add to Chats
+                    {addingToChat ? 'Adding...' : 'Add to Chats'}
                   </Text>
                 </Button>
               </Box>
@@ -159,11 +193,14 @@ function AgentDetailDialog({
   );
 }
 
-function AgentCard({ agent }: { agent: typeof mockAgents[0] }) {
+function AgentCard({ agent }: { agent: BotInfo }) {
   const [detailOpen, setDetailOpen] = useState(false);
 
   const openDetail = () => setDetailOpen(true);
   const closeDetail = () => setDetailOpen(false);
+
+  // Parse LLM info if exists
+  const llmInfo = agent.llm ? agent.llm.split(',').map((item) => item.trim()) : [];
 
   return (
     <>
@@ -171,24 +208,32 @@ function AgentCard({ agent }: { agent: typeof mockAgents[0] }) {
         <Box gap="200" justifyContent="SpaceBetween">
           <Box direction="Row" gap="200" alignItems="End">
             <Avatar size="500">
-              <Icon size="400" src={Icons.Bulb} />
+              {agent.icon ? (
+                <img
+                  src={agent.icon}
+                  alt={agent.botName}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              ) : (
+                <Icon size="400" src={Icons.Bulb} />
+              )}
             </Avatar>
             <Box direction="Row" gap="100">
-              {agent.tags.slice(0, 2).map((tag) => (
-                <Badge key={tag} variant="Secondary" fill="Soft" outlined>
-                  <Text size="T200">{tag}</Text>
+              {llmInfo.slice(0, 2).map((llm) => (
+                <Badge key={`llm-${agent.botId}-${llm}`} variant="Secondary" fill="Soft" outlined>
+                  <Text size="T200">{llm}</Text>
                 </Badge>
               ))}
             </Box>
           </Box>
         </Box>
         <Box grow="Yes" direction="Column" gap="100">
-          <AgentCardName>{agent.name}</AgentCardName>
+          <AgentCardName>{agent.botName}</AgentCardName>
           <AgentCardDescription>{agent.description}</AgentCardDescription>
         </Box>
         <Box gap="100">
           <Icon size="50" src={Icons.User} />
-          <Text size="T200">{agent.userCount.toLocaleString()} users</Text>
+          <Text size="T200">{agent.users?.toLocaleString() ?? 0} users</Text>
         </Box>
         <Button variant="Secondary" fill="Soft" size="300" onClick={openDetail}>
           <Text size="B300" truncate>
@@ -204,7 +249,62 @@ function AgentCard({ agent }: { agent: typeof mockAgents[0] }) {
 
 export function AgentStore() {
   const screenSize = useScreenSizeContext();
-  const agents = useMemo(() => mockAgents, []);
+
+  // Fetch bots data
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['bots'],
+    queryFn: async () => {
+      const response = await api.botsGet({ pageNo: 1, pageSize: 100 });
+      return response.result.bots;
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <Page>
+        <PageHeader>
+          <Box grow="Yes" basis="No" />
+          <Box grow="Yes" justifyContent="Center" alignItems="Center" gap="200">
+            <Text size="H3" truncate>
+              Agent Store
+            </Text>
+          </Box>
+          <Box grow="Yes" basis="No" />
+        </PageHeader>
+        <Box grow="Yes" alignItems="Center" justifyContent="Center">
+          <Spinner size="600" />
+        </Box>
+      </Page>
+    );
+  }
+
+  if (error) {
+    return (
+      <Page>
+        <PageHeader>
+          <Box grow="Yes" basis="No" />
+          <Box grow="Yes" justifyContent="Center" alignItems="Center" gap="200">
+            <Text size="H3" truncate>
+              Agent Store
+            </Text>
+          </Box>
+          <Box grow="Yes" basis="No" />
+        </PageHeader>
+        <Box grow="Yes" alignItems="Center" justifyContent="Center" direction="Column" gap="200">
+          <Icon size="600" src={Icons.Warning} />
+          <Text size="T300">Failed to load agents</Text>
+          <Button
+            variant="Primary"
+            fill="Solid"
+            size="300"
+            onClick={() => window.location.reload()}
+          >
+            <Text size="B300">Retry</Text>
+          </Button>
+        </Box>
+      </Page>
+    );
+  }
 
   return (
     <Page>
@@ -228,11 +328,24 @@ export function AgentStore() {
               <Box direction="Column" gap="600">
                 <Box direction="Column" gap="400">
                   <Text size="H4">Available Agents</Text>
-                  <RoomCardGrid>
-                    {agents.map((agent) => (
-                      <AgentCard key={agent.id} agent={agent} />
-                    ))}
-                  </RoomCardGrid>
+                  {data && data.length > 0 ? (
+                    <RoomCardGrid>
+                      {data.map((agent) => (
+                        <AgentCard key={agent.botId} agent={agent} />
+                      ))}
+                    </RoomCardGrid>
+                  ) : (
+                    <Box
+                      direction="Column"
+                      alignItems="Center"
+                      justifyContent="Center"
+                      gap="200"
+                      style={{ padding: toRem(40) }}
+                    >
+                      <Icon size="600" src={Icons.Bulb} />
+                      <Text size="T300">No agents available</Text>
+                    </Box>
+                  )}
                 </Box>
               </Box>
             </PageContentCenter>
