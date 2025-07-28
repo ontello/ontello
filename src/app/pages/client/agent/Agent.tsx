@@ -187,7 +187,7 @@ function AgentEmpty() {
   return (
     <NavEmptyCenter>
       <NavEmptyLayout
-        icon={<Icon size="600" src={Icons.Bulb} />} // can be replaced with AI-related icon
+        icon={<Icon size="600" src={Icons.Bulb} />}
         title={
           <Text size="H5" align="Center">
             No Agent Chats

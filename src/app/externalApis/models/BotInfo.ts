@@ -30,19 +30,19 @@ export interface BotInfo {
      * @type {number}
      * @memberof BotInfo
      */
-    botId: number;
+    bot_id: number;
     /**
      * 
      * @type {string}
      * @memberof BotInfo
      */
-    botName: string;
+    bot_name: string;
     /**
      * 
      * @type {string}
      * @memberof BotInfo
      */
-    botDid: string;
+    bot_did: string;
     /**
      * 
      * @type {string}
@@ -60,7 +60,7 @@ export interface BotInfo {
      * @type {string}
      * @memberof BotInfo
      */
-    createTime: string;
+    create_time: string;
     /**
      * 
      * @type {string}
@@ -96,7 +96,7 @@ export interface BotInfo {
      * @type {string}
      * @memberof BotInfo
      */
-    samplePrompts: string;
+    sample_prompts: string;
 }
 
 /**
@@ -104,18 +104,18 @@ export interface BotInfo {
  */
 export function instanceOfBotInfo(value: object): value is BotInfo {
     if (!('id' in value) || value['id'] === undefined) return false;
-    if (!('botId' in value) || value['botId'] === undefined) return false;
-    if (!('botName' in value) || value['botName'] === undefined) return false;
-    if (!('botDid' in value) || value['botDid'] === undefined) return false;
+    if (!('bot_id' in value) || value['bot_id'] === undefined) return false;
+    if (!('bot_name' in value) || value['bot_name'] === undefined) return false;
+    if (!('bot_did' in value) || value['bot_did'] === undefined) return false;
     if (!('owner' in value) || value['owner'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
-    if (!('createTime' in value) || value['createTime'] === undefined) return false;
+    if (!('create_time' in value) || value['create_time'] === undefined) return false;
     if (!('medias' in value) || value['medias'] === undefined) return false;
     if (!('users' in value) || value['users'] === undefined) return false;
     if (!('conversations' in value) || value['conversations'] === undefined) return false;
     if (!('llm' in value) || value['llm'] === undefined) return false;
     if (!('icon' in value) || value['icon'] === undefined) return false;
-    if (!('samplePrompts' in value) || value['samplePrompts'] === undefined) return false;
+    if (!('sample_prompts' in value) || value['sample_prompts'] === undefined) return false;
     return true;
 }
 
@@ -130,18 +130,18 @@ export function BotInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean): B
     return {
         
         'id': json['id'],
-        'botId': json['bot_id'],
-        'botName': json['bot_name'],
-        'botDid': json['bot_did'],
+        'bot_id': json['bot_id'],
+        'bot_name': json['bot_name'],
+        'bot_did': json['bot_did'],
         'owner': json['owner'],
         'description': json['description'],
-        'createTime': json['create_time'],
+        'create_time': json['create_time'],
         'medias': json['medias'],
         'users': json['users'],
         'conversations': json['conversations'],
         'llm': json['llm'],
         'icon': json['icon'],
-        'samplePrompts': json['sample_prompts'],
+        'sample_prompts': json['sample_prompts'],
     };
 }
 
@@ -157,18 +157,18 @@ export function BotInfoToJSONTyped(value?: BotInfo | null, ignoreDiscriminator: 
     return {
         
         'id': value['id'],
-        'bot_id': value['botId'],
-        'bot_name': value['botName'],
-        'bot_did': value['botDid'],
+        'bot_id': value['bot_id'],
+        'bot_name': value['bot_name'],
+        'bot_did': value['bot_did'],
         'owner': value['owner'],
         'description': value['description'],
-        'create_time': value['createTime'],
+        'create_time': value['create_time'],
         'medias': value['medias'],
         'users': value['users'],
         'conversations': value['conversations'],
         'llm': value['llm'],
         'icon': value['icon'],
-        'sample_prompts': value['samplePrompts'],
+        'sample_prompts': value['sample_prompts'],
     };
 }
 

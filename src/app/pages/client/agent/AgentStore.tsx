@@ -62,10 +62,10 @@ function AgentDetailDialog({
   // Parse sample prompts if exists
   let samplePrompts: string[] = [];
   try {
-    samplePrompts = agent.samplePrompts ? JSON.parse(agent.samplePrompts) : [];
+    samplePrompts = agent.sample_prompts ? JSON.parse(agent.sample_prompts) : [];
   } catch (e) {
     // If parsing fails, use as plain text
-    samplePrompts = agent.samplePrompts ? [agent.samplePrompts] : [];
+    samplePrompts = agent.sample_prompts ? [agent.sample_prompts] : [];
   }
 
   const handleAddToChats = async () => {
@@ -74,7 +74,8 @@ function AgentDetailDialog({
 
     try {
       // Create a direct message room with the bot
-      const result = await roomActions.createDM(mx, agent.botName, false);
+      // TODO
+      const result = await roomActions.createDM(mx, `@botuser4:ont.network`, false);
 
       // Invalidate query to refresh the room list
       queryClient.invalidateQueries({ queryKey: ['bots'] });
@@ -111,7 +112,7 @@ function AgentDetailDialog({
                   {agent.icon ? (
                     <img
                       src={agent.icon}
-                      alt={agent.botName}
+                      alt={agent.bot_name}
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     />
                   ) : (
@@ -119,9 +120,9 @@ function AgentDetailDialog({
                   )}
                 </Avatar>
                 <Box grow="Yes" direction="Column" gap="100">
-                  <AgentCardName>{agent.botName}</AgentCardName>
+                  <AgentCardName>{agent.bot_name}</AgentCardName>
                   <Text size="T200" priority="400">
-                    {agent.users?.toLocaleString() ?? 0} users
+                    {agent.users?.toLocaleString() ?? 0} Members
                   </Text>
                 </Box>
               </Box>
@@ -135,7 +136,7 @@ function AgentDetailDialog({
                     <Box gap="100" direction="Column">
                       {samplePrompts.map((prompt) => (
                         <Box
-                          key={`prompt-${agent.botId}-${prompt}`}
+                          key={`prompt-${agent.bot_id}-${prompt}`}
                           style={{
                             backgroundColor: 'rgba(0, 0, 0, 0.1)',
                             padding: toRem(10),
@@ -181,7 +182,7 @@ function AgentDetailDialog({
                   before={addingToChat ? <Spinner size="200" variant="Secondary" /> : undefined}
                 >
                   <Text size="B300" truncate>
-                    {addingToChat ? 'Adding...' : 'Add to Chats'}
+                    {addingToChat ? 'Adding...' : 'Start Chat'}
                   </Text>
                 </Button>
               </Box>
@@ -211,7 +212,7 @@ function AgentCard({ agent }: { agent: BotInfo }) {
               {agent.icon ? (
                 <img
                   src={agent.icon}
-                  alt={agent.botName}
+                  alt={agent.bot_name}
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
               ) : (
@@ -220,22 +221,22 @@ function AgentCard({ agent }: { agent: BotInfo }) {
             </Avatar>
             <Box direction="Row" gap="100">
               {llmInfo.slice(0, 2).map((llm) => (
-                <Badge key={`llm-${agent.botId}-${llm}`} variant="Secondary" fill="Soft" outlined>
-                  <Text size="T200">{llm}</Text>
+                <Badge key={`llm-${agent.bot_id}-${llm}`}>
+                  <Text size="B300">{llm}</Text>
                 </Badge>
               ))}
             </Box>
           </Box>
         </Box>
         <Box grow="Yes" direction="Column" gap="100">
-          <AgentCardName>{agent.botName}</AgentCardName>
+          <AgentCardName>{agent.bot_name}</AgentCardName>
           <AgentCardDescription>{agent.description}</AgentCardDescription>
         </Box>
         <Box gap="100">
           <Icon size="50" src={Icons.User} />
-          <Text size="T200">{agent.users?.toLocaleString() ?? 0} users</Text>
+          <Text size="T200">{agent.users?.toLocaleString() ?? 0} Members</Text>
         </Box>
-        <Button variant="Secondary" fill="Soft" size="300" onClick={openDetail}>
+        <Button variant="Secondary" size="300" onClick={openDetail}>
           <Text size="B300" truncate>
             View
           </Text>
@@ -254,7 +255,7 @@ export function AgentStore() {
   const { data, isLoading, error } = useQuery({
     queryKey: ['bots'],
     queryFn: async () => {
-      const response = await api.botsGet({ pageNo: 1, pageSize: 100 });
+      const response = await api.botsGet({ page_no: 1, page_size: 100 });
       return response.result.bots;
     },
   });
@@ -327,11 +328,11 @@ export function AgentStore() {
             <PageContentCenter>
               <Box direction="Column" gap="600">
                 <Box direction="Column" gap="400">
-                  <Text size="H4">Available Agents</Text>
+                  <Text size="H4">Popular agents</Text>
                   {data && data.length > 0 ? (
                     <RoomCardGrid>
                       {data.map((agent) => (
-                        <AgentCard key={agent.botId} agent={agent} />
+                        <AgentCard key={agent.bot_id} agent={agent} />
                       ))}
                     </RoomCardGrid>
                   ) : (

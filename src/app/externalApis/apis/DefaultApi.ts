@@ -29,19 +29,19 @@ import {
 } from '../models/index';
 
 export interface BotDetailGetRequest {
-    botId?: number;
-    botDid?: string;
+    bot_id?: number;
+    bot_did?: string;
 }
 
 export interface BotsGetRequest {
-    pageNo?: number;
-    pageSize?: number;
+    page_no?: number;
+    page_size?: number;
     keyword?: string;
     body?: object;
 }
 
 export interface UserRoomsGetRequest {
-    userId: string;
+    user_id: string;
 }
 
 /**
@@ -56,12 +56,12 @@ export class DefaultApi extends runtime.BaseAPI {
     async botDetailGetRaw(requestParameters: BotDetailGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BotDetailGet200Response>> {
         const queryParameters: any = {};
 
-        if (requestParameters['botId'] != null) {
-            queryParameters['bot_id'] = requestParameters['botId'];
+        if (requestParameters['bot_id'] != null) {
+            queryParameters['bot_id'] = requestParameters['bot_id'];
         }
 
-        if (requestParameters['botDid'] != null) {
-            queryParameters['bot_did'] = requestParameters['botDid'];
+        if (requestParameters['bot_did'] != null) {
+            queryParameters['bot_did'] = requestParameters['bot_did'];
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -92,12 +92,12 @@ export class DefaultApi extends runtime.BaseAPI {
     async botsGetRaw(requestParameters: BotsGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BotsGet200Response>> {
         const queryParameters: any = {};
 
-        if (requestParameters['pageNo'] != null) {
-            queryParameters['page_no'] = requestParameters['pageNo'];
+        if (requestParameters['page_no'] != null) {
+            queryParameters['page_no'] = requestParameters['page_no'];
         }
 
-        if (requestParameters['pageSize'] != null) {
-            queryParameters['page_size'] = requestParameters['pageSize'];
+        if (requestParameters['page_size'] != null) {
+            queryParameters['page_size'] = requestParameters['page_size'];
         }
 
         if (requestParameters['keyword'] != null) {
@@ -133,17 +133,17 @@ export class DefaultApi extends runtime.BaseAPI {
      * get user rooms
      */
     async userRoomsGetRaw(requestParameters: UserRoomsGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserRoomsGet200Response>> {
-        if (requestParameters['userId'] == null) {
+        if (requestParameters['user_id'] == null) {
             throw new runtime.RequiredError(
-                'userId',
-                'Required parameter "userId" was null or undefined when calling userRoomsGet().'
+                'user_id',
+                'Required parameter "user_id" was null or undefined when calling userRoomsGet().'
             );
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters['userId'] != null) {
-            queryParameters['user_id'] = requestParameters['userId'];
+        if (requestParameters['user_id'] != null) {
+            queryParameters['user_id'] = requestParameters['user_id'];
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
