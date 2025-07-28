@@ -41,7 +41,7 @@ export interface BotsGetRequest {
 }
 
 export interface UserRoomsGetRequest {
-    user_id: string;
+    authorization?: string;
 }
 
 /**
@@ -133,20 +133,13 @@ export class DefaultApi extends runtime.BaseAPI {
      * get user rooms
      */
     async userRoomsGetRaw(requestParameters: UserRoomsGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserRoomsGet200Response>> {
-        if (requestParameters['user_id'] == null) {
-            throw new runtime.RequiredError(
-                'user_id',
-                'Required parameter "user_id" was null or undefined when calling userRoomsGet().'
-            );
-        }
-
         const queryParameters: any = {};
 
-        if (requestParameters['user_id'] != null) {
-            queryParameters['user_id'] = requestParameters['user_id'];
-        }
-
         const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
 
         const response = await this.request({
             path: `/user/rooms`,
@@ -162,7 +155,7 @@ export class DefaultApi extends runtime.BaseAPI {
      * user_id  like. @tasktalk:matrix.org
      * get user rooms
      */
-    async userRoomsGet(requestParameters: UserRoomsGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserRoomsGet200Response> {
+    async userRoomsGet(requestParameters: UserRoomsGetRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserRoomsGet200Response> {
         const response = await this.userRoomsGetRaw(requestParameters, initOverrides);
         return await response.value();
     }

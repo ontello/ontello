@@ -22,17 +22,10 @@ import { Page, PageContent, PageContentCenter, PageHeader } from '../../../compo
 import { RoomCardBase, RoomCardGrid } from '../../../components/room-card';
 import { useScreenSizeContext } from '../../../hooks/useScreenSize';
 import { stopPropagation } from '../../../utils/keyboard';
-import { DefaultApi, BotInfo, Configuration } from '../../../externalApis';
+import { BotInfo, api } from '../../../externalApis';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
 import * as roomActions from '../../../../client/action/room';
 import { useRoomNavigate } from '../../../hooks/useRoomNavigate';
-
-// Create API instance with custom base path
-const api = new DefaultApi(
-  new Configuration({
-    basePath: 'https://chatbotapitest.ont.network/business',
-  })
-);
 
 const AgentCardName = as<'h6'>(({ ...props }, ref) => (
   <Text as="h6" size="H6" truncate {...props} ref={ref} />
@@ -74,8 +67,7 @@ function AgentDetailDialog({
 
     try {
       // Create a direct message room with the bot
-      // TODO
-      const result = await roomActions.createDM(mx, `@botuser4:ont.network`, false);
+      const result = await roomActions.createDM(mx, agent.mx_id, false);
 
       // Invalidate query to refresh the room list
       queryClient.invalidateQueries({ queryKey: ['bots'] });
