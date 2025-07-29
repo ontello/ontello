@@ -76,7 +76,7 @@ export function RecoveryKeyForm() {
       </Box>
       <Box direction="Column" gap="100">
         <Text as="label" size="L400" priority="300">
-          Recovery Key
+          Wallet Recovery Phrase
         </Text>
         <TextArea
           name="recoveryKey"

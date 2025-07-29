@@ -56,7 +56,7 @@ export function ManualVerificationMethodSwitcher({
       >
         <Text as="span" size="B300">
           {value === ManualVerificationMethod.RecoveryPassphrase && 'Recovery Passphrase'}
-          {value === ManualVerificationMethod.RecoveryKey && 'Recovery Key'}
+          {value === ManualVerificationMethod.RecoveryKey && 'Message Recovery Key'}
         </Text>
       </Chip>
       <PopOut
@@ -98,7 +98,7 @@ export function ManualVerificationMethodSwitcher({
                   onClick={() => handleSelect(ManualVerificationMethod.RecoveryKey)}
                 >
                   <Box grow="Yes">
-                    <Text size="T300">Recovery Key</Text>
+                    <Text size="T300">Message Recovery Key</Text>
                   </Box>
                 </MenuItem>
               </Box>
@@ -155,7 +155,9 @@ export function ManualVerificationTile({
     <Box direction="Column" gap="200">
       <SettingTile
         title="Verify Manually"
-        description={hasPassphrase ? 'Select a verification method.' : 'Provide recovery key.'}
+        description={
+          hasPassphrase ? 'Select a verification method.' : 'Provide message recovery key.'
+        }
         after={
           <Box alignItems="Center" gap="200">
             {hasPassphrase && (

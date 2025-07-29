@@ -141,7 +141,7 @@ function SetupVerification({ onComplete }: SetupVerificationProps) {
 
         const recoveryKeyData = await crypto.createRecoveryKeyFromPassphrase(passphrase);
         if (!recoveryKeyData.encodedPrivateKey) {
-          throw new Error('Unexpected Error! Failed to create recovery key.');
+          throw new Error('Unexpected Error! Failed to create message recovery key.');
         }
         clearSecretStorageKeys();
 
@@ -182,8 +182,8 @@ function SetupVerification({ onComplete }: SetupVerificationProps) {
   return (
     <Box as="form" onSubmit={handleSubmit} direction="Column" gap="400">
       <Text size="T300">
-        Generate a <b>Recovery Key</b> for verifying identity if you do not have access to other
-        devices. Additionally, setup a passphrase as a memorable alternative.
+        Generate a <b>Message Recovery Key</b> for verifying identity if you do not have access to
+        other devices. Additionally, setup a passphrase as a memorable alternative.
       </Text>
       <Box direction="Column" gap="100">
         <Text size="L400">Passphrase (Optional)</Text>
@@ -246,11 +246,11 @@ function RecoveryKeyDisplay({ recoveryKey }: RecoveryKeyDisplayProps) {
   return (
     <Box direction="Column" gap="400">
       <Text size="T300">
-        Store the Recovery Key in a safe place for future use, as you will need it to verify your
-        identity if you do not have access to other devices.
+        Store the Message Recovery Key in a safe place for future use, as you will need it to verify
+        your identity if you do not have access to other devices.
       </Text>
       <Box direction="Column" gap="100">
-        <Text size="L400">Recovery Key</Text>
+        <Text size="L400">Message Recovery Key</Text>
         <Box
           className={ContainerColor({ variant: 'SurfaceVariant' })}
           style={{
@@ -360,8 +360,8 @@ export const DeviceVerificationReset = forwardRef<HTMLDivElement, DeviceVerifica
               <Text size="T300">
                 Anyone you have verified with will see security alerts and your encryption backup
                 will be lost. You almost certainly do not want to do this, unless you have lost{' '}
-                <b>Recovery Key</b> or <b>Recovery Passphrase</b> and every device you can verify
-                from.
+                <b>Message Recovery Key</b> or <b>Recovery Passphrase</b> and every device you can
+                verify from.
               </Text>
             </Box>
             <Button variant="Critical" onClick={() => setReset(true)}>
