@@ -1,13 +1,13 @@
 import { Box, Button, color, config, Dialog, Header, Icon, IconButton, Icons, Text } from 'folds';
 import React, { FormEventHandler } from 'react';
 import { AuthType } from 'matrix-js-sdk';
+import { getMxIdLocalPart } from '@src/app/utils/matrix';
 import { StageComponentProps } from './types';
 import { ErrorCode } from '../../cs-errorcode';
 import { PasswordInput } from '../password-input';
 import { useMatrixClient } from '../../hooks/useMatrixClient';
 import { loginWithPasskey } from '../../utils/passkey';
 import { getIdServer } from '../../../util/matrixUtil';
-
 
 export function PasswordStage({
   stageData,
@@ -29,9 +29,9 @@ export function PasswordStage({
     // };
     // const password = passwordInput.value
 
-    const user = mx.getUser(userId);
-    if (!user || !user.displayName) return;
-    const { password } = await loginWithPasskey(user.displayName, mx, getIdServer(userId))
+    const name = getMxIdLocalPart(userId);
+    if (!name) return;
+    const { password } = await loginWithPasskey(name, mx, getIdServer(userId));
     // if (!password) return;
     submitAuthDict({
       type: AuthType.Password,
