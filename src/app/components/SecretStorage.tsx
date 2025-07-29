@@ -130,7 +130,7 @@ export function SecretStorageRecoveryKey({
         const match = await mx.secretStorage.checkKey(decodedRecoveryKey, keyContent as any);
 
         if (!match) {
-          throw new Error('Invalid recovery key.');
+          throw new Error('Invalid message recovery key.');
         }
 
         return decodedRecoveryKey;
@@ -163,7 +163,7 @@ export function SecretStorageRecoveryKey({
     <Box as="form" onSubmit={handleSubmit} direction="Column" gap="100">
       <Box gap="200" alignItems="End">
         <Box grow="Yes" direction="Column" gap="100">
-          <Text size="L400">Recovery Key</Text>
+          <Text size="L400">Message Recovery Key</Text>
           <PasswordInput
             name="recoveryKeyInput"
             size="400"

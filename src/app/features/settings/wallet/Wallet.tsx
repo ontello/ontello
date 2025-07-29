@@ -102,8 +102,8 @@ export function Wallet({ requestClose }: Props) {
                   gap="400"
                 >
                   <SettingTile
-                    title="Recovery Key"
-                    description="If you lose this device, or delete the passkey from the system, you risk losing your assets and message data. To protect your account, please establish a recovery key now!"
+                    title="Wallet Recovery Phrase"
+                    description="If you lose this device, or delete the passkey from the system, you risk losing your assets and message data. To protect your account, please establish a Wallet Recovery Phrase now!"
                     after={
                       <Button size="300" radii="300" onClick={handleGenerateRecovery}>
                         <Text size="B300">Generate</Text>
@@ -161,7 +161,7 @@ export function Wallet({ requestClose }: Props) {
                 size="500"
               >
                 <Box grow="Yes">
-                  <Text size="H4">Creating Recovery Key</Text>
+                  <Text size="H4">Creating Wallet Recovery Phrase</Text>
                 </Box>
                 <IconButton size="300" onClick={() => setIsRecoveryDialogOpen(false)} radii="300">
                   <Icon src={Icons.Cross} />
@@ -170,7 +170,7 @@ export function Wallet({ requestClose }: Props) {
               {addState.status === AsyncStatus.Success && (
                 <Box style={{ padding: config.space.S400 }} direction="Column" gap="400">
                   <Box direction="Column" gap="200">
-                    <Text>Please save this recovery key in a safe place:</Text>
+                    <Text>Please save this Wallet Recovery Phrase in a safe place:</Text>
                     <Box
                       direction="Column"
                       gap="100"
@@ -223,7 +223,7 @@ export function Wallet({ requestClose }: Props) {
               {addState.status === AsyncStatus.Error && (
                 <Box style={{ padding: config.space.S400 }} direction="Column">
                   <Text size="B400">
-                    Error occurred while generating recovery key. Please try again.
+                    Error occurred while generating Wallet Recovery Phrase. Please try again.
                   </Text>
                 </Box>
               )}

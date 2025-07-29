@@ -76,7 +76,9 @@ export function OwnerItem({
         >
           <Box direction="Column">
             <Box alignItems="Center" gap="200" direction="Row">
-              <Text>{(credential.publicKey.length === 43 && 'Recovery Key') || 'Passkey'}</Text>
+              <Text>
+                {(credential.publicKey.length === 43 && 'Wallet Recovery Phrase') || 'Passkey'}
+              </Text>
               {isCurrent && (
                 <Badge aria-label="A status badge" role="status">
                   <Text as="span" size="L400">
