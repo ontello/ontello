@@ -2,9 +2,11 @@ apis/DefaultApi.ts
 apis/index.ts
 models/BotDetailGet200Response.ts
 models/BotInfo.ts
+models/BotInfoMediasInner.ts
 models/BotsGet200Response.ts
 models/BotsGet200ResponseError.ts
 models/BotsGet200ResponseResult.ts
+models/LinkInfo.ts
 models/Response.ts
 models/UserRoomsGet200Response.ts
 models/index.ts
