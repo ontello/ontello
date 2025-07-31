@@ -23,6 +23,7 @@ import {
   SPACE_ROOM_PATH,
   SPACE_SEARCH_PATH,
   RECOVERY_ACCOUNT_PATH,
+  AGENT_DIRECT_PATH,
 } from './paths';
 import { trimLeadingSlash, trimTrailingSlash } from '../utils/common';
 import { HashRouterConfig } from '../hooks/useClientConfig';
@@ -160,3 +161,12 @@ export const getExploreServerPath = (server: string): string => {
 export const getInboxPath = (): string => INBOX_PATH;
 export const getInboxNotificationsPath = (): string => INBOX_NOTIFICATIONS_PATH;
 export const getInboxInvitesPath = (): string => INBOX_INVITES_PATH;
+
+export const getAgentDirectRoomPath = (roomIdOrAlias: string, eventId?: string): string => {
+  const params = {
+    roomIdOrAlias: encodeURIComponent(roomIdOrAlias),
+    eventId: eventId ? encodeURIComponent(eventId) : null,
+  };
+
+  return generatePath(AGENT_DIRECT_PATH, params);
+};

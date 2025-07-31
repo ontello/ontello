@@ -23,24 +23,19 @@ import { factoryRoomIdByActivity } from '../../../utils/sort';
 import {
   NavButton,
   NavCategory,
-  NavCategoryHeader,
   NavEmptyCenter,
   NavEmptyLayout,
   NavItem,
   NavItemContent,
 } from '../../../components/nav';
-import { getDirectRoomPath } from '../../pathUtils';
 import { getCanonicalAliasOrRoomId } from '../../../utils/matrix';
 import { useSelectedRoom } from '../../../hooks/router/useSelectedRoom';
 import { VirtualTile } from '../../../components/virtualizer';
-import { RoomNavCategoryButton, RoomNavItem } from '../../../features/room-nav';
-import { makeNavCategoryId } from '../../../state/closedNavCategories';
+import { RoomNavItem } from '../../../features/room-nav';
 import { roomToUnreadAtom } from '../../../state/room/roomToUnread';
-import { useCategoryHandler } from '../../../hooks/useCategoryHandler';
 import { useNavToActivePathMapper } from '../../../hooks/useNavToActivePathMapper';
 import { useAgentRooms } from './useAgentRooms';
 import { PageNav, PageNavContent, PageNavHeader } from '../../../components/page';
-import { useClosedNavCategoriesAtom } from '../../../state/hooks/closedNavCategories';
 import { useRoomsUnread } from '../../../state/hooks/unread';
 import { markAsRead } from '../../../../client/action/notifications';
 import { stopPropagation } from '../../../utils/keyboard';
@@ -51,6 +46,7 @@ import {
   useRoomsNotificationPreferencesContext,
 } from '../../../hooks/useRoomsNotificationPreferences';
 import { STORE_PATH } from '../../paths';
+import { getAgentDirectRoomPath } from '../../pathUtils';
 
 // Agent menu (can be extended later)
 type AgentMenuProps = {
@@ -87,9 +83,7 @@ const AgentMenu = forwardRef<HTMLDivElement, AgentMenuProps>(({ requestClose }, 
   );
 });
 
-const DEFAULT_CATEGORY_ID = makeNavCategoryId('agent', 'agent');
-
-function AgentHeader({ closedCategories }: { closedCategories: Set<string> }) {
+function AgentHeader() {
   const navigate = useNavigate();
   const [menuAnchor, setMenuAnchor] = useState<RectCords>();
 
@@ -191,7 +185,6 @@ export function Agent() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const agents = useAgentRooms();
   const notificationPreferences = useRoomsNotificationPreferencesContext();
-  const roomToUnread = useAtomValue(roomToUnreadAtom);
 
   const selectedRoomId = useSelectedRoom();
   const noRoomToDisplay = agents.length === 0;
@@ -210,7 +203,7 @@ export function Agent() {
 
   return (
     <PageNav>
-      <AgentHeader closedCategories={new Set()} />
+      <AgentHeader />
       {noRoomToDisplay ? (
         <AgentEmpty />
       ) : (
@@ -235,16 +228,16 @@ export function Agent() {
                     ref={virtualizer.measureElement}
                   >
                     <RoomNavItem
-                      room={room}
-                      selected={selected}
-                      showAvatar
-                      direct={false}
-                      linkPath={getDirectRoomPath(getCanonicalAliasOrRoomId(mx, roomId))}
-                      notificationMode={getRoomNotificationMode(
-                        notificationPreferences,
-                        room.roomId
-                      )}
-                    />
+                        room={room}
+                        selected={selected}
+                        showAvatar
+                        direct={false}
+                        linkPath={getAgentDirectRoomPath(getCanonicalAliasOrRoomId(mx, roomId))}
+                        notificationMode={getRoomNotificationMode(
+                          notificationPreferences,
+                          room.roomId
+                        )}
+                      />
                   </VirtualTile>
                 );
               })}
