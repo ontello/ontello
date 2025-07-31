@@ -6,6 +6,7 @@ import { StateEvent } from '../../types/matrix/room';
 import { IImageInfo } from '../../types/matrix/common';
 import { ThemeKind } from './useTheme';
 import { accessibleColor } from '../plugins/color';
+import { checkIsAgent } from '../utils/check';
 
 export type PowerLevelTagIcon = {
   key?: string;
@@ -133,7 +134,20 @@ export const useFlattenPowerLevelTagMembers = (
   const PLTagOrRoomMember = useMemo(() => {
     let prevTag: PowerLevelTag | undefined;
     const tagOrMember: Array<PowerLevelTag | RoomMember> = [];
-    members.forEach((member) => {
+
+    const agents = members.filter((member) => checkIsAgent(member.userId));
+    const users = members.filter((member) => !checkIsAgent(member.userId));
+
+    if (agents.length > 0) {
+      tagOrMember.push({
+        name: 'Agent',
+      });
+      agents.forEach((agent) => {
+        tagOrMember.push(agent);
+      });
+    }
+
+    users.forEach((member) => {
       const memberPL = getPowerLevel(member.userId);
       const tag = getTag(memberPL);
       if (tag !== prevTag) {

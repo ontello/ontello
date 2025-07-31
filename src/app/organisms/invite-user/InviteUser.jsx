@@ -20,12 +20,14 @@ import { getDMRoomFor } from '../../utils/matrix';
 import { useMatrixClient } from '../../hooks/useMatrixClient';
 import { useMediaAuthentication } from '../../hooks/useMediaAuthentication';
 import { isValidOntid, ontidToMxid } from '../../utils/ontid';
+import { useInviteAgent } from './useInviteAgent';
 
 function InviteUser({ isOpen, roomId, searchTerm, onRequestClose }) {
   const [isSearching, updateIsSearching] = useState(false);
   const [searchQuery, updateSearchQuery] = useState({});
   const [users, updateUsers] = useState([]);
   const useAuthentication = useMediaAuthentication();
+  const { searchAgent, isSearchAgent, setIsSearchAgent } = useInviteAgent();
 
   const [procUsers, updateProcUsers] = useState(new Set()); // proc stands for processing.
   const [procUserError, updateUserProcError] = useState(new Map());
@@ -68,14 +70,43 @@ function InviteUser({ isOpen, roomId, searchTerm, onRequestClose }) {
     updateRoomIdToUserId(getMapCopy(roomIdToUserId));
   }
 
+  function tabClick(isSearchAgentTabClick) {
+    if (isSearching) return;
+    if (isSearchAgent === isSearchAgentTabClick) return;
+    updateSearchQuery({});
+    updateUsers([]);
+    usernameRef.current.value = '';
+    setIsSearchAgent(isSearchAgentTabClick);
+  }
+
   async function searchUser(username) {
     const inputUsername = username.trim();
-    if (isSearching || inputUsername === '' || inputUsername === searchQuery.username) return;
+    if (isSearching || inputUsername === searchQuery.username) return;
+    if (!isSearchAgent && inputUsername === '') return;
     const isInputUserId = inputUsername[0] === '@' && inputUsername.indexOf(':') > 1;
     updateIsSearching(true);
     updateSearchQuery({ username: inputUsername });
 
-    if (isInputUserId) {
+    if (isSearchAgent) {
+      try {
+        const result = await searchAgent(inputUsername);
+        if (result.length === 0) {
+          updateSearchQuery({ error: `No matches found for "${inputUsername}"!` });
+          updateIsSearching(false);
+          updateUsers([]);
+          return;
+        }
+        const agentList = result.map((agent) => ({
+          user_id: agent.mx_id,
+          description: agent.description,
+          display_name: agent.bot_name,
+          avatar_url: agent.icon,
+        }));
+        updateUsers(agentList);
+      } catch (e) {
+        updateSearchQuery({ error: e?.message || 'Something went wrong!' });
+      }
+    } else if (isInputUserId) {
       try {
         const result = await mx.getProfileInfo(inputUsername);
         updateUsers([
@@ -237,7 +268,7 @@ function InviteUser({ isOpen, roomId, searchTerm, onRequestClose }) {
               : null
           }
           name={name}
-          id={userId}
+          id={userId + (user.description ? ` | ${user.description}` : '')}
           options={renderOptions(userId)}
           desc={renderError(userId)}
         />
@@ -248,6 +279,8 @@ function InviteUser({ isOpen, roomId, searchTerm, onRequestClose }) {
   useEffect(() => {
     if (isOpen && typeof searchTerm === 'string') {
       searchUser(isValidOntid(searchTerm) ? ontidToMxid(searchTerm) : searchTerm);
+    } else if (isSearchAgent) {
+      searchUser('');
     }
     return () => {
       updateIsSearching(false);
@@ -259,7 +292,7 @@ function InviteUser({ isOpen, roomId, searchTerm, onRequestClose }) {
       updateRoomIdToUserId(new Map());
       updateInvitedUserIds(new Set());
     };
-  }, [isOpen, searchTerm]);
+  }, [isOpen, searchTerm, isSearchAgent]);
 
   return (
     <PopupWindow
@@ -280,7 +313,30 @@ function InviteUser({ isOpen, roomId, searchTerm, onRequestClose }) {
             );
           }}
         >
-          <Input value={searchTerm} forwardRef={usernameRef} label="Name or userId" />
+          <Input
+            value={searchTerm}
+            forwardRef={usernameRef}
+            label={
+              <div className="invite-user__tabs">
+                <div
+                  className={`invite-user__tab-item ${
+                    isSearchAgent ? '' : 'invite-user__tab-item--active'
+                  }`}
+                  onClick={() => tabClick(false)}
+                >
+                  Name or userId
+                </div>
+                <div
+                  className={`invite-user__tab-item ${
+                    isSearchAgent ? 'invite-user__tab-item--active' : ''
+                  }`}
+                  onClick={() => tabClick(true)}
+                >
+                  Agents
+                </div>
+              </div>
+            }
+          />
           <Button disabled={isSearching} iconSrc={UserIC} variant="primary" type="submit">
             Search
           </Button>
@@ -289,11 +345,15 @@ function InviteUser({ isOpen, roomId, searchTerm, onRequestClose }) {
           {typeof searchQuery.username !== 'undefined' && isSearching && (
             <div className="flex--center">
               <Spinner size="small" />
-              <Text variant="b2">{`Searching for user "${searchQuery.username}"...`}</Text>
+              <Text variant="b2">{`Searching for ${isSearchAgent ? 'Agent' : 'user'} ${
+                searchQuery.username
+              }...`}</Text>
             </div>
           )}
           {typeof searchQuery.username !== 'undefined' && !isSearching && (
-            <Text variant="b2">{`Search result for user "${searchQuery.username}"`}</Text>
+            <Text variant="b2">{`Search result for ${isSearchAgent ? 'Agent' : 'user'} ${
+              searchQuery.username
+            }`}</Text>
           )}
           {searchQuery.error && (
             <Text className="invite-user__search-error" variant="b2">
