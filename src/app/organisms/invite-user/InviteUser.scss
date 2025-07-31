@@ -21,7 +21,7 @@
       }
     }
   }
-  
+
   &__search-status {
     margin-top: var(--sp-extra-loose);
     margin-bottom: var(--sp-tight);
@@ -40,6 +40,25 @@
     margin-top: var(--sp-normal);
     &__options {
       align-self: flex-end;
+    }
+  }
+
+  &__tabs {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    gap: 10px;
+  }
+
+  &__tab-item {
+    cursor: pointer;
+    padding: 2px 6px;
+
+    &--active {
+      border-radius: 6px;
+      background: #d9d9d9;
+      background-blend-mode: darken;
     }
   }
 }
