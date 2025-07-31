@@ -89,13 +89,7 @@ const AgentMenu = forwardRef<HTMLDivElement, AgentMenuProps>(({ requestClose }, 
 
 const DEFAULT_CATEGORY_ID = makeNavCategoryId('agent', 'agent');
 
-function AgentHeader({
-  closedCategories,
-  handleCategoryClick,
-}: {
-  closedCategories: Set<string>;
-  handleCategoryClick: (categoryId: string) => void;
-}) {
+function AgentHeader({ closedCategories }: { closedCategories: Set<string> }) {
   const navigate = useNavigate();
   const [menuAnchor, setMenuAnchor] = useState<RectCords>();
 
@@ -167,18 +161,6 @@ function AgentHeader({
           </NavButton>
         </NavItem>
       </NavCategory>
-      {/* Agents 分类按钮区域 */}
-      <NavCategory>
-        <NavCategoryHeader>
-          <RoomNavCategoryButton
-            closed={closedCategories.has(DEFAULT_CATEGORY_ID)}
-            data-category-id={DEFAULT_CATEGORY_ID}
-            onClick={() => handleCategoryClick(DEFAULT_CATEGORY_ID)}
-          >
-            Agents
-          </RoomNavCategoryButton>
-        </NavCategoryHeader>
-      </NavCategory>
     </>
   );
 }
@@ -213,22 +195,11 @@ export function Agent() {
 
   const selectedRoomId = useSelectedRoom();
   const noRoomToDisplay = agents.length === 0;
-  const [closedCategories, setClosedCategories] = useAtom(useClosedNavCategoriesAtom());
-  const handleCategoryClick = (categoryId: string) => {
-    if (closedCategories.has(categoryId)) {
-      setClosedCategories({ type: 'DELETE', categoryId });
-    } else {
-      setClosedCategories({ type: 'PUT', categoryId });
-    }
-  };
 
-  const sortedAgents = useMemo(() => {
-    const items = Array.from(agents).sort(factoryRoomIdByActivity(mx));
-    if (closedCategories.has(DEFAULT_CATEGORY_ID)) {
-      return items.filter((rId) => roomToUnread.has(rId) || rId === selectedRoomId);
-    }
-    return items;
-  }, [mx, agents, closedCategories, roomToUnread, selectedRoomId]);
+  const sortedAgents = useMemo(
+    () => Array.from(agents).sort(factoryRoomIdByActivity(mx)),
+    [mx, agents]
+  );
 
   const virtualizer = useVirtualizer({
     count: sortedAgents.length,
@@ -239,56 +210,45 @@ export function Agent() {
 
   return (
     <PageNav>
-      <AgentHeader closedCategories={closedCategories} handleCategoryClick={handleCategoryClick} />
+      <AgentHeader closedCategories={new Set()} />
       {noRoomToDisplay ? (
         <AgentEmpty />
       ) : (
         <PageNavContent scrollRef={scrollRef}>
           <Box direction="Column" gap="300">
-            <NavCategory>
-              <NavCategoryHeader>
-                <RoomNavCategoryButton
-                  closed={closedCategories.has(DEFAULT_CATEGORY_ID)}
-                  data-category-id={DEFAULT_CATEGORY_ID}
-                  onClick={() => handleCategoryClick(DEFAULT_CATEGORY_ID)}
-                >
-                  Agent Chats
-                </RoomNavCategoryButton>
-              </NavCategoryHeader>
-              <div
-                style={{
-                  position: 'relative',
-                  height: virtualizer.getTotalSize(),
-                }}
-              >
-                {virtualizer.getVirtualItems().map((vItem) => {
-                  const roomId = sortedAgents[vItem.index];
-                  const room = mx.getRoom(roomId);
-                  if (!room) return null;
-                  const selected = selectedRoomId === roomId;
+            <div
+              style={{
+                position: 'relative',
+                height: virtualizer.getTotalSize(),
+              }}
+            >
+              {virtualizer.getVirtualItems().map((vItem) => {
+                const roomId = sortedAgents[vItem.index];
+                const room = mx.getRoom(roomId);
+                if (!room) return null;
+                const selected = selectedRoomId === roomId;
 
-                  return (
-                    <VirtualTile
-                      virtualItem={vItem}
-                      key={vItem.index}
-                      ref={virtualizer.measureElement}
-                    >
-                      <RoomNavItem
-                        room={room}
-                        selected={selected}
-                        showAvatar
-                        direct={false}
-                        linkPath={getDirectRoomPath(getCanonicalAliasOrRoomId(mx, roomId))}
-                        notificationMode={getRoomNotificationMode(
-                          notificationPreferences,
-                          room.roomId
-                        )}
-                      />
-                    </VirtualTile>
-                  );
-                })}
-              </div>
-            </NavCategory>
+                return (
+                  <VirtualTile
+                    virtualItem={vItem}
+                    key={vItem.index}
+                    ref={virtualizer.measureElement}
+                  >
+                    <RoomNavItem
+                      room={room}
+                      selected={selected}
+                      showAvatar
+                      direct={false}
+                      linkPath={getDirectRoomPath(getCanonicalAliasOrRoomId(mx, roomId))}
+                      notificationMode={getRoomNotificationMode(
+                        notificationPreferences,
+                        room.roomId
+                      )}
+                    />
+                  </VirtualTile>
+                );
+              })}
+            </div>
           </Box>
         </PageNavContent>
       )}
