@@ -318,22 +318,24 @@ function InviteUser({ isOpen, roomId, searchTerm, onRequestClose }) {
             forwardRef={usernameRef}
             label={
               <div className="invite-user__tabs">
-                <div
+                <button
                   className={`invite-user__tab-item ${
                     isSearchAgent ? '' : 'invite-user__tab-item--active'
                   }`}
                   onClick={() => tabClick(false)}
+                  type="button"
                 >
                   Name or userId
-                </div>
-                <div
+                </button>
+                <button
                   className={`invite-user__tab-item ${
                     isSearchAgent ? 'invite-user__tab-item--active' : ''
                   }`}
                   onClick={() => tabClick(true)}
+                  type="button"
                 >
                   Agents
-                </div>
+                </button>
               </div>
             }
           />
