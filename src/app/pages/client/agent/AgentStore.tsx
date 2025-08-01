@@ -18,14 +18,23 @@ import {
   as,
   config,
   toRem,
+  color,
 } from 'folds';
 import FocusTrap from 'focus-trap-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import OntelloIcon from '@src/app/static/icons/OntelloIcon';
+import WebsiteIcon from '@src/app/static/icons/WebsiteIcon';
+import XIcon from '@src/app/static/icons/XIcon';
 import { Page, PageContent, PageContentCenter, PageHeader } from '../../../components/page';
 import { RoomCardBase, RoomCardGrid } from '../../../components/room-card';
 import { useScreenSizeContext } from '../../../hooks/useScreenSize';
 import { stopPropagation } from '../../../utils/keyboard';
-import { BotInfo, api } from '../../../externalApis';
+import {
+  BotInfo,
+  BotInfoMediasInner,
+  BotInfoMediasInnerMediaEnum,
+  api,
+} from '../../../externalApis';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
 import * as roomActions from '../../../../client/action/room';
 import { useRoomNavigate } from '../../../hooks/useRoomNavigate';
@@ -38,6 +47,27 @@ const AgentCardName = as<'h6'>(({ ...props }, ref) => (
 const AgentCardDescription = as<'p'>(({ ...props }, ref) => (
   <Text as="p" size="T200" priority="400" {...props} ref={ref} />
 ));
+
+function MediaIcon({ media }: { media: BotInfoMediasInner }) {
+  const handleClick = () => {
+    if (media.link) {
+      window.open(media.link, '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  switch (media.media) {
+    case BotInfoMediasInnerMediaEnum.X:
+      return <Icon src={XIcon} size="50" style={{ cursor: 'pointer' }} onClick={handleClick} />;
+    case BotInfoMediasInnerMediaEnum.OfficialWebsite:
+      return (
+        <Icon src={WebsiteIcon} size="50" style={{ cursor: 'pointer' }} onClick={handleClick} />
+      );
+    default:
+      return (
+        <Icon src={OntelloIcon} size="50" style={{ cursor: 'pointer' }} onClick={handleClick} />
+      );
+  }
+}
 
 // Agent detail dialog component
 function AgentDetailDialog({
@@ -122,13 +152,22 @@ function AgentDetailDialog({
                   </Box>
                 </Box>
 
-                <Box>
+                <Box alignItems="Center" gap="200">
                   <Text>By {agent.owner}</Text>
-                  <Box>
+                  <Box alignItems="Center" gap="200">
                     {agent.medias.map((media) => (
-                      <Badge aria-label="A status badge" role="status">
-                        {/* <img src={} alt="" /> */}
-                      </Badge>
+                      <Box
+                        style={{
+                          borderRadius: '50%',
+                          backgroundColor: color.Background.Container,
+                          height: toRem(28),
+                          width: toRem(28),
+                          alignItems: 'Center',
+                          justifyContent: 'Center',
+                        }}
+                      >
+                        <MediaIcon key={media.media} media={media} />
+                      </Box>
                     ))}
                   </Box>
                 </Box>
