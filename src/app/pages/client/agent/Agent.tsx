@@ -18,6 +18,7 @@ import {
 } from 'folds';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import FocusTrap from 'focus-trap-react';
+import storeImg from '@app/static/imgs/AgentstoreL.png';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
 import { factoryRoomIdByActivity } from '../../../utils/sort';
 import {
@@ -136,24 +137,12 @@ function AgentHeader() {
           </FocusTrap>
         }
       />
-      {/* Store button */}
-      <NavCategory>
-        <NavItem variant="Background" radii="400">
-          <NavButton onClick={handleStoreClick}>
-            <NavItemContent>
-              <Box as="span" grow="Yes" alignItems="Center" gap="200">
-                <Avatar size="200" radii="400">
-                  <Icon src={Icons.Bulb} size="100" />
-                </Avatar>
-                <Box as="span" grow="Yes">
-                  <Text as="span" size="Inherit" truncate>
-                    Agent Store
-                  </Text>
-                </Box>
-              </Box>
-            </NavItemContent>
-          </NavButton>
-        </NavItem>
+      <NavCategory
+        style={{ display: 'flex', justifyContent: 'center', padding: ` ${toRem(20)} 0` }}
+      >
+        <Box onClick={handleStoreClick}>
+          <img src={storeImg} alt="" style={{ cursor: 'pointer' }} />
+        </Box>
       </NavCategory>
     </>
   );
@@ -228,16 +217,16 @@ export function Agent() {
                     ref={virtualizer.measureElement}
                   >
                     <RoomNavItem
-                        room={room}
-                        selected={selected}
-                        showAvatar
-                        direct={false}
-                        linkPath={getAgentDirectRoomPath(getCanonicalAliasOrRoomId(mx, roomId))}
-                        notificationMode={getRoomNotificationMode(
-                          notificationPreferences,
-                          room.roomId
-                        )}
-                      />
+                      room={room}
+                      selected={selected}
+                      showAvatar
+                      direct={false}
+                      linkPath={getAgentDirectRoomPath(getCanonicalAliasOrRoomId(mx, roomId))}
+                      notificationMode={getRoomNotificationMode(
+                        notificationPreferences,
+                        room.roomId
+                      )}
+                    />
                   </VirtualTile>
                 );
               })}

@@ -55,18 +55,18 @@ function MediaIcon({ media }: { media: BotInfoMediasInner }) {
     }
   };
 
-  switch (media.media) {
-    case BotInfoMediasInnerMediaEnum.X:
-      return <Icon src={XIcon} size="50" style={{ cursor: 'pointer' }} onClick={handleClick} />;
-    case BotInfoMediasInnerMediaEnum.OfficialWebsite:
-      return (
-        <Icon src={WebsiteIcon} size="50" style={{ cursor: 'pointer' }} onClick={handleClick} />
-      );
-    default:
-      return (
-        <Icon src={OntelloIcon} size="50" style={{ cursor: 'pointer' }} onClick={handleClick} />
-      );
-  }
+  const getIconSrc = () => {
+    switch (media.media) {
+      case BotInfoMediasInnerMediaEnum.X:
+        return XIcon;
+      case BotInfoMediasInnerMediaEnum.OfficialWebsite:
+        return WebsiteIcon;
+      default:
+        return OntelloIcon;
+    }
+  };
+
+  return <Icon src={getIconSrc()} size="50" style={{ cursor: 'pointer' }} onClick={handleClick} />;
 }
 
 // Agent detail dialog component
@@ -139,7 +139,7 @@ function AgentDetailDialog({
                   </IconButton>
                 </Box>
               </Header>
-              <Box style={{ padding: `0 ${toRem(20)} ${toRem(20)}` }} direction="Column" gap="300">
+              <Box style={{ padding: `0 ${toRem(20)} ${toRem(20)}` }} direction="Column" gap="400">
                 <Box direction="Row" gap="200" alignItems="Center">
                   <img
                     src={agent.icon}
@@ -171,6 +171,40 @@ function AgentDetailDialog({
                     ))}
                   </Box>
                 </Box>
+
+                <Box alignItems="Center" justifyContent="Center" gap="400">
+                  <Box
+                    direction="Column"
+                    alignItems="Center"
+                    gap="100"
+                    style={{
+                      height: toRem(60),
+                      width: toRem(95),
+                      borderRadius: toRem(5),
+                      border: `1px solid ${color.Primary.Container}`,
+                      padding: `${toRem(5)} ${toRem(10)}`,
+                    }}
+                  >
+                    <Text size="H4">{agent.users}</Text>
+                    <Text size="L400">User</Text>
+                  </Box>
+                  <Box
+                    direction="Column"
+                    alignItems="Center"
+                    gap="100"
+                    style={{
+                      height: toRem(60),
+                      width: toRem(95),
+                      borderRadius: toRem(5),
+                      border: `1px solid ${color.Primary.Container}`,
+                      padding: `${toRem(5)} ${toRem(10)}`,
+                    }}
+                  >
+                    <Text size="H4">{agent.conversations}</Text>
+                    <Text size="L400">conversations</Text>
+                  </Box>
+                </Box>
+
                 <Box gap="200">
                   <Text size="T300">{agent.description}</Text>
                 </Box>

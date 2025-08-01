@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 // import { Icon, Icons } from 'folds';
-import aiImg from '@app/static/imgs/Group 99245961.svg';
+import aiImg from '@app/static/imgs/Agent-storeC.png';
 import { SidebarAvatar, SidebarItem, SidebarItemTooltip } from '../../../components/sidebar';
 import { AGENT_PATH } from '../../paths';
 
