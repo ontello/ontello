@@ -217,7 +217,7 @@ function AgentDetailDialog({
                     }}
                     direction="Column"
                   >
-                    <Text size="T200">Registration Date: </Text>
+                    <Text>Registration Date: </Text>
                     <Text>{timeDayMonYear(agent.create_time)}</Text>
                   </Box>
                   <Box
@@ -228,8 +228,8 @@ function AgentDetailDialog({
                     }}
                     direction="Column"
                   >
-                    <Text size="T200">Agent DID：</Text>
-                    <Text size="T200">{agent.bot_did}</Text>
+                    <Text>Agent DID：</Text>
+                    <Text>{agent.bot_did}</Text>
                   </Box>
                   <Box
                     style={{
@@ -239,7 +239,7 @@ function AgentDetailDialog({
                     }}
                     direction="Column"
                   >
-                    <Text size="T200">Capabilities： </Text>
+                    <Text>Capabilities： </Text>
                     <Text>{agent.capabilities}</Text>
                   </Box>
                 </Box>
