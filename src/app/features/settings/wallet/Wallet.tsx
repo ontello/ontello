@@ -113,7 +113,7 @@ export function Wallet({ requestClose }: Props) {
                 </SequenceCard>
               </Box>
               <Box direction="Column" gap="100">
-                <Text size="L400">Manage wallet trusted passkeys</Text>
+                <Text size="L400">Manage wallet</Text>
                 <Text>You can manage account&apos;s passkeys below.</Text>
                 <SequenceCard
                   className={SequenceCardStyle}
@@ -135,6 +135,17 @@ export function Wallet({ requestClose }: Props) {
                   Please never modify the key name of Passkey, as doing so may result in a loss of
                   access.
                 </Text>
+              </Box>
+              <Box direction="Column" gap="100">
+                <Text size="L400">Wallet Address</Text>
+                <SequenceCard
+                  className={SequenceCardStyle}
+                  variant="SurfaceVariant"
+                  direction="Column"
+                  gap="400"
+                >
+                  <Text>{passkeyData?.walletAddress}</Text>
+                </SequenceCard>
               </Box>
             </Box>
           </PageContent>
