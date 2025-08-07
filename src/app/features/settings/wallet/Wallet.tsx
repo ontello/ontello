@@ -144,7 +144,18 @@ export function Wallet({ requestClose }: Props) {
                   direction="Column"
                   gap="400"
                 >
-                  <Text>{passkeyData?.walletAddress}</Text>
+                  <SettingTile
+                    title={passkeyData?.walletAddress ?? ''}
+                    after={
+                      <Chip 
+                        variant="Secondary" 
+                        radii="Pill" 
+                        onClick={() => copyToClipboard(passkeyData?.walletAddress ?? '')}
+                      >
+                        <Text size="T200">Copy</Text>
+                      </Chip>
+                    }
+                  />
                 </SequenceCard>
               </Box>
             </Box>

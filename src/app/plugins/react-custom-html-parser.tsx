@@ -32,6 +32,7 @@ import {
 } from './matrix-to';
 import { onEnterOrSpace } from '../utils/keyboard';
 import { tryDecodeURIComponent } from '../utils/dom';
+import { confirmDialog } from '../molecules/confirm-dialog/ConfirmDialog';
 
 const ReactPrism = lazy(() => import('./react-prism/ReactPrism'));
 
@@ -351,6 +352,60 @@ export const getReactCustomHtmlParser = (
           );
 
           if (mention) return mention;
+        }
+
+        if (name === 'a' && props.href) {
+          const handleLinkClick: ReactEventHandler<HTMLElement> = async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            try {
+              const url = new URL(props.href);
+              const currentDomain = window.location.hostname;
+
+              if (url.hostname !== currentDomain) {
+                const isConfirmed = await confirmDialog(
+                  'External Link',
+                  `You are about to open an external link: ${props.href}\n\nAre you sure you want to proceed?`,
+                  'Open Link',
+                  'primary'
+                );
+
+                if (isConfirmed) {
+                  window.open(props.href, '_blank');
+                }
+              } else {
+                window.open(props.href, '_blank');
+              }
+            } catch {
+              // If URL parsing fails, treat it as external
+              const isConfirmed = await confirmDialog(
+                'External Link',
+                `You are about to open an external link: ${props.href}\n\nAre you sure you want to proceed?`,
+                'Open Link',
+                'primary'
+              );
+
+              if (isConfirmed) {
+                window.open(props.href, '_blank');
+              }
+            }
+          };
+
+          return (
+            <a
+              {...props}
+              style={{ cursor: 'pointer' }}
+              target="_blank"
+              rel="noreferrer noopener"
+              role="link"
+              tabIndex={0}
+              onKeyDown={onEnterOrSpace(handleLinkClick)}
+              onClick={handleLinkClick}
+            >
+              {domToReact(children, opts)}
+            </a>
+          );
         }
 
         if (name === 'span' && 'data-mx-spoiler' in props) {
