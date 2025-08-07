@@ -138,20 +138,21 @@ export const useFlattenPowerLevelTagMembers = (
     const agents = members.filter((member) => checkIsAgent(member.userId));
     const users = members.filter((member) => !checkIsAgent(member.userId));
 
-    if (agents.length > 0) {
-      tagOrMember.push({
-        name: 'Agent',
-      });
-      agents.forEach((agent) => {
-        tagOrMember.push(agent);
-      });
-    }
-
     users.forEach((member) => {
       const memberPL = getPowerLevel(member.userId);
       const tag = getTag(memberPL);
       if (tag !== prevTag) {
         prevTag = tag;
+        if (tag.name === 'Member') {
+          if (agents.length > 0) {
+            tagOrMember.push({
+              name: 'Agent',
+            });
+            agents.forEach((agent) => {
+              tagOrMember.push(agent);
+            });
+          }
+        }
         tagOrMember.push(tag);
       }
       tagOrMember.push(member);
