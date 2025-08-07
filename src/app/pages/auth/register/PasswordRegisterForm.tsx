@@ -113,7 +113,7 @@ function RegisterUIAFlow({
         auth: authDict,
         password,
         username,
-        initial_device_display_name: 'Cinny Web',
+        initial_device_display_name: 'Ontello Web',
       });
     },
     [onRegister, formData]
@@ -274,7 +274,7 @@ export function PasswordRegisterForm({
         auth: {
           session: authData.session,
         },
-        initial_device_display_name: 'Cinny Web',
+        initial_device_display_name: 'Ontello Web',
       },
       publicKeyBase64Url,
       address
