@@ -91,7 +91,7 @@ function AgentDetailDialog({
     setAddError(null);
 
     try {
-      const result = await roomActions.createDM(mx, agent.mx_id, false);
+      const result = await roomActions.createDM(mx, agent.mx_id);
 
       queryClient.invalidateQueries({ queryKey: ['bots'] });
 
