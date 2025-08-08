@@ -1,5 +1,5 @@
 import { Box, Button, color, config, Dialog, Header, Icon, IconButton, Icons, Text } from 'folds';
-import React, { FormEventHandler } from 'react';
+import React, { FormEventHandler, useState } from 'react';
 import { AuthType } from 'matrix-js-sdk';
 import { getMxIdLocalPart } from '@src/app/utils/matrix';
 import { StageComponentProps } from './types';
@@ -22,6 +22,8 @@ export function PasswordStage({
 
   const { errorCode, error, session } = stageData;
 
+  const [passKeyError, setPassKeyError] = useState<string | null>(null);
+
   const handleFormSubmit: FormEventHandler<HTMLFormElement> = async (evt) => {
     evt.preventDefault();
     // const { passwordInput } = evt.target as HTMLFormElement & {
@@ -31,7 +33,14 @@ export function PasswordStage({
 
     const name = getMxIdLocalPart(userId);
     if (!name) return;
-    const { password } = await loginWithPasskey(name, mx, getIdServer(userId));
+    let password = null;
+    try {
+      const passkeyRes = await loginWithPasskey(name, mx, getIdServer(userId));
+      password = passkeyRes.password;
+    } catch (error) {
+      setPassKeyError(error as string);
+      return;
+    }
     // if (!password) return;
     submitAuthDict({
       type: AuthType.Password,
@@ -72,6 +81,14 @@ export function PasswordStage({
             To perform this action you need to authenticate yourself by entering you account
             password.
           </Text>
+          {(errorCode || passKeyError) && (
+            <Box alignItems="Center" gap="100" style={{ color: color.Critical.Main }}>
+              <Icon size="50" src={Icons.Warning} filled />
+              <Text size="T200">
+                <b>{errorCode ? `${errorCode}: ${error}` : `${passKeyError}`}</b>
+              </Text>
+            </Box>
+          )}
           {/* <Box direction="Column" gap="100">
             <Text size="L400">Password</Text>
             <PasswordInput size="400" name="passwordInput" outlined autoFocus required />
@@ -87,7 +104,7 @@ export function PasswordStage({
                 </Text>
               </Box>
             )}
-          </Box> */}
+          </Box>  */}
         </Box>
         <Button variant="Primary" type="submit">
           <Text as="span" size="B400">
