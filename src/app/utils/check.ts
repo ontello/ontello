@@ -1,1 +1,1 @@
-export const checkIsAgent = (matrixId: string = '') => matrixId.endsWith('-agent:ont.network');
+export const checkIsAgent = (matrixId = '') => matrixId.endsWith('.agent:ont.network');
