@@ -259,22 +259,22 @@ function InviteUser({ isOpen, roomId, searchTerm, onRequestClose }) {
     return users.map((user) => {
       const userId = user.user_id;
       const name = typeof user.display_name === 'string' ? user.display_name : userId;
+      let avatarSrc = user.avatar_url || null;
+      if (typeof user.avatar_url === 'string' && !isSearchAgent) {
+        avatarSrc = mx.mxcUrlToHttp(
+          user.avatar_url,
+          42,
+          42,
+          'crop',
+          undefined,
+          undefined,
+          useAuthentication
+        );
+      }
       return (
         <RoomTile
           key={userId}
-          avatarSrc={
-            typeof user.avatar_url === 'string'
-              ? mx.mxcUrlToHttp(
-                  user.avatar_url,
-                  42,
-                  42,
-                  'crop',
-                  undefined,
-                  undefined,
-                  useAuthentication
-                )
-              : null
-          }
+          avatarSrc={avatarSrc}
           name={name}
           id={userId}
           description={user.description}
