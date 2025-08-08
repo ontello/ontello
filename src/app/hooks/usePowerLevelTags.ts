@@ -138,13 +138,15 @@ export const useFlattenPowerLevelTagMembers = (
     const agents = members.filter((member) => checkIsAgent(member.userId));
     const users = members.filter((member) => !checkIsAgent(member.userId));
 
+    let isAgentAdded = false;
     users.forEach((member) => {
       const memberPL = getPowerLevel(member.userId);
       const tag = getTag(memberPL);
       if (tag !== prevTag) {
         prevTag = tag;
         if (tag.name === 'Member') {
-          if (agents.length > 0) {
+          if (agents.length > 0 && !isAgentAdded) {
+            isAgentAdded = true;
             tagOrMember.push({
               name: 'Agent',
             });
@@ -157,6 +159,16 @@ export const useFlattenPowerLevelTagMembers = (
       }
       tagOrMember.push(member);
     });
+
+    if (agents.length > 0 && !isAgentAdded) {
+      isAgentAdded = true;
+      tagOrMember.push({
+        name: 'Agent',
+      });
+      agents.forEach((agent) => {
+        tagOrMember.push(agent);
+      });
+    }
     return tagOrMember;
   }, [members, getTag, getPowerLevel]);
 

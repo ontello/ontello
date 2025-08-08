@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import './InviteUser.scss';
 
+import { Box, Icon as FoldsIcon, Icons, Text as FoldsText } from 'folds';
+
 import * as roomActions from '../../../client/action/room';
 import { hasDevices } from '../../../util/matrixUtil';
 
@@ -101,6 +103,12 @@ function InviteUser({ isOpen, roomId, searchTerm, onRequestClose }) {
           description: agent.description,
           display_name: agent.bot_name,
           avatar_url: agent.icon,
+          users: (
+            <Box gap="100">
+              <FoldsIcon size="50" src={Icons.User} />
+              <FoldsText size="T200">{agent.users?.toLocaleString() ?? 0} Users</FoldsText>
+            </Box>
+          ),
         }));
         updateUsers(agentList);
       } catch (e) {
@@ -268,9 +276,11 @@ function InviteUser({ isOpen, roomId, searchTerm, onRequestClose }) {
               : null
           }
           name={name}
-          id={userId + (user.description ? ` | ${user.description}` : '')}
+          id={userId}
+          description={user.description}
           options={renderOptions(userId)}
           desc={renderError(userId)}
+          users={user.users}
         />
       );
     });

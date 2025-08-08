@@ -1,6 +1,22 @@
 .room-tile {
   display: flex;
 
+  &__id {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__name {
+    display: flex;
+    align-items: center;
+  }
+
+  &__users {
+    display: inline-block;
+    margin-left: var(--sp-tight);
+  }
+
   &__content {
     flex: 1;
     min-width: 0;
@@ -9,6 +25,7 @@
 
     &__desc {
       white-space: pre-wrap;
+
       & a {
         white-space: wrap;
       }
