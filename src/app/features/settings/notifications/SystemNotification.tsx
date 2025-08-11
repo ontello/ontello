@@ -145,14 +145,14 @@ export function SystemNotification() {
           after={<Switch value={isNotificationSounds} onChange={setIsNotificationSounds} />}
         />
       </SequenceCard>
-      <SequenceCard
+      {/* <SequenceCard
         className={SequenceCardStyle}
         variant="SurfaceVariant"
         direction="Column"
         gap="400"
       >
         <EmailNotification />
-      </SequenceCard>
+      </SequenceCard> */}
     </Box>
   );
 }

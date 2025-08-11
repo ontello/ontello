@@ -49,10 +49,10 @@ export function About({ requestClose }: AboutProps) {
                       <Text size="H3">Ontello</Text>
                       <Text size="T200">v{cons.version}</Text>
                     </Box>
-                    <Text>Yet another matrix client.</Text>
+                    <Text>Say it. Send it. Own it.</Text>
                   </Box>
 
-                  <Box gap="200" wrap="Wrap">
+                  {/* <Box gap="200" wrap="Wrap">
                     <Button
                       as="a"
                       href="https://github.com/cinnyapp/cinny"
@@ -79,7 +79,7 @@ export function About({ requestClose }: AboutProps) {
                     >
                       <Text size="B300">Support</Text>
                     </Button>
-                  </Box>
+                  </Box> */}
                 </Box>
               </Box>
               <Box direction="Column" gap="100">

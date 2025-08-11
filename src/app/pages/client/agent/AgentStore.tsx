@@ -4,6 +4,7 @@ import {
   Badge,
   Box,
   Button,
+  Chip,
   Dialog,
   Header,
   Icon,
@@ -40,6 +41,7 @@ import * as roomActions from '../../../../client/action/room';
 import { useRoomNavigate } from '../../../hooks/useRoomNavigate';
 import { timeDayMonYear } from '../../../utils/time';
 import { getDMRoomFor } from '@src/app/utils/matrix';
+import { copyToClipboard } from '../../../utils/dom';
 
 const AgentCardName = as<'h6'>(({ ...props }, ref) => (
   <Text as="h6" size="H6" truncate {...props} ref={ref} />
@@ -52,19 +54,28 @@ const AgentCardDescription = as<'p'>(({ ...props }, ref) => (
 interface InfoContainerProps {
   label: string;
   value: string | React.ReactNode;
+  copyable?: boolean;
 }
 
-const InfoContainer: React.FC<InfoContainerProps> = ({ label, value }) => (
+const InfoContainer: React.FC<InfoContainerProps> = ({ label, value, copyable }) => (
   <Box
     style={{
       backgroundColor: color.SurfaceVariant.Container,
-      padding: config.space.S100,
+      padding: config.space.S200,
       borderRadius: config.radii.R400,
     }}
     direction="Column"
+    gap="100"
   >
-    <Text>{label}</Text>
-    <Text>{value}</Text>
+    <Text size="H4">{label}</Text>
+    <Box alignItems="Center" gap="200">
+      <Text style={{ flex: 1 }}>{value}</Text>
+      {copyable && (
+        <Chip variant="Secondary" radii="Pill" onClick={() => copyToClipboard(String(value))}>
+          <Text size="T200">Copy</Text>
+        </Chip>
+      )}
+    </Box>
   </Box>
 );
 
@@ -145,7 +156,7 @@ function AgentDetailDialog({
         >
           <Dialog variant="Surface" style={{ width: '100%', maxWidth: toRem(520) }}>
             <Box direction="Column" gap="300">
-              <Header
+              {/* <Header
                 style={{
                   padding: `0 ${config.space.S200} 0 ${config.space.S400}`,
                   borderBottomWidth: config.borderWidth.B300,
@@ -163,17 +174,22 @@ function AgentDetailDialog({
                     <Icon src={Icons.Cross} />
                   </IconButton>
                 </Box>
-              </Header>
-              <Box style={{ padding: `0 ${toRem(20)} ${toRem(20)}` }} direction="Column" gap="400">
+              </Header> */}
+              <Box style={{ padding: `${toRem(20)}` }} direction="Column" gap="400">
                 <Box direction="Row" gap="200" alignItems="Center">
                   <img
                     src={agent.icon}
                     alt={agent.bot_name}
-                    style={{ width: `${toRem(80)}`, height: `${toRem(80)}`, objectFit: 'cover' }}
+                    style={{
+                      width: `${toRem(80)}`,
+                      height: `${toRem(80)}`,
+                      objectFit: 'cover',
+                      borderRadius: '6px',
+                    }}
                   />
-                  <Box grow="Yes" direction="Column" gap="100" justifyContent="End">
+                  <Box grow="Yes" direction="Column" gap="100" justifyContent="End" alignSelf="End">
                     <Text size="T500">{agent.bot_name}</Text>
-                    <Text size="B300">{agent.bot_did}</Text>
+                    <Text size="B300">{agent.mx_id}</Text>
                   </Box>
                 </Box>
 
@@ -181,19 +197,19 @@ function AgentDetailDialog({
                   <Text>By {agent.owner}</Text>
                   <Box alignItems="Center" gap="200">
                     {agent.medias.map((media) => (
-                      <Box
-                        key={media.link}
-                        style={{
-                          borderRadius: '50%',
-                          backgroundColor: color.Background.Container,
-                          height: toRem(28),
-                          width: toRem(28),
-                          alignItems: 'Center',
-                          justifyContent: 'Center',
-                        }}
-                      >
-                        <MediaIcon key={media.media} media={media} />
-                      </Box>
+                      // <Box
+                      //   key={media.link}
+                      //   style={{
+                      //     borderRadius: '50%',
+                      //     backgroundColor: color.Background.Container,
+                      //     height: toRem(28),
+                      //     width: toRem(28),
+                      //     alignItems: 'Center',
+                      //     justifyContent: 'Center',
+                      //   }}
+                      // >
+                      <MediaIcon key={media.media} media={media} />
+                      // </Box>
                     ))}
                   </Box>
                 </Box>
@@ -212,7 +228,7 @@ function AgentDetailDialog({
                     }}
                   >
                     <Text size="H4">{agent.users}</Text>
-                    <Text size="L400">User</Text>
+                    <Text size="L400">Users</Text>
                   </Box>
                   <Box
                     direction="Column"
@@ -227,7 +243,7 @@ function AgentDetailDialog({
                     }}
                   >
                     <Text size="H4">{agent.conversations}</Text>
-                    <Text size="L400">conversations</Text>
+                    <Text size="L400">Conversations</Text>
                   </Box>
                 </Box>
 
@@ -235,22 +251,13 @@ function AgentDetailDialog({
                   <Text size="T300">{agent.description}</Text>
                 </Box>
                 <Box gap="200" direction="Column">
-                  <InfoContainer 
-                    label="Registration Date: " 
-                    value={timeDayMonYear(agent.create_time)} 
+                  <InfoContainer
+                    label="Registration Date: "
+                    value={timeDayMonYear(agent.create_time)}
                   />
-                  <InfoContainer 
-                    label="Agent DID：" 
-                    value={agent.bot_did} 
-                  />
-                  <InfoContainer 
-                    label="Capabilities： " 
-                    value={agent.capabilities} 
-                  />
-                  <InfoContainer 
-                    label="Configuration items： " 
-                    value={agent.llm} 
-                  />
+                  <InfoContainer label="Agent DID：" value={agent.bot_did} copyable />
+                  <InfoContainer label="Capabilities： " value={agent.capabilities} />
+                  <InfoContainer label="Configuration items： " value={agent.llm} />
                 </Box>
 
                 {addError && (
@@ -291,9 +298,6 @@ function AgentCard({ agent }: { agent: BotInfo }) {
   const openDetail = () => setDetailOpen(true);
   const closeDetail = () => setDetailOpen(false);
 
-  // Parse LLM info if exists
-  // const llmInfo = agent.llm ? agent.llm.split(',').map((item) => item.trim()) : [];
-
   return (
     <>
       <RoomCardBase>
@@ -325,7 +329,7 @@ function AgentCard({ agent }: { agent: BotInfo }) {
         </Box>
         <Box gap="100">
           <Icon size="50" src={Icons.User} />
-          <Text size="T200">{agent.users?.toLocaleString() ?? 0} Members</Text>
+          <Text size="T200">{agent.users?.toLocaleString() ?? 0} Users</Text>
         </Box>
         <Button variant="Secondary" size="300" onClick={openDetail}>
           <Text size="B300" truncate>
