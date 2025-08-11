@@ -39,6 +39,7 @@ import { useMatrixClient } from '../../../hooks/useMatrixClient';
 import * as roomActions from '../../../../client/action/room';
 import { useRoomNavigate } from '../../../hooks/useRoomNavigate';
 import { timeDayMonYear } from '../../../utils/time';
+import { getDMRoomFor } from '@src/app/utils/matrix';
 
 const AgentCardName = as<'h6'>(({ ...props }, ref) => (
   <Text as="h6" size="H6" truncate {...props} ref={ref} />
@@ -91,6 +92,11 @@ function AgentDetailDialog({
     setAddError(null);
 
     try {
+      const room = getDMRoomFor(mx, agent.mx_id);
+      if (room) {
+        navigateRoom(room.roomId);
+        return;
+      }
       const result = await roomActions.createDM(mx, agent.mx_id);
 
       queryClient.invalidateQueries({ queryKey: ['bots'] });
