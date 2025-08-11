@@ -121,6 +121,12 @@ export interface BotInfo {
      * @memberof BotInfo
      */
     mx_id: string;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof BotInfo
+     */
+    information: Array<string>;
 }
 
 /**
@@ -142,6 +148,7 @@ export function instanceOfBotInfo(value: object): value is BotInfo {
     if (!('icon' in value) || value['icon'] === undefined) return false;
     if (!('sample_prompts' in value) || value['sample_prompts'] === undefined) return false;
     if (!('mx_id' in value) || value['mx_id'] === undefined) return false;
+    if (!('information' in value) || value['information'] === undefined) return false;
     return true;
 }
 
@@ -170,6 +177,7 @@ export function BotInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean): B
         'icon': json['icon'],
         'sample_prompts': json['sample_prompts'],
         'mx_id': json['mx_id'],
+        'information': json['information'],
     };
 }
 
@@ -199,6 +207,7 @@ export function BotInfoToJSONTyped(value?: BotInfo | null, ignoreDiscriminator: 
         'icon': value['icon'],
         'sample_prompts': value['sample_prompts'],
         'mx_id': value['mx_id'],
+        'information': value['information'],
     };
 }
 

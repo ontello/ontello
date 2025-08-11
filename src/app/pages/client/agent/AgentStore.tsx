@@ -49,6 +49,25 @@ const AgentCardDescription = as<'p'>(({ ...props }, ref) => (
   <Text as="p" size="T200" priority="400" {...props} ref={ref} />
 ));
 
+interface InfoContainerProps {
+  label: string;
+  value: string | React.ReactNode;
+}
+
+const InfoContainer: React.FC<InfoContainerProps> = ({ label, value }) => (
+  <Box
+    style={{
+      backgroundColor: color.SurfaceVariant.Container,
+      padding: config.space.S100,
+      borderRadius: config.radii.R400,
+    }}
+    direction="Column"
+  >
+    <Text>{label}</Text>
+    <Text>{value}</Text>
+  </Box>
+);
+
 function MediaIcon({ media }: { media: BotInfoMediasInner }) {
   const handleClick = () => {
     if (media.link) {
@@ -163,6 +182,7 @@ function AgentDetailDialog({
                   <Box alignItems="Center" gap="200">
                     {agent.medias.map((media) => (
                       <Box
+                        key={media.link}
                         style={{
                           borderRadius: '50%',
                           backgroundColor: color.Background.Container,
@@ -215,39 +235,22 @@ function AgentDetailDialog({
                   <Text size="T300">{agent.description}</Text>
                 </Box>
                 <Box gap="200" direction="Column">
-                  <Box
-                    style={{
-                      background: '#F5F5F5',
-                      padding: config.space.S100,
-                      borderRadius: config.radii.R400,
-                    }}
-                    direction="Column"
-                  >
-                    <Text>Registration Date: </Text>
-                    <Text>{timeDayMonYear(agent.create_time)}</Text>
-                  </Box>
-                  <Box
-                    style={{
-                      background: '#F5F5F5',
-                      padding: config.space.S100,
-                      borderRadius: config.radii.R400,
-                    }}
-                    direction="Column"
-                  >
-                    <Text>Agent DID：</Text>
-                    <Text>{agent.bot_did}</Text>
-                  </Box>
-                  <Box
-                    style={{
-                      background: '#F5F5F5',
-                      padding: config.space.S100,
-                      borderRadius: config.radii.R400,
-                    }}
-                    direction="Column"
-                  >
-                    <Text>Capabilities： </Text>
-                    <Text>{agent.capabilities}</Text>
-                  </Box>
+                  <InfoContainer 
+                    label="Registration Date: " 
+                    value={timeDayMonYear(agent.create_time)} 
+                  />
+                  <InfoContainer 
+                    label="Agent DID：" 
+                    value={agent.bot_did} 
+                  />
+                  <InfoContainer 
+                    label="Capabilities： " 
+                    value={agent.capabilities} 
+                  />
+                  <InfoContainer 
+                    label="Configuration items： " 
+                    value={agent.llm} 
+                  />
                 </Box>
 
                 {addError && (
@@ -289,7 +292,7 @@ function AgentCard({ agent }: { agent: BotInfo }) {
   const closeDetail = () => setDetailOpen(false);
 
   // Parse LLM info if exists
-  const llmInfo = agent.llm ? agent.llm.split(',').map((item) => item.trim()) : [];
+  // const llmInfo = agent.llm ? agent.llm.split(',').map((item) => item.trim()) : [];
 
   return (
     <>
@@ -308,9 +311,9 @@ function AgentCard({ agent }: { agent: BotInfo }) {
               )}
             </Avatar>
             <Box direction="Row" gap="100">
-              {llmInfo.slice(0, 2).map((llm) => (
-                <Badge key={`llm-${agent.bot_id}-${llm}`}>
-                  <Text size="B300">{llm}</Text>
+              {agent.information.map((info) => (
+                <Badge key={`${agent.bot_id}-${info}`}>
+                  <Text size="B300">{info}</Text>
                 </Badge>
               ))}
             </Box>

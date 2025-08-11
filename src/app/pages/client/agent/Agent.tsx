@@ -220,7 +220,7 @@ export function Agent() {
                       room={room}
                       selected={selected}
                       showAvatar
-                      direct={false}
+                      direct
                       linkPath={getAgentDirectRoomPath(getCanonicalAliasOrRoomId(mx, roomId))}
                       notificationMode={getRoomNotificationMode(
                         notificationPreferences,
