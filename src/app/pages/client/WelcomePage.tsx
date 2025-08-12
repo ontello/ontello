@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Button, Icon, Icons, Text, config, toRem } from 'folds';
 import { Page, PageHero, PageHeroSection } from '../../components/page';
-import CinnySVG from '../../../../public/res/svg/cinny.svg';
+import OntelloSVG from '../../../../public/res/svg/ontello.svg';
 import cons from '../../../client/state/cons';
 
 export function WelcomePage() {
@@ -15,7 +15,7 @@ export function WelcomePage() {
       >
         <PageHeroSection>
           <PageHero
-            icon={<img width="70" height="70" src={CinnySVG} alt="Ontello Logo" />}
+            icon={<img width="70" height="70" src={OntelloSVG} alt="Ontello Logo" />}
             title="Welcome to Ontello"
             subTitle={
               <span>
