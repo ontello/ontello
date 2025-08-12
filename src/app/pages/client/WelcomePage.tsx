@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, Button, Icon, Icons, Text, config, toRem } from 'folds';
 import { Page, PageHero, PageHeroSection } from '../../components/page';
 import CinnySVG from '../../../../public/res/svg/cinny.svg';
+import cons from '../../../client/state/cons';
 
 export function WelcomePage() {
   return (
@@ -18,13 +19,13 @@ export function WelcomePage() {
             title="Welcome to Ontello"
             subTitle={
               <span>
-                Yet another matrix client.{' '}
+                Say it. Send it. Own it.{' '}
                 <a
                   href="https://github.com/cinnyapp/cinny/releases"
                   target="_blank"
                   rel="noreferrer noopener"
                 >
-                  v4.6.0
+                  v{cons.version}
                 </a>
               </span>
             }
@@ -42,7 +43,7 @@ export function WelcomePage() {
                     Source Code
                   </Text>
                 </Button>
-                <Button
+                {/* <Button
                   as="a"
                   href="https://cinny.in/#sponsor"
                   target="_blank"
@@ -53,7 +54,7 @@ export function WelcomePage() {
                   <Text as="span" size="B400" truncate>
                     Support
                   </Text>
-                </Button>
+                </Button> */}
               </Box>
             </Box>
           </PageHero>
