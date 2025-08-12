@@ -63,7 +63,7 @@ export function PasswordStage({
         size="500"
       >
         <Box grow="Yes">
-          <Text size="H4">Account Password</Text>
+          <Text size="H4">Account Passkey</Text>
         </Box>
         <IconButton size="300" onClick={onCancel} radii="300">
           <Icon src={Icons.Cross} />
@@ -78,8 +78,7 @@ export function PasswordStage({
       >
         <Box direction="Column" gap="400">
           <Text size="T200">
-            To perform this action you need to authenticate yourself by entering you account
-            password.
+            To perform this action you need to authenticate yourself by verifying your passkey.
           </Text>
           {(errorCode || passKeyError) && (
             <Box alignItems="Center" gap="100" style={{ color: color.Critical.Main }}>

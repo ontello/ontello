@@ -146,7 +146,7 @@ export function AgentDetailDialog({ agent, open, onClose }: AgentDetailDialogPro
                     }}
                   />
                   <Box grow="Yes" direction="Column" gap="100" justifyContent="End" alignSelf="End">
-                    <Text size="T500">{agent.bot_name}</Text>
+                    <Text size="H3">{agent.bot_name}</Text>
                     <Text size="B300">{agent.mx_id}</Text>
                   </Box>
                 </Box>

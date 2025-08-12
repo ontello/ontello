@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
 import { api } from '../../../externalApis';
+import { useInterval } from '../../../hooks/useInterval';
 
 const isAgentRoom = (roomId: string, agentRoomIds: Set<string>) => agentRoomIds.has(roomId);
 
@@ -8,9 +9,12 @@ export const useAgentRooms = () => {
   const mx = useMatrixClient();
   const [agentRoomIds, setAgentRoomIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
-  const fetchAgentRooms = async () => {
+  
+  const fetchAgentRooms = useCallback(async (isInitialFetch = false) => {
     try {
-      setLoading(true);
+      if (isInitialFetch) {
+        setLoading(true);
+      }
       const response = await api.userRoomsGet();
 
       if (response.result) {
@@ -19,12 +23,18 @@ export const useAgentRooms = () => {
     } catch (error) {
       console.error('Failed to fetch agent rooms:', error);
     } finally {
-      setLoading(false);
+      if (isInitialFetch) {
+        setLoading(false);
+      }
     }
-  };
-  useEffect(() => {
-    fetchAgentRooms();
   }, []);
+  
+  useEffect(() => {
+    fetchAgentRooms(true);
+  }, [fetchAgentRooms]);
+  
+  // Poll every 3 seconds
+  useInterval(fetchAgentRooms, 3000);
 
   const agentRooms = useMemo(() => {
     if (loading) return [];
