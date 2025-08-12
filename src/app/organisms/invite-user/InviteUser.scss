@@ -47,8 +47,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    font-size: 12px;
-    gap: 10px;
+    font-size: var(--fs-b3);
+    gap: var(--sp-extra-tight);
   }
 
   &__tab-item {
@@ -56,8 +56,8 @@
     padding: 2px 6px;
 
     &--active {
-      border-radius: 6px;
-      background: #d9d9d9;
+      border-radius: var(--bo-radius);
+      background: var(--bg-surface-low);
       background-blend-mode: darken;
     }
   }
