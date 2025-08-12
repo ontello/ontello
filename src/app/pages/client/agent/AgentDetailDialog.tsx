@@ -27,6 +27,7 @@ import { stopPropagation } from '../../../utils/keyboard';
 import OntelloIcon from '@src/app/static/icons/OntelloIcon';
 import WebsiteIcon from '@src/app/static/icons/WebsiteIcon';
 import XIcon from '@src/app/static/icons/XIcon';
+import { KnownMembership } from 'matrix-js-sdk';
 
 interface InfoContainerProps {
   label: string;
@@ -97,14 +98,16 @@ export function AgentDetailDialog({ agent, open, onClose }: AgentDetailDialogPro
 
     try {
       const room = getDMRoomFor(mx, agent.mx_id);
+
       if (room) {
-        navigateRoom(room.roomId);
-        return;
+        const member = room?.getMember(mx.getUserId()!);
+        if (member && member.membership !== KnownMembership.Leave) {
+          navigateRoom(room.roomId);
+          return;
+        }
       }
       const result = await roomActions.createDM(mx, agent.mx_id);
-
       queryClient.invalidateQueries({ queryKey: ['bots'] });
-
       navigateRoom(result.room_id);
 
       onClose();

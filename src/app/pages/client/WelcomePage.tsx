@@ -32,7 +32,7 @@ export function WelcomePage() {
           >
             <Box justifyContent="Center">
               <Box grow="Yes" style={{ maxWidth: toRem(300) }} direction="Column" gap="300">
-                <Button
+                {/* <Button
                   as="a"
                   href="https://github.com/cinnyapp/cinny"
                   target="_blank"
@@ -42,7 +42,7 @@ export function WelcomePage() {
                   <Text as="span" size="B400" truncate>
                     Source Code
                   </Text>
-                </Button>
+                </Button> */}
                 {/* <Button
                   as="a"
                   href="https://cinny.in/#sponsor"
