@@ -359,36 +359,31 @@ export const getReactCustomHtmlParser = (
             e.preventDefault();
             e.stopPropagation();
 
-            try {
-              const url = new URL(props.href);
-              const currentDomain = window.location.hostname;
-
-              if (url.hostname !== currentDomain) {
-                const isConfirmed = await confirmDialog(
-                  'External Link',
-                  `You are about to open an external link: ${props.href}\n\nAre you sure you want to proceed?`,
-                  'Open Link',
-                  'primary'
-                );
-
-                if (isConfirmed) {
-                  window.open(props.href, '_blank');
-                }
-              } else {
-                window.open(props.href, '_blank');
-              }
-            } catch {
-              // If URL parsing fails, treat it as external
+            const openExternalLink = async () => {
               const isConfirmed = await confirmDialog(
-                'External Link',
-                `You are about to open an external link: ${props.href}\n\nAre you sure you want to proceed?`,
-                'Open Link',
+                'Warning',
+                `This link isn't verified. Make sure you trust this link before proceeding. If you don't recognize the URL, don't open the link to access the site. ${props.href}`,
+                'Go anyway',
                 'primary'
               );
 
               if (isConfirmed) {
                 window.open(props.href, '_blank');
               }
+            };
+
+            try {
+              const url = new URL(props.href);
+              const isExternal = url.hostname !== window.location.hostname;
+
+              if (isExternal) {
+                await openExternalLink();
+              } else {
+                window.open(props.href, '_blank');
+              }
+            } catch {
+              // If URL parsing fails, treat it as external
+              await openExternalLink();
             }
           };
 
