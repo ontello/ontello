@@ -9,7 +9,7 @@ export const useAgentRooms = () => {
   const mx = useMatrixClient();
   const [agentRoomIds, setAgentRoomIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
-  
+
   const fetchAgentRooms = useCallback(async (isInitialFetch = false) => {
     try {
       if (isInitialFetch) {
@@ -28,12 +28,11 @@ export const useAgentRooms = () => {
       }
     }
   }, []);
-  
+
   useEffect(() => {
     fetchAgentRooms(true);
   }, [fetchAgentRooms]);
-  
-  // Poll every 3 seconds
+
   useInterval(fetchAgentRooms, 3000);
 
   const agentRooms = useMemo(() => {

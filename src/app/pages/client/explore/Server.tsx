@@ -81,7 +81,7 @@ const useRoomTypeFilters = (): RoomTypeFilter[] =>
     []
   );
 
-const FALLBACK_ROOMS_LIMIT = 24;
+const FALLBACK_ROOMS_LIMIT = 96;
 
 type SearchProps = {
   active?: boolean;
@@ -586,75 +586,83 @@ export function PublicRooms() {
                     </Box>
                   )}
                   {data &&
-                    (data.chunk.length > 0 ? (
-                      <>
-                        <RoomCardGrid>
-                          {data?.chunk.map((chunkRoom) => (
-                            <RoomCard
-                              key={chunkRoom.room_id}
-                              roomIdOrAlias={chunkRoom.canonical_alias ?? chunkRoom.room_id}
-                              allRooms={allRooms}
-                              avatarUrl={chunkRoom.avatar_url}
-                              name={chunkRoom.name}
-                              topic={chunkRoom.topic}
-                              memberCount={chunkRoom.num_joined_members}
-                              roomType={chunkRoom.room_type}
-                              onView={
-                                chunkRoom.room_type === RoomType.Space
-                                  ? navigateSpace
-                                  : navigateRoom
-                              }
-                              renderTopicViewer={(name, topic, requestClose) => (
-                                <RoomTopicViewer
-                                  name={name}
-                                  topic={topic}
-                                  requestClose={requestClose}
-                                />
-                              )}
-                            />
-                          ))}
-                        </RoomCardGrid>
+                    (() => {
+                      const publicRooms = data.chunk.filter(
+                        (chunkRoom) =>
+                          chunkRoom.join_rule === 'public' ||
+                          chunkRoom.join_rule === undefined ||
+                          chunkRoom.guest_can_join === true
+                      );
+                      return publicRooms.length > 0 ? (
+                        <>
+                          <RoomCardGrid>
+                            {publicRooms.map((chunkRoom) => (
+                              <RoomCard
+                                key={chunkRoom.room_id}
+                                roomIdOrAlias={chunkRoom.canonical_alias ?? chunkRoom.room_id}
+                                allRooms={allRooms}
+                                avatarUrl={chunkRoom.avatar_url}
+                                name={chunkRoom.name}
+                                topic={chunkRoom.topic}
+                                memberCount={chunkRoom.num_joined_members}
+                                roomType={chunkRoom.room_type}
+                                onView={
+                                  chunkRoom.room_type === RoomType.Space
+                                    ? navigateSpace
+                                    : navigateRoom
+                                }
+                                renderTopicViewer={(name, topic, requestClose) => (
+                                  <RoomTopicViewer
+                                    name={name}
+                                    topic={topic}
+                                    requestClose={requestClose}
+                                  />
+                                )}
+                              />
+                            ))}
+                          </RoomCardGrid>
 
-                        {(data.prev_batch || data.next_batch) && (
-                          <Box justifyContent="Center" gap="200">
-                            <Button
-                              onClick={paginateBack}
-                              size="300"
-                              fill="Soft"
-                              disabled={!data.prev_batch}
-                            >
-                              <Text size="B300" truncate>
-                                Previous Page
-                              </Text>
-                            </Button>
-                            <Box data-spacing-node grow="Yes" />
-                            <Button
-                              onClick={paginateFront}
-                              size="300"
-                              fill="Solid"
-                              disabled={!data.next_batch}
-                            >
-                              <Text size="B300" truncate>
-                                Next Page
-                              </Text>
-                            </Button>
-                          </Box>
-                        )}
-                      </>
-                    ) : (
-                      <Box
-                        className={css.RoomsInfoCard}
-                        direction="Column"
-                        justifyContent="Center"
-                        alignItems="Center"
-                        gap="200"
-                      >
-                        <Icon size="400" src={Icons.Info} />
-                        <Text size="T300" align="Center">
-                          No communities found!
-                        </Text>
-                      </Box>
-                    ))}
+                          {(data.prev_batch || data.next_batch) && (
+                            <Box justifyContent="Center" gap="200">
+                              <Button
+                                onClick={paginateBack}
+                                size="300"
+                                fill="Soft"
+                                disabled={!data.prev_batch}
+                              >
+                                <Text size="B300" truncate>
+                                  Previous Page
+                                </Text>
+                              </Button>
+                              <Box data-spacing-node grow="Yes" />
+                              <Button
+                                onClick={paginateFront}
+                                size="300"
+                                fill="Solid"
+                                disabled={!data.next_batch}
+                              >
+                                <Text size="B300" truncate>
+                                  Next Page
+                                </Text>
+                              </Button>
+                            </Box>
+                          )}
+                        </>
+                      ) : (
+                        <Box
+                          className={css.RoomsInfoCard}
+                          direction="Column"
+                          justifyContent="Center"
+                          alignItems="Center"
+                          gap="200"
+                        >
+                          <Icon size="400" src={Icons.Info} />
+                          <Text size="T300" align="Center">
+                            No communities found!
+                          </Text>
+                        </Box>
+                      );
+                    })()}
                 </Box>
               </Box>
             </PageContentCenter>
