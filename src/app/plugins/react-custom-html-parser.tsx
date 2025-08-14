@@ -38,6 +38,42 @@ const ReactPrism = lazy(() => import('./react-prism/ReactPrism'));
 
 const EMOJI_REG_G = new RegExp(`${URL_NEG_LB}(${EMOJI_PATTERN})`, 'g');
 
+export const handleExternalLinkClick = async (
+  href: string,
+  e?: React.MouseEvent | React.SyntheticEvent
+) => {
+  if (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  const openExternalLink = async () => {
+    const isConfirmed = await confirmDialog(
+      'Warning',
+      `This link isn't verified. Make sure you trust this link before proceeding. If you don't recognize the URL, don't open the link to access the site. ${href}`,
+      'Go anyway',
+      'primary'
+    );
+
+    if (isConfirmed) {
+      window.open(href, '_blank');
+    }
+  };
+
+  try {
+    const url = new URL(href);
+    const isExternal = url.hostname !== window.location.hostname;
+
+    if (isExternal) {
+      await openExternalLink();
+    } else {
+      window.open(href, '_blank');
+    }
+  } catch {
+    await openExternalLink();
+  }
+};
+
 export const LINKIFY_OPTS: LinkifyOpts = {
   attributes: {
     target: '_blank',
@@ -47,6 +83,23 @@ export const LINKIFY_OPTS: LinkifyOpts = {
     url: (value) => /^(https|http|ftp|mailto|magnet)?:/.test(value),
   },
   ignoreTags: ['span'],
+  render: {
+    url: ({ attributes, content }) => {
+      const { href, ...props } = attributes;
+      return (
+        <a
+          {...props}
+          href={href}
+          onClick={(e) => {
+            e.preventDefault();
+            handleExternalLinkClick(href);
+          }}
+        >
+          {content}
+        </a>
+      );
+    },
+  },
 };
 
 export const makeMentionCustomProps = (
@@ -152,7 +205,17 @@ export const factoryRenderLinkifyWithMention = (
       if (mention) return mention;
     }
 
-    return <a {...attributes}>{content}</a>;
+    return (
+      <a
+        {...attributes}
+        onClick={(e) => {
+          e.preventDefault();
+          handleExternalLinkClick(attributes.href);
+        }}
+      >
+        {content}
+      </a>
+    );
   };
   return render;
 };
@@ -355,36 +418,8 @@ export const getReactCustomHtmlParser = (
         }
 
         if (name === 'a' && props.href) {
-          const handleLinkClick: ReactEventHandler<HTMLElement> = async (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-
-            const openExternalLink = async () => {
-              const isConfirmed = await confirmDialog(
-                'Warning',
-                `This link isn't verified. Make sure you trust this link before proceeding. If you don't recognize the URL, don't open the link to access the site. ${props.href}`,
-                'Go anyway',
-                'primary'
-              );
-
-              if (isConfirmed) {
-                window.open(props.href, '_blank');
-              }
-            };
-
-            try {
-              const url = new URL(props.href);
-              const isExternal = url.hostname !== window.location.hostname;
-
-              if (isExternal) {
-                await openExternalLink();
-              } else {
-                window.open(props.href, '_blank');
-              }
-            } catch {
-              // If URL parsing fails, treat it as external
-              await openExternalLink();
-            }
+          const handleLinkClick: ReactEventHandler<HTMLElement> = (e) => {
+            handleExternalLinkClick(props.href, e);
           };
 
           return (

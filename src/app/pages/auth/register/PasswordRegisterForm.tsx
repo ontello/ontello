@@ -300,7 +300,7 @@ export function PasswordRegisterForm({
             <FieldError message="This username is already taken." />
           )}
           {registerError?.errcode === RegisterError.UserInvalid && (
-            <FieldError message="This username contains invalid characters." />
+            <FieldError message="This username does not meet the requirements." />
           )}
           {registerError?.errcode === RegisterError.UserExclusive && (
             <FieldError message="This username is reserved." />
