@@ -348,6 +348,7 @@ function InviteUser({ isOpen, roomId, searchTerm, onRequestClose }) {
                 </button>
               </div>
             }
+            autoFocus
           />
           <Button disabled={isSearching} iconSrc={UserIC} variant="primary" type="submit">
             Search

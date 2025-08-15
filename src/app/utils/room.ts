@@ -5,6 +5,7 @@ import {
   EventTimelineSet,
   EventType,
   IMentions,
+  IPowerLevelsContent,
   IPushRule,
   IPushRules,
   JoinRule,
@@ -19,6 +20,7 @@ import {
 import { CryptoBackend } from 'matrix-js-sdk/lib/common-crypto/CryptoBackend';
 import { AccountDataEvent } from '../../types/matrix/accountData';
 import {
+  Membership,
   MessageEvent,
   NotificationType,
   RoomToParents,
@@ -171,7 +173,7 @@ export const getNotificationType = (mx: MatrixClient, roomId: string): Notificat
   }
 
   if (!roomPushRule) {
-    const overrideRules = mx.getAccountData('m.push_rules')?.getContent<IPushRules>()
+    const overrideRules = mx.getAccountData(EventType.PushRules)?.getContent<IPushRules>()
       ?.global?.override;
     if (!overrideRules) return NotificationType.Default;
 
@@ -292,9 +294,14 @@ export const getDirectRoomAvatarUrl = (
   useAuthentication = false
 ): string | undefined => {
   const mxcUrl = room.getAvatarFallbackMember()?.getMxcAvatarUrl();
-  return mxcUrl
-    ? mx.mxcUrlToHttp(mxcUrl, size, size, 'crop', undefined, false, useAuthentication) ?? undefined
-    : undefined;
+
+  if (!mxcUrl) {
+    return getRoomAvatarUrl(mx, room, size, useAuthentication);
+  }
+
+  return (
+    mx.mxcUrlToHttp(mxcUrl, size, size, 'crop', undefined, false, useAuthentication) ?? undefined
+  );
 };
 
 export const trimReplyFromBody = (body: string): string => {
@@ -442,4 +449,73 @@ export const getMentionContent = (userIds: string[], room: boolean): IMentions =
   }
 
   return mMentions;
+};
+
+export const getCommonRooms = (
+  mx: MatrixClient,
+  rooms: string[],
+  otherUserId: string
+): string[] => {
+  const commonRooms: string[] = [];
+
+  rooms.forEach((roomId) => {
+    const room = mx.getRoom(roomId);
+    if (!room || room.getMyMembership() !== Membership.Join) return;
+
+    const common = room.hasMembershipState(otherUserId, Membership.Join);
+    if (common) {
+      commonRooms.push(roomId);
+    }
+  });
+
+  return commonRooms;
+};
+
+export const bannedInRooms = (mx: MatrixClient, rooms: string[], otherUserId: string): boolean =>
+  rooms.some((roomId) => {
+    const room = mx.getRoom(roomId);
+    if (!room || room.getMyMembership() !== Membership.Join) return false;
+
+    const banned = room.hasMembershipState(otherUserId, Membership.Ban);
+    return banned;
+  });
+
+export const guessPerfectParent = (
+  mx: MatrixClient,
+  roomId: string,
+  parents: string[]
+): string | undefined => {
+  if (parents.length === 1) {
+    return parents[0];
+  }
+
+  const getSpecialUsers = (rId: string): string[] => {
+    const r = mx.getRoom(rId);
+    const powerLevels =
+      r && getStateEvent(r, StateEvent.RoomPowerLevels)?.getContent<IPowerLevelsContent>();
+
+    const { users_default: usersDefault, users } = powerLevels ?? {};
+    if (typeof users !== 'object') return [];
+
+    const defaultPower = typeof usersDefault === 'number' ? usersDefault : 0;
+    return Object.keys(users).filter((userId) => users[userId] > defaultPower);
+  };
+
+  let perfectParent: string | undefined;
+  let score = 0;
+
+  const roomSpecialUsers = getSpecialUsers(roomId);
+  parents.forEach((parentId) => {
+    const parentSpecialUsers = getSpecialUsers(parentId);
+    const matchedUsersCount = parentSpecialUsers.filter((userId) =>
+      roomSpecialUsers.includes(userId)
+    ).length;
+
+    if (matchedUsersCount > score) {
+      score = matchedUsersCount;
+      perfectParent = parentId;
+    }
+  });
+
+  return perfectParent;
 };

@@ -18,6 +18,13 @@ export const millisecondsToMinutesAndSeconds = (milliseconds: number): string =>
   return `${mm}:${ss < 10 ? '0' : ''}${ss}`;
 };
 
+export const millisecondsToMinutes = (milliseconds: number): string => {
+  const seconds = Math.floor(milliseconds / 1000);
+  const mm = Math.floor(seconds / 60);
+
+  return mm.toString();
+};
+
 export const secondsToMinutesAndSeconds = (seconds: number): string => {
   const mm = Math.floor(seconds / 60);
   const ss = Math.round(seconds % 60);
@@ -153,11 +160,19 @@ export const polling = <T>(
 
   return execute();
 };
+
 export const ellipsisMiddle = (str: string, headLen = 6, tailLen = 6): string => {
   if (str.length <= headLen + tailLen + 3) return str;
   return `${str.slice(0, headLen)}...${str.slice(-tailLen)}`;
 };
+
 export const sleep = (ms: number): Promise<void> =>
   new Promise((resolve) => {
     setTimeout(resolve, ms);
   });
+
+export const splitWithSpace = (content: string): string[] => {
+  const trimmedContent = content.trim();
+  if (trimmedContent === '') return [];
+  return trimmedContent.split(' ');
+};

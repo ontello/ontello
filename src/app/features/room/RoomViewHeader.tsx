@@ -34,7 +34,7 @@ import { RoomTopicViewer } from '../../components/room-topic-viewer';
 import { StateEvent } from '../../../types/matrix/room';
 import { useMatrixClient } from '../../hooks/useMatrixClient';
 import { useRoom } from '../../hooks/useRoom';
-import { useSetSetting, useSetting } from '../../state/hooks/settings';
+import { useSetting } from '../../state/hooks/settings';
 import { settingsAtom } from '../../state/settings';
 import { useSpaceOptionally } from '../../hooks/useSpace';
 import { getHomeSearchPath, getSpaceSearchPath, withSearchParam } from '../../pages/pathUtils';
@@ -42,7 +42,7 @@ import { getCanonicalAliasOrRoomId, isRoomAlias, mxcUrlToHttp } from '../../util
 import { _SearchPathSearchParams } from '../../pages/paths';
 import * as css from './RoomViewHeader.css';
 import { useRoomUnread } from '../../state/hooks/unread';
-import { usePowerLevelsAPI, usePowerLevelsContext } from '../../hooks/usePowerLevels';
+import { usePowerLevelsContext } from '../../hooks/usePowerLevels';
 import { markAsRead } from '../../../client/action/notifications';
 import { roomToUnreadAtom } from '../../state/room/roomToUnread';
 import { openInviteUser } from '../../../client/action/navigation';
@@ -65,6 +65,10 @@ import {
   getRoomNotificationModeIcon,
   useRoomsNotificationPreferencesContext,
 } from '../../hooks/useRoomsNotificationPreferences';
+import { JumpToTime } from './jump-to-time';
+import { useRoomNavigate } from '../../hooks/useRoomNavigate';
+import { useRoomCreators } from '../../hooks/useRoomCreators';
+import { useRoomPermissions } from '../../hooks/useRoomPermissions';
 
 type RoomMenuProps = {
   room: Room;
@@ -75,10 +79,13 @@ const RoomMenu = forwardRef<HTMLDivElement, RoomMenuProps>(({ room, requestClose
   const [hideActivity] = useSetting(settingsAtom, 'hideActivity');
   const unread = useRoomUnread(room.roomId, roomToUnreadAtom);
   const powerLevels = usePowerLevelsContext();
-  const { getPowerLevel, canDoAction } = usePowerLevelsAPI(powerLevels);
-  const canInvite = canDoAction('invite', getPowerLevel(mx.getUserId() ?? ''));
+  const creators = useRoomCreators(room);
+
+  const permissions = useRoomPermissions(creators, powerLevels);
+  const canInvite = permissions.action('invite', mx.getSafeUserId());
   const notificationPreferences = useRoomsNotificationPreferencesContext();
   const notificationMode = getRoomNotificationMode(notificationPreferences, room.roomId);
+  const { navigateRoom } = useRoomNavigate();
 
   const handleMarkAsRead = () => {
     markAsRead(mx, room.roomId, hideActivity);
@@ -175,6 +182,33 @@ const RoomMenu = forwardRef<HTMLDivElement, RoomMenuProps>(({ room, requestClose
             Room Settings
           </Text>
         </MenuItem>
+        <UseStateProvider initial={false}>
+          {(promptJump, setPromptJump) => (
+            <>
+              <MenuItem
+                onClick={() => setPromptJump(true)}
+                size="300"
+                after={<Icon size="100" src={Icons.RecentClock} />}
+                radii="300"
+                aria-pressed={promptJump}
+              >
+                <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
+                  Jump to Time
+                </Text>
+              </MenuItem>
+              {promptJump && (
+                <JumpToTime
+                  onSubmit={(eventId) => {
+                    setPromptJump(false);
+                    navigateRoom(room.roomId, eventId);
+                    requestClose();
+                  }}
+                  onCancel={() => setPromptJump(false)}
+                />
+              )}
+            </>
+          )}
+        </UseStateProvider>
       </Box>
       <Line variant="Surface" size="300" />
       <Box direction="Column" gap="100" style={{ padding: config.space.S100 }}>
@@ -230,7 +264,7 @@ export function RoomViewHeader() {
     ? mxcUrlToHttp(mx, avatarMxc, useAuthentication, 96, 96, 'crop') ?? undefined
     : undefined;
 
-  const setPeopleDrawer = useSetSetting(settingsAtom, 'isPeopleDrawer');
+  const [peopleDrawer, setPeopleDrawer] = useSetting(settingsAtom, 'isPeopleDrawer');
 
   const handleSearchClick = () => {
     const searchParams: _SearchPathSearchParams = {
@@ -404,7 +438,7 @@ export function RoomViewHeader() {
               offset={4}
               tooltip={
                 <Tooltip>
-                  <Text>Members</Text>
+                  <Text>{peopleDrawer ? 'Hide Members' : 'Show Members'}</Text>
                 </Tooltip>
               }
             >

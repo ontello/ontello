@@ -13,14 +13,19 @@ import {
   UploadProgress,
   UploadResponse,
 } from 'matrix-js-sdk';
+import to from 'await-to-js';
 import { IImageInfo, IThumbnailContent, IVideoInfo } from '../../types/matrix/common';
 import { AccountDataEvent } from '../../types/matrix/accountData';
 import { getStateEvent } from './room';
 import { StateEvent } from '../../types/matrix/room';
 
-export const matchMxId = (id: string): RegExpMatchArray | null => id.match(/^([@!$+#])(.+):(\S+)$/);
+const DOMAIN_REGEX = /\b(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}\b/;
 
-export const validMxId = (id: string): boolean => !!matchMxId(id);
+export const isServerName = (serverName: string): boolean => DOMAIN_REGEX.test(serverName);
+
+const matchMxId = (id: string): RegExpMatchArray | null => id.match(/^([@$+#])(.+):(\S+)$/);
+
+const validMxId = (id: string): boolean => !!matchMxId(id);
 
 export const getMxIdServer = (userId: string): string | undefined => matchMxId(userId)?.[3];
 
@@ -28,7 +33,7 @@ export const getMxIdLocalPart = (userId: string): string | undefined => matchMxI
 
 export const isUserId = (id: string): boolean => validMxId(id) && id.startsWith('@');
 
-export const isRoomId = (id: string): boolean => validMxId(id) && id.startsWith('!');
+export const isRoomId = (id: string): boolean => id.startsWith('!');
 
 export const isRoomAlias = (id: string): boolean => validMxId(id) && id.startsWith('#');
 
@@ -45,7 +50,11 @@ export const getCanonicalAliasOrRoomId = (mx: MatrixClient, roomId: string): str
   const room = mx.getRoom(roomId);
   if (!room) return roomId;
   if (getStateEvent(room, StateEvent.RoomTombstone) !== undefined) return roomId;
-  return room.getCanonicalAlias() || roomId;
+  const alias = room.getCanonicalAlias();
+  if (alias && getCanonicalAliasRoomId(mx, alias) === roomId) {
+    return alias;
+  }
+  return roomId;
 };
 
 export const getImageInfo = (img: HTMLImageElement, fileOrBlob: File | Blob): IImageInfo => {
@@ -291,4 +300,64 @@ export const downloadEncryptedMedia = async (
   const decryptedContent = await decryptContent(await encryptedContent.arrayBuffer());
 
   return decryptedContent;
+};
+
+export const rateLimitedActions = async <T, R = void>(
+  data: T[],
+  callback: (item: T, index: number) => Promise<R>,
+  maxRetryCount?: number
+) => {
+  let retryCount = 0;
+
+  let actionInterval = 0;
+
+  const sleepForMs = (ms: number) =>
+    new Promise((resolve) => {
+      setTimeout(resolve, ms);
+    });
+
+  const performAction = async (dataItem: T, index: number) => {
+    const [err] = await to<R, MatrixError>(callback(dataItem, index));
+
+    if (err?.httpStatus === 429) {
+      if (retryCount === maxRetryCount) {
+        return;
+      }
+
+      const waitMS = err.getRetryAfterMs() ?? 3000;
+      actionInterval = waitMS * 1.5;
+      await sleepForMs(waitMS);
+      retryCount += 1;
+
+      await performAction(dataItem, index);
+    }
+  };
+
+  for (let i = 0; i < data.length; i += 1) {
+    const dataItem = data[i];
+    retryCount = 0;
+    // eslint-disable-next-line no-await-in-loop
+    await performAction(dataItem, i);
+    if (actionInterval > 0) {
+      // eslint-disable-next-line no-await-in-loop
+      await sleepForMs(actionInterval);
+    }
+  }
+};
+
+export const knockSupported = (version: string): boolean => {
+  const unsupportedVersion = ['1', '2', '3', '4', '5', '6'];
+  return !unsupportedVersion.includes(version);
+};
+export const restrictedSupported = (version: string): boolean => {
+  const unsupportedVersion = ['1', '2', '3', '4', '5', '6', '7'];
+  return !unsupportedVersion.includes(version);
+};
+export const knockRestrictedSupported = (version: string): boolean => {
+  const unsupportedVersion = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
+  return !unsupportedVersion.includes(version);
+};
+export const creatorsSupported = (version: string): boolean => {
+  const unsupportedVersion = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'];
+  return !unsupportedVersion.includes(version);
 };
