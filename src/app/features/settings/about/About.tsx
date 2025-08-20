@@ -52,10 +52,10 @@ export function About({ requestClose }: AboutProps) {
                     <Text>Say it. Send it. Own it.</Text>
                   </Box>
 
-                  {/* <Box gap="200" wrap="Wrap">
+                  <Box gap="200" wrap="Wrap">
                     <Button
                       as="a"
-                      href="https://github.com/cinnyapp/cinny"
+                      href="https://github.com/ontello/ontello"
                       rel="noreferrer noopener"
                       target="_blank"
                       variant="Secondary"
@@ -66,7 +66,7 @@ export function About({ requestClose }: AboutProps) {
                     >
                       <Text size="B300">Source Code</Text>
                     </Button>
-                    <Button
+                    {/*  <Button
                       as="a"
                       href="https://cinny.in/#sponsor"
                       rel="noreferrer noopener"
@@ -78,8 +78,8 @@ export function About({ requestClose }: AboutProps) {
                       before={<Icon src={Icons.Heart} size="100" filled />}
                     >
                       <Text size="B300">Support</Text>
-                    </Button>
-                  </Box> */}
+                    </Button> */}
+                  </Box>
                 </Box>
               </Box>
               <Box direction="Column" gap="100">

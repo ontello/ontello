@@ -21,7 +21,7 @@ export function WelcomePage() {
               <span>
                 Say it. Send it. Own it.{' '}
                 <a
-                  href="https://github.com/cinnyapp/cinny/releases"
+                  href="https://github.com/ontello/ontello/releases"
                   target="_blank"
                   rel="noreferrer noopener"
                 >

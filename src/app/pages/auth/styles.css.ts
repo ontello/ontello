@@ -29,7 +29,7 @@ export const AuthLogo = style([
     width: toRem(26),
     height: toRem(26),
 
-    borderRadius: '50%',
+    // borderRadius: '50%',
   },
 ]);
 
