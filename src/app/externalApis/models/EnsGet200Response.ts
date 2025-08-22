@@ -13,13 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
-import type { BotsGet200ResponseResult } from './BotsGet200ResponseResult';
+import type { EnsData } from './EnsData';
 import {
-    BotsGet200ResponseResultFromJSON,
-    BotsGet200ResponseResultFromJSONTyped,
-    BotsGet200ResponseResultToJSON,
-    BotsGet200ResponseResultToJSONTyped,
-} from './BotsGet200ResponseResult';
+    EnsDataFromJSON,
+    EnsDataFromJSONTyped,
+    EnsDataToJSON,
+    EnsDataToJSONTyped,
+} from './EnsData';
 import type { BotDetailGet200ResponseError } from './BotDetailGet200ResponseError';
 import {
     BotDetailGet200ResponseErrorFromJSON,
@@ -31,52 +31,52 @@ import {
 /**
  * 
  * @export
- * @interface BotsGet200Response
+ * @interface EnsGet200Response
  */
-export interface BotsGet200Response {
+export interface EnsGet200Response {
     /**
      * 
      * @type {BotDetailGet200ResponseError}
-     * @memberof BotsGet200Response
+     * @memberof EnsGet200Response
      */
     error: BotDetailGet200ResponseError;
     /**
      * 
-     * @type {BotsGet200ResponseResult}
-     * @memberof BotsGet200Response
+     * @type {Array<EnsData>}
+     * @memberof EnsGet200Response
      */
-    result: BotsGet200ResponseResult;
+    result: Array<EnsData>;
 }
 
 /**
- * Check if a given object implements the BotsGet200Response interface.
+ * Check if a given object implements the EnsGet200Response interface.
  */
-export function instanceOfBotsGet200Response(value: object): value is BotsGet200Response {
+export function instanceOfEnsGet200Response(value: object): value is EnsGet200Response {
     if (!('error' in value) || value['error'] === undefined) return false;
     if (!('result' in value) || value['result'] === undefined) return false;
     return true;
 }
 
-export function BotsGet200ResponseFromJSON(json: any): BotsGet200Response {
-    return BotsGet200ResponseFromJSONTyped(json, false);
+export function EnsGet200ResponseFromJSON(json: any): EnsGet200Response {
+    return EnsGet200ResponseFromJSONTyped(json, false);
 }
 
-export function BotsGet200ResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): BotsGet200Response {
+export function EnsGet200ResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): EnsGet200Response {
     if (json == null) {
         return json;
     }
     return {
         
         'error': BotDetailGet200ResponseErrorFromJSON(json['error']),
-        'result': BotsGet200ResponseResultFromJSON(json['result']),
+        'result': ((json['result'] as Array<any>).map(EnsDataFromJSON)),
     };
 }
 
-export function BotsGet200ResponseToJSON(json: any): BotsGet200Response {
-    return BotsGet200ResponseToJSONTyped(json, false);
+export function EnsGet200ResponseToJSON(json: any): EnsGet200Response {
+    return EnsGet200ResponseToJSONTyped(json, false);
 }
 
-export function BotsGet200ResponseToJSONTyped(value?: BotsGet200Response | null, ignoreDiscriminator: boolean = false): any {
+export function EnsGet200ResponseToJSONTyped(value?: EnsGet200Response | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }
@@ -84,7 +84,7 @@ export function BotsGet200ResponseToJSONTyped(value?: BotsGet200Response | null,
     return {
         
         'error': BotDetailGet200ResponseErrorToJSON(value['error']),
-        'result': BotsGet200ResponseResultToJSON(value['result']),
+        'result': ((value['result'] as Array<any>).map(EnsDataToJSON)),
     };
 }
 

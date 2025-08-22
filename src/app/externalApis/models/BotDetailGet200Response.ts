@@ -13,13 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
-import type { BotsGet200ResponseError } from './BotsGet200ResponseError';
+import type { BotDetailGet200ResponseError } from './BotDetailGet200ResponseError';
 import {
-    BotsGet200ResponseErrorFromJSON,
-    BotsGet200ResponseErrorFromJSONTyped,
-    BotsGet200ResponseErrorToJSON,
-    BotsGet200ResponseErrorToJSONTyped,
-} from './BotsGet200ResponseError';
+    BotDetailGet200ResponseErrorFromJSON,
+    BotDetailGet200ResponseErrorFromJSONTyped,
+    BotDetailGet200ResponseErrorToJSON,
+    BotDetailGet200ResponseErrorToJSONTyped,
+} from './BotDetailGet200ResponseError';
 
 /**
  * 
@@ -35,10 +35,10 @@ export interface BotDetailGet200Response {
     result?: string;
     /**
      * 
-     * @type {BotsGet200ResponseError}
+     * @type {BotDetailGet200ResponseError}
      * @memberof BotDetailGet200Response
      */
-    error: BotsGet200ResponseError;
+    error: BotDetailGet200ResponseError;
 }
 
 /**
@@ -60,7 +60,7 @@ export function BotDetailGet200ResponseFromJSONTyped(json: any, ignoreDiscrimina
     return {
         
         'result': json['result'] == null ? undefined : json['result'],
-        'error': BotsGet200ResponseErrorFromJSON(json['error']),
+        'error': BotDetailGet200ResponseErrorFromJSON(json['error']),
     };
 }
 
@@ -76,7 +76,7 @@ export function BotDetailGet200ResponseToJSONTyped(value?: BotDetailGet200Respon
     return {
         
         'result': value['result'],
-        'error': BotsGet200ResponseErrorToJSON(value['error']),
+        'error': BotDetailGet200ResponseErrorToJSON(value['error']),
     };
 }
 

@@ -13,13 +13,6 @@
  */
 
 import { mapValues } from '../runtime';
-import type { BotsGet200ResponseResult } from './BotsGet200ResponseResult';
-import {
-    BotsGet200ResponseResultFromJSON,
-    BotsGet200ResponseResultFromJSONTyped,
-    BotsGet200ResponseResultToJSON,
-    BotsGet200ResponseResultToJSONTyped,
-} from './BotsGet200ResponseResult';
 import type { BotDetailGet200ResponseError } from './BotDetailGet200ResponseError';
 import {
     BotDetailGet200ResponseErrorFromJSON,
@@ -27,56 +20,63 @@ import {
     BotDetailGet200ResponseErrorToJSON,
     BotDetailGet200ResponseErrorToJSONTyped,
 } from './BotDetailGet200ResponseError';
+import type { ChainConfig } from './ChainConfig';
+import {
+    ChainConfigFromJSON,
+    ChainConfigFromJSONTyped,
+    ChainConfigToJSON,
+    ChainConfigToJSONTyped,
+} from './ChainConfig';
 
 /**
  * 
  * @export
- * @interface BotsGet200Response
+ * @interface ChainConfigGet200Response
  */
-export interface BotsGet200Response {
+export interface ChainConfigGet200Response {
     /**
      * 
      * @type {BotDetailGet200ResponseError}
-     * @memberof BotsGet200Response
+     * @memberof ChainConfigGet200Response
      */
     error: BotDetailGet200ResponseError;
     /**
      * 
-     * @type {BotsGet200ResponseResult}
-     * @memberof BotsGet200Response
+     * @type {Array<ChainConfig>}
+     * @memberof ChainConfigGet200Response
      */
-    result: BotsGet200ResponseResult;
+    result: Array<ChainConfig>;
 }
 
 /**
- * Check if a given object implements the BotsGet200Response interface.
+ * Check if a given object implements the ChainConfigGet200Response interface.
  */
-export function instanceOfBotsGet200Response(value: object): value is BotsGet200Response {
+export function instanceOfChainConfigGet200Response(value: object): value is ChainConfigGet200Response {
     if (!('error' in value) || value['error'] === undefined) return false;
     if (!('result' in value) || value['result'] === undefined) return false;
     return true;
 }
 
-export function BotsGet200ResponseFromJSON(json: any): BotsGet200Response {
-    return BotsGet200ResponseFromJSONTyped(json, false);
+export function ChainConfigGet200ResponseFromJSON(json: any): ChainConfigGet200Response {
+    return ChainConfigGet200ResponseFromJSONTyped(json, false);
 }
 
-export function BotsGet200ResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): BotsGet200Response {
+export function ChainConfigGet200ResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): ChainConfigGet200Response {
     if (json == null) {
         return json;
     }
     return {
         
         'error': BotDetailGet200ResponseErrorFromJSON(json['error']),
-        'result': BotsGet200ResponseResultFromJSON(json['result']),
+        'result': ((json['result'] as Array<any>).map(ChainConfigFromJSON)),
     };
 }
 
-export function BotsGet200ResponseToJSON(json: any): BotsGet200Response {
-    return BotsGet200ResponseToJSONTyped(json, false);
+export function ChainConfigGet200ResponseToJSON(json: any): ChainConfigGet200Response {
+    return ChainConfigGet200ResponseToJSONTyped(json, false);
 }
 
-export function BotsGet200ResponseToJSONTyped(value?: BotsGet200Response | null, ignoreDiscriminator: boolean = false): any {
+export function ChainConfigGet200ResponseToJSONTyped(value?: ChainConfigGet200Response | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }
@@ -84,7 +84,7 @@ export function BotsGet200ResponseToJSONTyped(value?: BotsGet200Response | null,
     return {
         
         'error': BotDetailGet200ResponseErrorToJSON(value['error']),
-        'result': BotsGet200ResponseResultToJSON(value['result']),
+        'result': ((value['result'] as Array<any>).map(ChainConfigToJSON)),
     };
 }
 

@@ -13,13 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
-import type { BotsGet200ResponseResult } from './BotsGet200ResponseResult';
+import type { Token } from './Token';
 import {
-    BotsGet200ResponseResultFromJSON,
-    BotsGet200ResponseResultFromJSONTyped,
-    BotsGet200ResponseResultToJSON,
-    BotsGet200ResponseResultToJSONTyped,
-} from './BotsGet200ResponseResult';
+    TokenFromJSON,
+    TokenFromJSONTyped,
+    TokenToJSON,
+    TokenToJSONTyped,
+} from './Token';
 import type { BotDetailGet200ResponseError } from './BotDetailGet200ResponseError';
 import {
     BotDetailGet200ResponseErrorFromJSON,
@@ -31,52 +31,52 @@ import {
 /**
  * 
  * @export
- * @interface BotsGet200Response
+ * @interface TransferBalanceGet200Response
  */
-export interface BotsGet200Response {
+export interface TransferBalanceGet200Response {
     /**
      * 
      * @type {BotDetailGet200ResponseError}
-     * @memberof BotsGet200Response
+     * @memberof TransferBalanceGet200Response
      */
     error: BotDetailGet200ResponseError;
     /**
      * 
-     * @type {BotsGet200ResponseResult}
-     * @memberof BotsGet200Response
+     * @type {Token}
+     * @memberof TransferBalanceGet200Response
      */
-    result: BotsGet200ResponseResult;
+    result: Token;
 }
 
 /**
- * Check if a given object implements the BotsGet200Response interface.
+ * Check if a given object implements the TransferBalanceGet200Response interface.
  */
-export function instanceOfBotsGet200Response(value: object): value is BotsGet200Response {
+export function instanceOfTransferBalanceGet200Response(value: object): value is TransferBalanceGet200Response {
     if (!('error' in value) || value['error'] === undefined) return false;
     if (!('result' in value) || value['result'] === undefined) return false;
     return true;
 }
 
-export function BotsGet200ResponseFromJSON(json: any): BotsGet200Response {
-    return BotsGet200ResponseFromJSONTyped(json, false);
+export function TransferBalanceGet200ResponseFromJSON(json: any): TransferBalanceGet200Response {
+    return TransferBalanceGet200ResponseFromJSONTyped(json, false);
 }
 
-export function BotsGet200ResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): BotsGet200Response {
+export function TransferBalanceGet200ResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): TransferBalanceGet200Response {
     if (json == null) {
         return json;
     }
     return {
         
         'error': BotDetailGet200ResponseErrorFromJSON(json['error']),
-        'result': BotsGet200ResponseResultFromJSON(json['result']),
+        'result': TokenFromJSON(json['result']),
     };
 }
 
-export function BotsGet200ResponseToJSON(json: any): BotsGet200Response {
-    return BotsGet200ResponseToJSONTyped(json, false);
+export function TransferBalanceGet200ResponseToJSON(json: any): TransferBalanceGet200Response {
+    return TransferBalanceGet200ResponseToJSONTyped(json, false);
 }
 
-export function BotsGet200ResponseToJSONTyped(value?: BotsGet200Response | null, ignoreDiscriminator: boolean = false): any {
+export function TransferBalanceGet200ResponseToJSONTyped(value?: TransferBalanceGet200Response | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }
@@ -84,7 +84,7 @@ export function BotsGet200ResponseToJSONTyped(value?: BotsGet200Response | null,
     return {
         
         'error': BotDetailGet200ResponseErrorToJSON(value['error']),
-        'result': BotsGet200ResponseResultToJSON(value['result']),
+        'result': TokenToJSON(value['result']),
     };
 }
 

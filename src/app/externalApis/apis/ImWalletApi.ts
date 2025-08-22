@@ -15,20 +15,13 @@
 
 import * as runtime from '../runtime';
 import type {
-  BotDetailGet200Response,
-  BotsGet200Response,
   ChainConfigGet200Response,
   EnsGet200Response,
   GasTokenGet200Response,
   TokensGet200Response,
   TransferBalanceGet200Response,
-  UserRoomsGet200Response,
 } from '../models/index';
 import {
-    BotDetailGet200ResponseFromJSON,
-    BotDetailGet200ResponseToJSON,
-    BotsGet200ResponseFromJSON,
-    BotsGet200ResponseToJSON,
     ChainConfigGet200ResponseFromJSON,
     ChainConfigGet200ResponseToJSON,
     EnsGet200ResponseFromJSON,
@@ -39,65 +32,38 @@ import {
     TokensGet200ResponseToJSON,
     TransferBalanceGet200ResponseFromJSON,
     TransferBalanceGet200ResponseToJSON,
-    UserRoomsGet200ResponseFromJSON,
-    UserRoomsGet200ResponseToJSON,
 } from '../models/index';
 
 export interface ActivityGetRequest {
     addr: string;
     page_num?: number;
     page_size?: number;
-    Authorization?: string;
-}
-
-export interface BotDetailGetRequest {
-    bot_id?: number;
-    bot_did?: string;
-}
-
-export interface BotsGetRequest {
-    page_no?: number;
-    page_size?: number;
-    keyword?: string;
-    body?: object;
-}
-
-export interface ChainConfigGetRequest {
-    Authorization?: string;
 }
 
 export interface EnsGetRequest {
     query: string;
-    Authorization?: string;
 }
 
 export interface GasTokenGetRequest {
     chain_id: number;
     currency_name: string;
-    Authorization?: string;
 }
 
 export interface TokensGetRequest {
     addr: string;
     ont_id: string;
-    Authorization?: string;
 }
 
 export interface TransferBalanceGetRequest {
     chain_id: number;
     token_addr: string;
     addr: string;
-    Authorization?: string;
-}
-
-export interface UserRoomsGetRequest {
-    authorization?: string;
 }
 
 /**
  * 
  */
-export class DefaultApi extends runtime.BaseAPI {
+export class ImWalletApi extends runtime.BaseAPI {
 
     /**
      * 
@@ -127,10 +93,6 @@ export class DefaultApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters['Authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['Authorization']);
-        }
-
         const response = await this.request({
             path: `/activity`,
             method: 'GET',
@@ -151,96 +113,13 @@ export class DefaultApi extends runtime.BaseAPI {
     }
 
     /**
-     * 输入参数为bot_id或bot_did
-     * get bot detail info
-     */
-    async botDetailGetRaw(requestParameters: BotDetailGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BotDetailGet200Response>> {
-        const queryParameters: any = {};
-
-        if (requestParameters['bot_id'] != null) {
-            queryParameters['bot_id'] = requestParameters['bot_id'];
-        }
-
-        if (requestParameters['bot_did'] != null) {
-            queryParameters['bot_did'] = requestParameters['bot_did'];
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        const response = await this.request({
-            path: `/bot/detail`,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => BotDetailGet200ResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * 输入参数为bot_id或bot_did
-     * get bot detail info
-     */
-    async botDetailGet(requestParameters: BotDetailGetRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BotDetailGet200Response> {
-        const response = await this.botDetailGetRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * 
-     * get all bots
-     */
-    async botsGetRaw(requestParameters: BotsGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BotsGet200Response>> {
-        const queryParameters: any = {};
-
-        if (requestParameters['page_no'] != null) {
-            queryParameters['page_no'] = requestParameters['page_no'];
-        }
-
-        if (requestParameters['page_size'] != null) {
-            queryParameters['page_size'] = requestParameters['page_size'];
-        }
-
-        if (requestParameters['keyword'] != null) {
-            queryParameters['keyword'] = requestParameters['keyword'];
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        const response = await this.request({
-            path: `/bots`,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-            body: requestParameters['body'] as any,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => BotsGet200ResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * 
-     * get all bots
-     */
-    async botsGet(requestParameters: BotsGetRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BotsGet200Response> {
-        const response = await this.botsGetRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
      * 
      * wallet_config
      */
-    async chainConfigGetRaw(requestParameters: ChainConfigGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ChainConfigGet200Response>> {
+    async chainConfigGetRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ChainConfigGet200Response>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
-
-        if (requestParameters['Authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['Authorization']);
-        }
 
         const response = await this.request({
             path: `/chain_config`,
@@ -256,8 +135,8 @@ export class DefaultApi extends runtime.BaseAPI {
      * 
      * wallet_config
      */
-    async chainConfigGet(requestParameters: ChainConfigGetRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ChainConfigGet200Response> {
-        const response = await this.chainConfigGetRaw(requestParameters, initOverrides);
+    async chainConfigGet(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ChainConfigGet200Response> {
+        const response = await this.chainConfigGetRaw(initOverrides);
         return await response.value();
     }
 
@@ -280,10 +159,6 @@ export class DefaultApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
-
-        if (requestParameters['Authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['Authorization']);
-        }
 
         const response = await this.request({
             path: `/ens`,
@@ -335,10 +210,6 @@ export class DefaultApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters['Authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['Authorization']);
-        }
-
         const response = await this.request({
             path: `/gas_token`,
             method: 'GET',
@@ -388,10 +259,6 @@ export class DefaultApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
-
-        if (requestParameters['Authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['Authorization']);
-        }
 
         const response = await this.request({
             path: `/tokens`,
@@ -454,10 +321,6 @@ export class DefaultApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters['Authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['Authorization']);
-        }
-
         const response = await this.request({
             path: `/transfer_balance`,
             method: 'GET',
@@ -474,38 +337,6 @@ export class DefaultApi extends runtime.BaseAPI {
      */
     async transferBalanceGet(requestParameters: TransferBalanceGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TransferBalanceGet200Response> {
         const response = await this.transferBalanceGetRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * user_id  like. @tasktalk:matrix.org
-     * get user rooms
-     */
-    async userRoomsGetRaw(requestParameters: UserRoomsGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserRoomsGet200Response>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        if (requestParameters['authorization'] != null) {
-            headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        const response = await this.request({
-            path: `/user/rooms`,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => UserRoomsGet200ResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * user_id  like. @tasktalk:matrix.org
-     * get user rooms
-     */
-    async userRoomsGet(requestParameters: UserRoomsGetRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserRoomsGet200Response> {
-        const response = await this.userRoomsGetRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
