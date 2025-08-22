@@ -38,6 +38,7 @@ import { useSyncState } from '../../hooks/useSyncState';
 import { stopPropagation } from '../../utils/keyboard';
 import { SyncStatus } from './SyncStatus';
 import { AuthMetadataProvider } from '../../hooks/useAuthMetadata';
+import { useChainConfig } from '../../hooks/web3/useChainConfig';
 
 function ClientRootLoading() {
   return (
@@ -148,6 +149,14 @@ export function ClientRoot({ children }: ClientRootProps) {
   const [loading, setLoading] = useState(true);
   const { baseUrl } = getSecret();
 
+  // Initialize chain config alongside matrix client
+  const {
+    availableChains,
+    isLoading: chainConfigLoading,
+    error: chainConfigError,
+    loadChainConfig,
+  } = useChainConfig();
+
   const [loadState, loadMatrix] = useAsyncCallback<MatrixClient, Error, []>(
     useCallback(() => initClient(getSecret() as any), [])
   );
@@ -164,6 +173,13 @@ export function ClientRoot({ children }: ClientRootProps) {
     }
   }, [loadState, loadMatrix]);
 
+  // Initialize chain config on startup
+  useEffect(() => {
+    if (!chainConfigLoading && availableChains.length === 0 && !chainConfigError) {
+      loadChainConfig();
+    }
+  }, [chainConfigLoading, availableChains.length, chainConfigError, loadChainConfig]);
+
   useEffect(() => {
     if (mx && !mx.clientRunning) {
       startMatrix(mx);
@@ -179,22 +195,40 @@ export function ClientRoot({ children }: ClientRootProps) {
     }, [])
   );
 
+  const isChainConfigReady = availableChains.length > 0 || chainConfigError;
+
   return (
     <SpecVersions baseUrl={baseUrl!}>
       {mx && <SyncStatus mx={mx} />}
       {loading && <ClientRootOptions mx={mx} />}
-      {(loadState.status === AsyncStatus.Error || startState.status === AsyncStatus.Error) && (
+      {(loadState.status === AsyncStatus.Error ||
+        startState.status === AsyncStatus.Error ||
+        chainConfigError) && (
         <SplashScreen>
           <Box direction="Column" grow="Yes" alignItems="Center" justifyContent="Center" gap="400">
             <Dialog>
               <Box direction="Column" gap="400" style={{ padding: config.space.S400 }}>
                 {loadState.status === AsyncStatus.Error && (
-                  <Text>{`Failed to load. ${loadState.error.message}`}</Text>
+                  <Text>{`Failed to load Matrix client. ${loadState.error.message}`}</Text>
                 )}
                 {startState.status === AsyncStatus.Error && (
-                  <Text>{`Failed to start. ${startState.error.message}`}</Text>
+                  <Text>{`Failed to start Matrix client. ${startState.error.message}`}</Text>
                 )}
-                <Button variant="Critical" onClick={mx ? () => startMatrix(mx) : loadMatrix}>
+                {chainConfigError && (
+                  <Text>{`Failed to load chain configuration. ${chainConfigError}`}</Text>
+                )}
+                <Button
+                  variant="Critical"
+                  onClick={() => {
+                    if (chainConfigError) {
+                      loadChainConfig(true);
+                    } else if (mx) {
+                      startMatrix(mx);
+                    } else {
+                      loadMatrix();
+                    }
+                  }}
+                >
                   <Text as="span" size="B400">
                     Retry
                   </Text>
@@ -204,7 +238,7 @@ export function ClientRoot({ children }: ClientRootProps) {
           </Box>
         </SplashScreen>
       )}
-      {loading || !mx ? (
+      {loading || !mx || !isChainConfigReady ? (
         <ClientRootLoading />
       ) : (
         <MatrixClientProvider value={mx}>

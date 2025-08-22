@@ -19,10 +19,10 @@ export function RecoveryKeyForm() {
   const baseUrl = serverDiscovery['m.homeserver'].base_url;
   const mx = useMemo(() => createClient({ baseUrl }), [baseUrl]);
 
-  const ethClient = useWeb3PublicClient();
+  const { publicClient } = useWeb3PublicClient();
   const [address, setAddress] = useState<Address>('0x');
   const [shouldRecover, setShouldRecover] = useState(false); // 控制恢复操作
-  const { recoveryAccount } = useAbstractAccount(ethClient, address);
+  const { recoveryAccount } = useAbstractAccount(publicClient, address);
   const navigate = useNavigate();
 
   const [errorData, setErrorData] = useState<string | null>(null);

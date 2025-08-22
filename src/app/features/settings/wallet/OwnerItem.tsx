@@ -40,7 +40,7 @@ export function OwnerItem({
   aaAddress,
   deleteCallback,
 }: OwnerItemProps) {
-  const publicClient = useWeb3PublicClient();
+  const { publicClient } = useWeb3PublicClient();
   const mx = useMatrixClient();
   const { removeOwner } = useAbstractAccount(publicClient, aaAddress);
   const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false);

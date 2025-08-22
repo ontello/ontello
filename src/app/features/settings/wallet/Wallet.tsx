@@ -48,7 +48,7 @@ export function Wallet({ requestClose }: Props) {
   const mx = useMatrixClient();
   const userId = mx.getUserId();
   const [passkeyData, refetch] = useFetchPasskeyList(userId!);
-  const publicClient = useWeb3PublicClient();
+  const { publicClient } = useWeb3PublicClient();
 
   const { addOwnerByAddress } = useAbstractAccount(publicClient, aaAddress as Address);
 
@@ -59,6 +59,8 @@ export function Wallet({ requestClose }: Props) {
   >(useCallback(addOwnerByAddress, [addOwnerByAddress]));
 
   const [copyChecked, setCopyChecked] = useState(false);
+  console.log('publicClient', publicClient);
+
   const handleGenerateRecovery = async () => {
     const mnemonic = generateMnemonic(english);
     const mnemonicAccount = mnemonicToAccount(mnemonic);
@@ -147,9 +149,9 @@ export function Wallet({ requestClose }: Props) {
                   <SettingTile
                     title={passkeyData?.walletAddress ?? ''}
                     after={
-                      <Chip 
-                        variant="Secondary" 
-                        radii="Pill" 
+                      <Chip
+                        variant="Secondary"
+                        radii="Pill"
                         onClick={() => copyToClipboard(passkeyData?.walletAddress ?? '')}
                       >
                         <Text size="T200">Copy</Text>

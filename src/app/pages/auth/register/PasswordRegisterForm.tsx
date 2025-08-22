@@ -217,7 +217,7 @@ export function PasswordRegisterForm({
     registerState.status === AsyncStatus.Error ? registerState.error : undefined;
 
   useRegisterComplete(customRegisterResp);
-  const ethClient = useWeb3PublicClient();
+  const { publicClient } = useWeb3PublicClient();
   const handleSubmit: ChangeEventHandler<HTMLFormElement> = async (evt) => {
     evt.preventDefault();
     const {
@@ -237,7 +237,7 @@ export function PasswordRegisterForm({
     // }
     const { password, publicKeyBase64Url, xy } = await registerWithPasskey(username);
     setPublicKey(publicKeyBase64Url);
-    const address = await ethClient.readContract({
+    const address = await publicClient.readContract({
       // TODO
       address: '0x9Ac10fc0948A05319a3358881741Da38e6dAd182',
       abi: AccountFactoryAbi,
