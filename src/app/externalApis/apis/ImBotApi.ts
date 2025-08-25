@@ -15,32 +15,32 @@
 
 import * as runtime from '../runtime';
 import type {
-  BotDetailGet200Response,
-  BotsGet200Response,
-  UserRoomsGet200Response,
+  BusinessBotDetailGet200Response,
+  BusinessBotsGet200Response,
+  BusinessUserRoomsGet200Response,
 } from '../models/index';
 import {
-    BotDetailGet200ResponseFromJSON,
-    BotDetailGet200ResponseToJSON,
-    BotsGet200ResponseFromJSON,
-    BotsGet200ResponseToJSON,
-    UserRoomsGet200ResponseFromJSON,
-    UserRoomsGet200ResponseToJSON,
+    BusinessBotDetailGet200ResponseFromJSON,
+    BusinessBotDetailGet200ResponseToJSON,
+    BusinessBotsGet200ResponseFromJSON,
+    BusinessBotsGet200ResponseToJSON,
+    BusinessUserRoomsGet200ResponseFromJSON,
+    BusinessUserRoomsGet200ResponseToJSON,
 } from '../models/index';
 
-export interface BotDetailGetRequest {
+export interface BusinessBotDetailGetRequest {
     bot_id?: number;
     bot_did?: string;
 }
 
-export interface BotsGetRequest {
+export interface BusinessBotsGetRequest {
     page_no?: number;
     page_size?: number;
     keyword?: string;
     body?: object;
 }
 
-export interface UserRoomsGetRequest {
+export interface BusinessUserRoomsGetRequest {
     authorization?: string;
 }
 
@@ -53,7 +53,7 @@ export class ImBotApi extends runtime.BaseAPI {
      * 输入参数为bot_id或bot_did
      * get bot detail info
      */
-    async botDetailGetRaw(requestParameters: BotDetailGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BotDetailGet200Response>> {
+    async businessBotDetailGetRaw(requestParameters: BusinessBotDetailGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BusinessBotDetailGet200Response>> {
         const queryParameters: any = {};
 
         if (requestParameters['bot_id'] != null) {
@@ -67,21 +67,21 @@ export class ImBotApi extends runtime.BaseAPI {
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/bot/detail`,
+            path: `/business/bot/detail`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => BotDetailGet200ResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => BusinessBotDetailGet200ResponseFromJSON(jsonValue));
     }
 
     /**
      * 输入参数为bot_id或bot_did
      * get bot detail info
      */
-    async botDetailGet(requestParameters: BotDetailGetRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BotDetailGet200Response> {
-        const response = await this.botDetailGetRaw(requestParameters, initOverrides);
+    async businessBotDetailGet(requestParameters: BusinessBotDetailGetRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BusinessBotDetailGet200Response> {
+        const response = await this.businessBotDetailGetRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -89,7 +89,7 @@ export class ImBotApi extends runtime.BaseAPI {
      * 
      * get all bots
      */
-    async botsGetRaw(requestParameters: BotsGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BotsGet200Response>> {
+    async businessBotsGetRaw(requestParameters: BusinessBotsGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BusinessBotsGet200Response>> {
         const queryParameters: any = {};
 
         if (requestParameters['page_no'] != null) {
@@ -109,22 +109,22 @@ export class ImBotApi extends runtime.BaseAPI {
         headerParameters['Content-Type'] = 'application/json';
 
         const response = await this.request({
-            path: `/bots`,
+            path: `/business/bots`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
             body: requestParameters['body'] as any,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => BotsGet200ResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => BusinessBotsGet200ResponseFromJSON(jsonValue));
     }
 
     /**
      * 
      * get all bots
      */
-    async botsGet(requestParameters: BotsGetRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BotsGet200Response> {
-        const response = await this.botsGetRaw(requestParameters, initOverrides);
+    async businessBotsGet(requestParameters: BusinessBotsGetRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BusinessBotsGet200Response> {
+        const response = await this.businessBotsGetRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -132,7 +132,7 @@ export class ImBotApi extends runtime.BaseAPI {
      * user_id  like. @tasktalk:matrix.org
      * get user rooms
      */
-    async userRoomsGetRaw(requestParameters: UserRoomsGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserRoomsGet200Response>> {
+    async businessUserRoomsGetRaw(requestParameters: BusinessUserRoomsGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BusinessUserRoomsGet200Response>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -142,21 +142,21 @@ export class ImBotApi extends runtime.BaseAPI {
         }
 
         const response = await this.request({
-            path: `/user/rooms`,
+            path: `/business/user/rooms`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => UserRoomsGet200ResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => BusinessUserRoomsGet200ResponseFromJSON(jsonValue));
     }
 
     /**
      * user_id  like. @tasktalk:matrix.org
      * get user rooms
      */
-    async userRoomsGet(requestParameters: UserRoomsGetRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserRoomsGet200Response> {
-        const response = await this.userRoomsGetRaw(requestParameters, initOverrides);
+    async businessUserRoomsGet(requestParameters: BusinessUserRoomsGetRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BusinessUserRoomsGet200Response> {
+        const response = await this.businessUserRoomsGetRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

@@ -13,6 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
+import type { TokensGet200ResponseError } from './TokensGet200ResponseError';
+import {
+    TokensGet200ResponseErrorFromJSON,
+    TokensGet200ResponseErrorFromJSONTyped,
+    TokensGet200ResponseErrorToJSON,
+    TokensGet200ResponseErrorToJSONTyped,
+} from './TokensGet200ResponseError';
 import type { Token } from './Token';
 import {
     TokenFromJSON,
@@ -20,13 +27,6 @@ import {
     TokenToJSON,
     TokenToJSONTyped,
 } from './Token';
-import type { BotDetailGet200ResponseError } from './BotDetailGet200ResponseError';
-import {
-    BotDetailGet200ResponseErrorFromJSON,
-    BotDetailGet200ResponseErrorFromJSONTyped,
-    BotDetailGet200ResponseErrorToJSON,
-    BotDetailGet200ResponseErrorToJSONTyped,
-} from './BotDetailGet200ResponseError';
 
 /**
  * 
@@ -36,10 +36,10 @@ import {
 export interface TransferBalanceGet200Response {
     /**
      * 
-     * @type {BotDetailGet200ResponseError}
+     * @type {TokensGet200ResponseError}
      * @memberof TransferBalanceGet200Response
      */
-    error: BotDetailGet200ResponseError;
+    error: TokensGet200ResponseError;
     /**
      * 
      * @type {Token}
@@ -67,7 +67,7 @@ export function TransferBalanceGet200ResponseFromJSONTyped(json: any, ignoreDisc
     }
     return {
         
-        'error': BotDetailGet200ResponseErrorFromJSON(json['error']),
+        'error': TokensGet200ResponseErrorFromJSON(json['error']),
         'result': TokenFromJSON(json['result']),
     };
 }
@@ -83,7 +83,7 @@ export function TransferBalanceGet200ResponseToJSONTyped(value?: TransferBalance
 
     return {
         
-        'error': BotDetailGet200ResponseErrorToJSON(value['error']),
+        'error': TokensGet200ResponseErrorToJSON(value['error']),
         'result': TokenToJSON(value['result']),
     };
 }

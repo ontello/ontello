@@ -13,6 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
+import type { TokensGet200ResponseError } from './TokensGet200ResponseError';
+import {
+    TokensGet200ResponseErrorFromJSON,
+    TokensGet200ResponseErrorFromJSONTyped,
+    TokensGet200ResponseErrorToJSON,
+    TokensGet200ResponseErrorToJSONTyped,
+} from './TokensGet200ResponseError';
 import type { BotsGet200ResponseResult } from './BotsGet200ResponseResult';
 import {
     BotsGet200ResponseResultFromJSON,
@@ -20,13 +27,6 @@ import {
     BotsGet200ResponseResultToJSON,
     BotsGet200ResponseResultToJSONTyped,
 } from './BotsGet200ResponseResult';
-import type { BotDetailGet200ResponseError } from './BotDetailGet200ResponseError';
-import {
-    BotDetailGet200ResponseErrorFromJSON,
-    BotDetailGet200ResponseErrorFromJSONTyped,
-    BotDetailGet200ResponseErrorToJSON,
-    BotDetailGet200ResponseErrorToJSONTyped,
-} from './BotDetailGet200ResponseError';
 
 /**
  * 
@@ -36,10 +36,10 @@ import {
 export interface BotsGet200Response {
     /**
      * 
-     * @type {BotDetailGet200ResponseError}
+     * @type {TokensGet200ResponseError}
      * @memberof BotsGet200Response
      */
-    error: BotDetailGet200ResponseError;
+    error: TokensGet200ResponseError;
     /**
      * 
      * @type {BotsGet200ResponseResult}
@@ -67,7 +67,7 @@ export function BotsGet200ResponseFromJSONTyped(json: any, ignoreDiscriminator: 
     }
     return {
         
-        'error': BotDetailGet200ResponseErrorFromJSON(json['error']),
+        'error': TokensGet200ResponseErrorFromJSON(json['error']),
         'result': BotsGet200ResponseResultFromJSON(json['result']),
     };
 }
@@ -83,7 +83,7 @@ export function BotsGet200ResponseToJSONTyped(value?: BotsGet200Response | null,
 
     return {
         
-        'error': BotDetailGet200ResponseErrorToJSON(value['error']),
+        'error': TokensGet200ResponseErrorToJSON(value['error']),
         'result': BotsGet200ResponseResultToJSON(value['result']),
     };
 }

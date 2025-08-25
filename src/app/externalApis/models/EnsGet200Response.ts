@@ -13,6 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
+import type { TokensGet200ResponseError } from './TokensGet200ResponseError';
+import {
+    TokensGet200ResponseErrorFromJSON,
+    TokensGet200ResponseErrorFromJSONTyped,
+    TokensGet200ResponseErrorToJSON,
+    TokensGet200ResponseErrorToJSONTyped,
+} from './TokensGet200ResponseError';
 import type { EnsData } from './EnsData';
 import {
     EnsDataFromJSON,
@@ -20,13 +27,6 @@ import {
     EnsDataToJSON,
     EnsDataToJSONTyped,
 } from './EnsData';
-import type { BotDetailGet200ResponseError } from './BotDetailGet200ResponseError';
-import {
-    BotDetailGet200ResponseErrorFromJSON,
-    BotDetailGet200ResponseErrorFromJSONTyped,
-    BotDetailGet200ResponseErrorToJSON,
-    BotDetailGet200ResponseErrorToJSONTyped,
-} from './BotDetailGet200ResponseError';
 
 /**
  * 
@@ -36,10 +36,10 @@ import {
 export interface EnsGet200Response {
     /**
      * 
-     * @type {BotDetailGet200ResponseError}
+     * @type {TokensGet200ResponseError}
      * @memberof EnsGet200Response
      */
-    error: BotDetailGet200ResponseError;
+    error: TokensGet200ResponseError;
     /**
      * 
      * @type {Array<EnsData>}
@@ -67,7 +67,7 @@ export function EnsGet200ResponseFromJSONTyped(json: any, ignoreDiscriminator: b
     }
     return {
         
-        'error': BotDetailGet200ResponseErrorFromJSON(json['error']),
+        'error': TokensGet200ResponseErrorFromJSON(json['error']),
         'result': ((json['result'] as Array<any>).map(EnsDataFromJSON)),
     };
 }
@@ -83,7 +83,7 @@ export function EnsGet200ResponseToJSONTyped(value?: EnsGet200Response | null, i
 
     return {
         
-        'error': BotDetailGet200ResponseErrorToJSON(value['error']),
+        'error': TokensGet200ResponseErrorToJSON(value['error']),
         'result': ((value['result'] as Array<any>).map(EnsDataToJSON)),
     };
 }

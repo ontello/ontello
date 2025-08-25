@@ -24,52 +24,51 @@ import {
 /**
  * 
  * @export
- * @interface Response
+ * @interface BusinessUserRoomsGet200Response
  */
-export interface Response {
+export interface BusinessUserRoomsGet200Response {
     /**
      * 
-     * @type {string}
-     * @memberof Response
+     * @type {Array<string>}
+     * @memberof BusinessUserRoomsGet200Response
      */
-    result: string;
+    result?: Array<string>;
     /**
      * 
      * @type {WalletdataTokensGet200ResponseError}
-     * @memberof Response
+     * @memberof BusinessUserRoomsGet200Response
      */
     error: WalletdataTokensGet200ResponseError;
 }
 
 /**
- * Check if a given object implements the Response interface.
+ * Check if a given object implements the BusinessUserRoomsGet200Response interface.
  */
-export function instanceOfResponse(value: object): value is Response {
-    if (!('result' in value) || value['result'] === undefined) return false;
+export function instanceOfBusinessUserRoomsGet200Response(value: object): value is BusinessUserRoomsGet200Response {
     if (!('error' in value) || value['error'] === undefined) return false;
     return true;
 }
 
-export function ResponseFromJSON(json: any): Response {
-    return ResponseFromJSONTyped(json, false);
+export function BusinessUserRoomsGet200ResponseFromJSON(json: any): BusinessUserRoomsGet200Response {
+    return BusinessUserRoomsGet200ResponseFromJSONTyped(json, false);
 }
 
-export function ResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): Response {
+export function BusinessUserRoomsGet200ResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): BusinessUserRoomsGet200Response {
     if (json == null) {
         return json;
     }
     return {
         
-        'result': json['result'],
+        'result': json['result'] == null ? undefined : json['result'],
         'error': WalletdataTokensGet200ResponseErrorFromJSON(json['error']),
     };
 }
 
-export function ResponseToJSON(json: any): Response {
-    return ResponseToJSONTyped(json, false);
+export function BusinessUserRoomsGet200ResponseToJSON(json: any): BusinessUserRoomsGet200Response {
+    return BusinessUserRoomsGet200ResponseToJSONTyped(json, false);
 }
 
-export function ResponseToJSONTyped(value?: Response | null, ignoreDiscriminator: boolean = false): any {
+export function BusinessUserRoomsGet200ResponseToJSONTyped(value?: BusinessUserRoomsGet200Response | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }

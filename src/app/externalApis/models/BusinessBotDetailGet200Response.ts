@@ -24,52 +24,51 @@ import {
 /**
  * 
  * @export
- * @interface Response
+ * @interface BusinessBotDetailGet200Response
  */
-export interface Response {
+export interface BusinessBotDetailGet200Response {
     /**
      * 
      * @type {string}
-     * @memberof Response
+     * @memberof BusinessBotDetailGet200Response
      */
-    result: string;
+    result?: string;
     /**
      * 
      * @type {WalletdataTokensGet200ResponseError}
-     * @memberof Response
+     * @memberof BusinessBotDetailGet200Response
      */
     error: WalletdataTokensGet200ResponseError;
 }
 
 /**
- * Check if a given object implements the Response interface.
+ * Check if a given object implements the BusinessBotDetailGet200Response interface.
  */
-export function instanceOfResponse(value: object): value is Response {
-    if (!('result' in value) || value['result'] === undefined) return false;
+export function instanceOfBusinessBotDetailGet200Response(value: object): value is BusinessBotDetailGet200Response {
     if (!('error' in value) || value['error'] === undefined) return false;
     return true;
 }
 
-export function ResponseFromJSON(json: any): Response {
-    return ResponseFromJSONTyped(json, false);
+export function BusinessBotDetailGet200ResponseFromJSON(json: any): BusinessBotDetailGet200Response {
+    return BusinessBotDetailGet200ResponseFromJSONTyped(json, false);
 }
 
-export function ResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): Response {
+export function BusinessBotDetailGet200ResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): BusinessBotDetailGet200Response {
     if (json == null) {
         return json;
     }
     return {
         
-        'result': json['result'],
+        'result': json['result'] == null ? undefined : json['result'],
         'error': WalletdataTokensGet200ResponseErrorFromJSON(json['error']),
     };
 }
 
-export function ResponseToJSON(json: any): Response {
-    return ResponseToJSONTyped(json, false);
+export function BusinessBotDetailGet200ResponseToJSON(json: any): BusinessBotDetailGet200Response {
+    return BusinessBotDetailGet200ResponseToJSONTyped(json, false);
 }
 
-export function ResponseToJSONTyped(value?: Response | null, ignoreDiscriminator: boolean = false): any {
+export function BusinessBotDetailGet200ResponseToJSONTyped(value?: BusinessBotDetailGet200Response | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }

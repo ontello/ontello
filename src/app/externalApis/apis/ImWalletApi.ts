@@ -15,49 +15,58 @@
 
 import * as runtime from '../runtime';
 import type {
-  ChainConfigGet200Response,
-  EnsGet200Response,
-  GasTokenGet200Response,
-  TokensGet200Response,
-  TransferBalanceGet200Response,
+  WalletdataChainConfigGet200Response,
+  WalletdataEnsGet200Response,
+  WalletdataGasTokenGet200Response,
+  WalletdataTokensGet200Response,
+  WalletdataTransferBalanceGet200Response,
 } from '../models/index';
 import {
-    ChainConfigGet200ResponseFromJSON,
-    ChainConfigGet200ResponseToJSON,
-    EnsGet200ResponseFromJSON,
-    EnsGet200ResponseToJSON,
-    GasTokenGet200ResponseFromJSON,
-    GasTokenGet200ResponseToJSON,
-    TokensGet200ResponseFromJSON,
-    TokensGet200ResponseToJSON,
-    TransferBalanceGet200ResponseFromJSON,
-    TransferBalanceGet200ResponseToJSON,
+    WalletdataChainConfigGet200ResponseFromJSON,
+    WalletdataChainConfigGet200ResponseToJSON,
+    WalletdataEnsGet200ResponseFromJSON,
+    WalletdataEnsGet200ResponseToJSON,
+    WalletdataGasTokenGet200ResponseFromJSON,
+    WalletdataGasTokenGet200ResponseToJSON,
+    WalletdataTokensGet200ResponseFromJSON,
+    WalletdataTokensGet200ResponseToJSON,
+    WalletdataTransferBalanceGet200ResponseFromJSON,
+    WalletdataTransferBalanceGet200ResponseToJSON,
 } from '../models/index';
 
-export interface ActivityGetRequest {
+export interface WalletdataActivityGetRequest {
     addr: string;
     page_num?: number;
     page_size?: number;
+    Authorization?: string;
 }
 
-export interface EnsGetRequest {
+export interface WalletdataChainConfigGetRequest {
+    Authorization?: string;
+}
+
+export interface WalletdataEnsGetRequest {
     query: string;
+    Authorization?: string;
 }
 
-export interface GasTokenGetRequest {
+export interface WalletdataGasTokenGetRequest {
     chain_id: number;
     currency_name: string;
+    Authorization?: string;
 }
 
-export interface TokensGetRequest {
+export interface WalletdataTokensGetRequest {
     addr: string;
     ont_id: string;
+    Authorization?: string;
 }
 
-export interface TransferBalanceGetRequest {
+export interface WalletdataTransferBalanceGetRequest {
     chain_id: number;
     token_addr: string;
     addr: string;
+    Authorization?: string;
 }
 
 /**
@@ -69,11 +78,11 @@ export class ImWalletApi extends runtime.BaseAPI {
      * 
      * activity
      */
-    async activityGetRaw(requestParameters: ActivityGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<object>> {
+    async walletdataActivityGetRaw(requestParameters: WalletdataActivityGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<object>> {
         if (requestParameters['addr'] == null) {
             throw new runtime.RequiredError(
                 'addr',
-                'Required parameter "addr" was null or undefined when calling activityGet().'
+                'Required parameter "addr" was null or undefined when calling walletdataActivityGet().'
             );
         }
 
@@ -93,8 +102,12 @@ export class ImWalletApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (requestParameters['Authorization'] != null) {
+            headerParameters['Authorization'] = String(requestParameters['Authorization']);
+        }
+
         const response = await this.request({
-            path: `/activity`,
+            path: `/walletdata/activity`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -107,8 +120,8 @@ export class ImWalletApi extends runtime.BaseAPI {
      * 
      * activity
      */
-    async activityGet(requestParameters: ActivityGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<object> {
-        const response = await this.activityGetRaw(requestParameters, initOverrides);
+    async walletdataActivityGet(requestParameters: WalletdataActivityGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<object> {
+        const response = await this.walletdataActivityGetRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -116,27 +129,31 @@ export class ImWalletApi extends runtime.BaseAPI {
      * 
      * wallet_config
      */
-    async chainConfigGetRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ChainConfigGet200Response>> {
+    async walletdataChainConfigGetRaw(requestParameters: WalletdataChainConfigGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<WalletdataChainConfigGet200Response>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (requestParameters['Authorization'] != null) {
+            headerParameters['Authorization'] = String(requestParameters['Authorization']);
+        }
+
         const response = await this.request({
-            path: `/chain_config`,
+            path: `/walletdata/chain_config`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => ChainConfigGet200ResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => WalletdataChainConfigGet200ResponseFromJSON(jsonValue));
     }
 
     /**
      * 
      * wallet_config
      */
-    async chainConfigGet(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ChainConfigGet200Response> {
-        const response = await this.chainConfigGetRaw(initOverrides);
+    async walletdataChainConfigGet(requestParameters: WalletdataChainConfigGetRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<WalletdataChainConfigGet200Response> {
+        const response = await this.walletdataChainConfigGetRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -144,11 +161,11 @@ export class ImWalletApi extends runtime.BaseAPI {
      * 
      * ens
      */
-    async ensGetRaw(requestParameters: EnsGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<EnsGet200Response>> {
+    async walletdataEnsGetRaw(requestParameters: WalletdataEnsGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<WalletdataEnsGet200Response>> {
         if (requestParameters['query'] == null) {
             throw new runtime.RequiredError(
                 'query',
-                'Required parameter "query" was null or undefined when calling ensGet().'
+                'Required parameter "query" was null or undefined when calling walletdataEnsGet().'
             );
         }
 
@@ -160,22 +177,26 @@ export class ImWalletApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (requestParameters['Authorization'] != null) {
+            headerParameters['Authorization'] = String(requestParameters['Authorization']);
+        }
+
         const response = await this.request({
-            path: `/ens`,
+            path: `/walletdata/ens`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => EnsGet200ResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => WalletdataEnsGet200ResponseFromJSON(jsonValue));
     }
 
     /**
      * 
      * ens
      */
-    async ensGet(requestParameters: EnsGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<EnsGet200Response> {
-        const response = await this.ensGetRaw(requestParameters, initOverrides);
+    async walletdataEnsGet(requestParameters: WalletdataEnsGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<WalletdataEnsGet200Response> {
+        const response = await this.walletdataEnsGetRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -183,18 +204,18 @@ export class ImWalletApi extends runtime.BaseAPI {
      * 
      * gas_token
      */
-    async gasTokenGetRaw(requestParameters: GasTokenGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GasTokenGet200Response>> {
+    async walletdataGasTokenGetRaw(requestParameters: WalletdataGasTokenGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<WalletdataGasTokenGet200Response>> {
         if (requestParameters['chain_id'] == null) {
             throw new runtime.RequiredError(
                 'chain_id',
-                'Required parameter "chain_id" was null or undefined when calling gasTokenGet().'
+                'Required parameter "chain_id" was null or undefined when calling walletdataGasTokenGet().'
             );
         }
 
         if (requestParameters['currency_name'] == null) {
             throw new runtime.RequiredError(
                 'currency_name',
-                'Required parameter "currency_name" was null or undefined when calling gasTokenGet().'
+                'Required parameter "currency_name" was null or undefined when calling walletdataGasTokenGet().'
             );
         }
 
@@ -210,22 +231,26 @@ export class ImWalletApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (requestParameters['Authorization'] != null) {
+            headerParameters['Authorization'] = String(requestParameters['Authorization']);
+        }
+
         const response = await this.request({
-            path: `/gas_token`,
+            path: `/walletdata/gas_token`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => GasTokenGet200ResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => WalletdataGasTokenGet200ResponseFromJSON(jsonValue));
     }
 
     /**
      * 
      * gas_token
      */
-    async gasTokenGet(requestParameters: GasTokenGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GasTokenGet200Response> {
-        const response = await this.gasTokenGetRaw(requestParameters, initOverrides);
+    async walletdataGasTokenGet(requestParameters: WalletdataGasTokenGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<WalletdataGasTokenGet200Response> {
+        const response = await this.walletdataGasTokenGetRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -233,18 +258,18 @@ export class ImWalletApi extends runtime.BaseAPI {
      * 
      * tokens
      */
-    async tokensGetRaw(requestParameters: TokensGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokensGet200Response>> {
+    async walletdataTokensGetRaw(requestParameters: WalletdataTokensGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<WalletdataTokensGet200Response>> {
         if (requestParameters['addr'] == null) {
             throw new runtime.RequiredError(
                 'addr',
-                'Required parameter "addr" was null or undefined when calling tokensGet().'
+                'Required parameter "addr" was null or undefined when calling walletdataTokensGet().'
             );
         }
 
         if (requestParameters['ont_id'] == null) {
             throw new runtime.RequiredError(
                 'ont_id',
-                'Required parameter "ont_id" was null or undefined when calling tokensGet().'
+                'Required parameter "ont_id" was null or undefined when calling walletdataTokensGet().'
             );
         }
 
@@ -260,22 +285,26 @@ export class ImWalletApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (requestParameters['Authorization'] != null) {
+            headerParameters['Authorization'] = String(requestParameters['Authorization']);
+        }
+
         const response = await this.request({
-            path: `/tokens`,
+            path: `/walletdata/tokens`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => TokensGet200ResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => WalletdataTokensGet200ResponseFromJSON(jsonValue));
     }
 
     /**
      * 
      * tokens
      */
-    async tokensGet(requestParameters: TokensGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TokensGet200Response> {
-        const response = await this.tokensGetRaw(requestParameters, initOverrides);
+    async walletdataTokensGet(requestParameters: WalletdataTokensGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<WalletdataTokensGet200Response> {
+        const response = await this.walletdataTokensGetRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -283,25 +312,25 @@ export class ImWalletApi extends runtime.BaseAPI {
      * 
      * transfer_balance
      */
-    async transferBalanceGetRaw(requestParameters: TransferBalanceGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TransferBalanceGet200Response>> {
+    async walletdataTransferBalanceGetRaw(requestParameters: WalletdataTransferBalanceGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<WalletdataTransferBalanceGet200Response>> {
         if (requestParameters['chain_id'] == null) {
             throw new runtime.RequiredError(
                 'chain_id',
-                'Required parameter "chain_id" was null or undefined when calling transferBalanceGet().'
+                'Required parameter "chain_id" was null or undefined when calling walletdataTransferBalanceGet().'
             );
         }
 
         if (requestParameters['token_addr'] == null) {
             throw new runtime.RequiredError(
                 'token_addr',
-                'Required parameter "token_addr" was null or undefined when calling transferBalanceGet().'
+                'Required parameter "token_addr" was null or undefined when calling walletdataTransferBalanceGet().'
             );
         }
 
         if (requestParameters['addr'] == null) {
             throw new runtime.RequiredError(
                 'addr',
-                'Required parameter "addr" was null or undefined when calling transferBalanceGet().'
+                'Required parameter "addr" was null or undefined when calling walletdataTransferBalanceGet().'
             );
         }
 
@@ -321,22 +350,26 @@ export class ImWalletApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (requestParameters['Authorization'] != null) {
+            headerParameters['Authorization'] = String(requestParameters['Authorization']);
+        }
+
         const response = await this.request({
-            path: `/transfer_balance`,
+            path: `/walletdata/transfer_balance`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => TransferBalanceGet200ResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => WalletdataTransferBalanceGet200ResponseFromJSON(jsonValue));
     }
 
     /**
      * 
      * transfer_balance
      */
-    async transferBalanceGet(requestParameters: TransferBalanceGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TransferBalanceGet200Response> {
-        const response = await this.transferBalanceGetRaw(requestParameters, initOverrides);
+    async walletdataTransferBalanceGet(requestParameters: WalletdataTransferBalanceGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<WalletdataTransferBalanceGet200Response> {
+        const response = await this.walletdataTransferBalanceGetRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

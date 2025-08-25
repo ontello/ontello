@@ -7,10 +7,12 @@ export * from './runtime';
 export * from './apis/index';
 export * from './models/index';
 
+const BASE_URL = 'https://chatbotapitest.ont.network';
+
 const createConfig = () => {
   const token = localStorage.getItem('cinny_access_token') || undefined;
   return new Configuration({
-    basePath: 'https://chatbotapitest.ont.network/business',
+    basePath: `${BASE_URL}`,
     headers: token
       ? {
           Authorization: `Bearer ${token}`,

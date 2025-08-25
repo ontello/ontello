@@ -13,13 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
-import type { BotDetailGet200ResponseError } from './BotDetailGet200ResponseError';
+import type { TokensGet200ResponseError } from './TokensGet200ResponseError';
 import {
-    BotDetailGet200ResponseErrorFromJSON,
-    BotDetailGet200ResponseErrorFromJSONTyped,
-    BotDetailGet200ResponseErrorToJSON,
-    BotDetailGet200ResponseErrorToJSONTyped,
-} from './BotDetailGet200ResponseError';
+    TokensGet200ResponseErrorFromJSON,
+    TokensGet200ResponseErrorFromJSONTyped,
+    TokensGet200ResponseErrorToJSON,
+    TokensGet200ResponseErrorToJSONTyped,
+} from './TokensGet200ResponseError';
 
 /**
  * 
@@ -35,10 +35,10 @@ export interface UserRoomsGet200Response {
     result?: Array<string>;
     /**
      * 
-     * @type {BotDetailGet200ResponseError}
+     * @type {TokensGet200ResponseError}
      * @memberof UserRoomsGet200Response
      */
-    error: BotDetailGet200ResponseError;
+    error: TokensGet200ResponseError;
 }
 
 /**
@@ -60,7 +60,7 @@ export function UserRoomsGet200ResponseFromJSONTyped(json: any, ignoreDiscrimina
     return {
         
         'result': json['result'] == null ? undefined : json['result'],
-        'error': BotDetailGet200ResponseErrorFromJSON(json['error']),
+        'error': TokensGet200ResponseErrorFromJSON(json['error']),
     };
 }
 
@@ -76,7 +76,7 @@ export function UserRoomsGet200ResponseToJSONTyped(value?: UserRoomsGet200Respon
     return {
         
         'result': value['result'],
-        'error': BotDetailGet200ResponseErrorToJSON(value['error']),
+        'error': TokensGet200ResponseErrorToJSON(value['error']),
     };
 }
 

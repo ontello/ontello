@@ -13,13 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
-import type { BotDetailGet200ResponseError } from './BotDetailGet200ResponseError';
+import type { TokensGet200ResponseError } from './TokensGet200ResponseError';
 import {
-    BotDetailGet200ResponseErrorFromJSON,
-    BotDetailGet200ResponseErrorFromJSONTyped,
-    BotDetailGet200ResponseErrorToJSON,
-    BotDetailGet200ResponseErrorToJSONTyped,
-} from './BotDetailGet200ResponseError';
+    TokensGet200ResponseErrorFromJSON,
+    TokensGet200ResponseErrorFromJSONTyped,
+    TokensGet200ResponseErrorToJSON,
+    TokensGet200ResponseErrorToJSONTyped,
+} from './TokensGet200ResponseError';
 import type { ChainConfig } from './ChainConfig';
 import {
     ChainConfigFromJSON,
@@ -36,10 +36,10 @@ import {
 export interface ChainConfigGet200Response {
     /**
      * 
-     * @type {BotDetailGet200ResponseError}
+     * @type {TokensGet200ResponseError}
      * @memberof ChainConfigGet200Response
      */
-    error: BotDetailGet200ResponseError;
+    error: TokensGet200ResponseError;
     /**
      * 
      * @type {Array<ChainConfig>}
@@ -67,7 +67,7 @@ export function ChainConfigGet200ResponseFromJSONTyped(json: any, ignoreDiscrimi
     }
     return {
         
-        'error': BotDetailGet200ResponseErrorFromJSON(json['error']),
+        'error': TokensGet200ResponseErrorFromJSON(json['error']),
         'result': ((json['result'] as Array<any>).map(ChainConfigFromJSON)),
     };
 }
@@ -83,7 +83,7 @@ export function ChainConfigGet200ResponseToJSONTyped(value?: ChainConfigGet200Re
 
     return {
         
-        'error': BotDetailGet200ResponseErrorToJSON(value['error']),
+        'error': TokensGet200ResponseErrorToJSON(value['error']),
         'result': ((value['result'] as Array<any>).map(ChainConfigToJSON)),
     };
 }
