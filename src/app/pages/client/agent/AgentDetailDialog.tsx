@@ -16,18 +16,18 @@ import {
 } from 'folds';
 import FocusTrap from 'focus-trap-react';
 import { useQueryClient } from '@tanstack/react-query';
-import { BotInfo, BotInfoMediasInner, BotInfoMediasInnerMediaEnum } from '../../../externalApis';
-import { useMatrixClient } from '../../../hooks/useMatrixClient';
-import * as roomActions from '../../../../client/action/room';
-import { useRoomNavigate } from '../../../hooks/useRoomNavigate';
-import { timeDayMonYear } from '../../../utils/time';
 import { getDMRoomFor } from '@src/app/utils/matrix';
-import { copyToClipboard } from '../../../utils/dom';
-import { stopPropagation } from '../../../utils/keyboard';
 import OntelloIcon from '@src/app/static/icons/OntelloIcon';
 import WebsiteIcon from '@src/app/static/icons/WebsiteIcon';
 import XIcon from '@src/app/static/icons/XIcon';
 import { KnownMembership } from 'matrix-js-sdk';
+import { BotInfo, BotInfoMediasInner, BotInfoMediasInnerMediaEnum } from '../../../externalApis';
+import { useMatrixClient } from '../../../hooks/useMatrixClient';
+import * as roomActions from '../../../../client/action/room';
+import { useRoomNavigate } from '../../../hooks/useRoomNavigate';
+import { timeDayMonthYear } from '../../../utils/time';
+import { copyToClipboard } from '../../../utils/dom';
+import { stopPropagation } from '../../../utils/keyboard';
 
 interface InfoContainerProps {
   label: string;
@@ -35,27 +35,29 @@ interface InfoContainerProps {
   copyable?: boolean;
 }
 
-const InfoContainer: React.FC<InfoContainerProps> = ({ label, value, copyable }) => (
-  <Box
-    style={{
-      backgroundColor: color.SurfaceVariant.Container,
-      padding: config.space.S200,
-      borderRadius: config.radii.R400,
-    }}
-    direction="Column"
-    gap="100"
-  >
-    <Text size="H4">{label}</Text>
-    <Box alignItems="Center" gap="200">
-      <Text style={{ flex: 1 }}>{value}</Text>
-      {copyable && (
-        <Chip variant="Secondary" radii="Pill" onClick={() => copyToClipboard(String(value))}>
-          <Text size="T200">Copy</Text>
-        </Chip>
-      )}
+function InfoContainer({ label, value, copyable }: InfoContainerProps) {
+  return (
+    <Box
+      style={{
+        backgroundColor: color.SurfaceVariant.Container,
+        padding: config.space.S200,
+        borderRadius: config.radii.R400,
+      }}
+      direction="Column"
+      gap="100"
+    >
+      <Text size="H4">{label}</Text>
+      <Box alignItems="Center" gap="200">
+        <Text style={{ flex: 1 }}>{value}</Text>
+        {copyable && (
+          <Chip variant="Secondary" radii="Pill" onClick={() => copyToClipboard(String(value))}>
+            <Text size="T200">Copy</Text>
+          </Chip>
+        )}
+      </Box>
     </Box>
-  </Box>
-);
+  );
+}
 
 function MediaIcon({ media }: { media: BotInfoMediasInner }) {
   const handleClick = () => {
@@ -199,7 +201,7 @@ export function AgentDetailDialog({ agent, open, onClose }: AgentDetailDialogPro
                 <Box gap="200" direction="Column">
                   <InfoContainer
                     label="Registration Date: "
-                    value={timeDayMonYear(agent.create_time)}
+                    value={timeDayMonthYear(agent.create_time)}
                   />
                   <InfoContainer label="Agent DID：" value={agent.bot_did} copyable />
                   <InfoContainer label="Capabilities： " value={agent.capabilities} />

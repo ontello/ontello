@@ -6,7 +6,7 @@ export const useInviteAgent = () => {
 
   const searchAgent: (keyword: string) => Promise<BotInfo[]> = useCallback(
     async (keyword: string) => {
-      const response = await api.botsGet({
+      const response = await api.businessBotsGet({
         page_no: 1,
         page_size: 20,
         keyword,

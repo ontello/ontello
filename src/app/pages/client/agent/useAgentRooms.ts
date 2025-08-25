@@ -15,7 +15,7 @@ export const useAgentRooms = () => {
       if (isInitialFetch) {
         setLoading(true);
       }
-      const response = await api.userRoomsGet();
+      const response = await api.businessUserRoomsGet();
 
       if (response.result) {
         setAgentRoomIds(new Set(response.result));

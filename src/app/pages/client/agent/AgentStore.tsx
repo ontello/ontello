@@ -1,17 +1,5 @@
 import React, { useState } from 'react';
-import {
-  Avatar,
-  Badge,
-  Box,
-  Button,
-  Icon,
-  Icons,
-  Scroll,
-  Spinner,
-  Text,
-  as,
-  toRem,
-} from 'folds';
+import { Avatar, Badge, Box, Button, Icon, Icons, Scroll, Spinner, Text, as, toRem } from 'folds';
 import { useQuery } from '@tanstack/react-query';
 import { Page, PageContent, PageContentCenter, PageHeader } from '../../../components/page';
 import { RoomCardBase, RoomCardGrid } from '../../../components/room-card';
@@ -77,22 +65,24 @@ function AgentCard({ agent }: { agent: BotInfo }) {
   );
 }
 
-const StoreHeader = () => (
-  <PageHeader>
-    <Box grow="Yes" justifyContent="Center" alignItems="Center" gap="200">
-      <Text size="H3" truncate>
-        Agent Store
-      </Text>
-    </Box>
-  </PageHeader>
-);
+function StoreHeader() {
+  return (
+    <PageHeader>
+      <Box grow="Yes" justifyContent="Center" alignItems="Center" gap="200">
+        <Text size="H3" truncate>
+          Agent Store
+        </Text>
+      </Box>
+    </PageHeader>
+  );
+}
 
 export function AgentStore() {
   // Fetch bots data
   const { data, isLoading, error } = useQuery({
     queryKey: ['bots'],
     queryFn: async () => {
-      const response = await api.botsGet({ page_no: 1, page_size: 100 });
+      const response = await api.businessBotsGet({ page_no: 1, page_size: 100 });
       return response.result.bots;
     },
   });
