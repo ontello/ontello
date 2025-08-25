@@ -1,12 +1,12 @@
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef } from 'react';
+import { walletApi } from '@src/app/externalApis';
 import {
   chainConfigAtom,
   isLoadingChainConfigAtom,
   chainConfigErrorAtom,
   availableChainsAtom,
 } from '../../state/web3/chainConfig';
-import { api } from '../../externalApis';
 
 const CACHE_DURATION = 60 * 60 * 1000;
 
@@ -41,7 +41,7 @@ export const useChainConfig = () => {
           }
         }
 
-        const response = await api.chainConfigGet();
+        const response = await walletApi.walletdataChainConfigGet();
 
         if (response.error.code !== '0') {
           throw new Error(`API Error: ${response.error.message}`);

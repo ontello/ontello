@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-import { DefaultApi } from './apis/DefaultApi';
+import { ImBotApi, ImWalletApi } from './apis';
 import { Configuration } from './runtime';
 
 export * from './runtime';
@@ -21,4 +21,6 @@ const createConfig = () => {
   });
 };
 
-export const api = new DefaultApi(createConfig());
+export const api = new ImBotApi(createConfig());
+export const botApi = new ImBotApi(createConfig());
+export const walletApi = new ImWalletApi(createConfig());
