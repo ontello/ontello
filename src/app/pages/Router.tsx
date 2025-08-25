@@ -30,6 +30,8 @@ import {
   _SERVER_PATH,
   RECOVERY_ACCOUNT_PATH,
   AGENT_PATH,
+  WALLET_PATH,
+  WALLET_DIRECT_PATH,
   STORE_PATH,
   DIRECT_ROOM_PATH,
   AGENT_DIRECT_PATH,
@@ -74,6 +76,7 @@ import { Create } from './client/create';
 import { CreateSpaceModalRenderer } from '../features/create-space';
 import { Agent } from './client/agent/Agent';
 import { AgentStore } from './client/agent/AgentStore';
+import { Wallet } from './client/wallet/Wallet';
 
 export const createRouter = (clientConfig: ClientConfig, screenSize: ScreenSize) => {
   const { hashRouter } = clientConfig;
@@ -225,6 +228,31 @@ export const createRouter = (clientConfig: ClientConfig, screenSize: ScreenSize)
           <Route path={STORE_PATH} element={<AgentStore />} />
           <Route
             path={AGENT_DIRECT_PATH}
+            element={
+              <DirectRouteRoomProvider>
+                <Room />
+              </DirectRouteRoomProvider>
+            }
+          />
+        </Route>
+
+        <Route
+          path={WALLET_PATH}
+          element={
+            <PageRoot
+              nav={
+                <MobileFriendlyPageNav path={WALLET_PATH}>
+                  <Wallet />
+                </MobileFriendlyPageNav>
+              }
+            >
+              <Outlet />
+            </PageRoot>
+          }
+        >
+          <Route index element={<div>Wallet Test</div>} />
+          <Route
+            path={WALLET_DIRECT_PATH}
             element={
               <DirectRouteRoomProvider>
                 <Room />

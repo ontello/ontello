@@ -20,6 +20,7 @@ import {
   UnverifiedTab,
 } from './sidebar';
 import { AgentTab } from './sidebar/AgentTab';
+import { WalletTab } from './sidebar/WalletTab';
 import { openSearch } from '../../../client/action/navigation';
 import { CreateTab } from './sidebar/CreateTab';
 
@@ -34,6 +35,7 @@ export function SidebarNav() {
             <SidebarStack>
               <HomeTab />
               <DirectTab />
+              <WalletTab />
               <AgentTab />
             </SidebarStack>
             <SpaceTabs scrollRef={scrollRef} />
