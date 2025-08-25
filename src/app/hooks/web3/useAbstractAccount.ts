@@ -1,7 +1,6 @@
 import {
   Hex,
   Address,
-  PublicClient,
   toHex,
   getContract,
   encodeFunctionData,
@@ -14,7 +13,7 @@ import { mnemonicToAccount } from 'viem/accounts';
 import { EntryPointAbi, Erc20Abi, AccountAbi, PaymasterAbi } from '@src/app/static/abis';
 import { polling } from '@src/app/utils/common';
 import { fromBase64Url, registerWithPasskey, signMessageWithPasskey } from '../../utils/passkey';
-import { useChainConfig } from './useChainConfig';
+import { useWeb3PublicClient } from './useWeb3Client';
 import {
   AccountCallType,
   BuildUserOperationParams,
@@ -31,11 +30,11 @@ import {
 } from '../../utils/web3';
 import cons from '../../../client/state/cons';
 
-// TODO: GAS_ADDRESS should come from chain config when backend provides it
+// TODO
 const GAS_ADDRESS = '0xd878dfE2b33A07E7FB290c1578A0b3cbc8aDadEA';
 
-export const useAbstractAccount = (ethClient: PublicClient, aaAddress: Address) => {
-  const { getChainConfig } = useChainConfig();
+export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
+  const { publicClient: ethClient, chainConfig } = useWeb3PublicClient(chainId);
 
   const passKeyAccountContract = getContract({
     address: aaAddress,
@@ -67,11 +66,7 @@ export const useAbstractAccount = (ethClient: PublicClient, aaAddress: Address) 
   };
 
   // paymaster
-  const getPaymasterSign = async (
-    userOp: UserOperation,
-    chainId: number,
-    gasTokenAddress: string
-  ): Promise<Hex> => {
+  const getPaymasterSign = async (userOp: UserOperation, gasTokenAddress: string): Promise<Hex> => {
     const response = await fetch(
       `https://service-test.onto.app/S5/v2/ontoservice/aa/paymaster_sign`,
       {
@@ -113,9 +108,7 @@ export const useAbstractAccount = (ethClient: PublicClient, aaAddress: Address) 
     callGasLimit: Hex;
     // paymasterVerificationGasLimit: Hex;
   }> => {
-    const chainId = await ethClient.getChainId();
-    const config = getChainConfig(chainId);
-    const response = await fetch(config.bundlerUrl, {
+    const response = await fetch(chainConfig.bundlerUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -125,7 +118,7 @@ export const useAbstractAccount = (ethClient: PublicClient, aaAddress: Address) 
           jsonrpc: '2.0',
           id: 1,
           method: 'eth_estimateUserOperationGas',
-          params: [userOp, config.entrypointAddr],
+          params: [userOp, chainConfig.entrypointAddr],
         },
         serializerToHex
       ),
@@ -137,9 +130,7 @@ export const useAbstractAccount = (ethClient: PublicClient, aaAddress: Address) 
     return res.result;
   };
   const sendUserOperation = async (userOp: UserOperation): Promise<Hex> => {
-    const chainId = await ethClient.getChainId();
-    const config = getChainConfig(chainId);
-    const response = await fetch(config.bundlerUrl, {
+    const response = await fetch(chainConfig.bundlerUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -149,7 +140,7 @@ export const useAbstractAccount = (ethClient: PublicClient, aaAddress: Address) 
           jsonrpc: '2.0',
           id: 1,
           method: 'eth_sendUserOperation',
-          params: [userOp, config.entrypointAddr],
+          params: [userOp, chainConfig.entrypointAddr],
         },
         serializerToHex
       ),
@@ -161,10 +152,8 @@ export const useAbstractAccount = (ethClient: PublicClient, aaAddress: Address) 
     throw new Error(res.error?.message);
   };
   const getUserOperationReceipt = async (userOpHash: Hex): Promise<UserOperationReceipt> => {
-    const chainId = await ethClient.getChainId();
-    const config = getChainConfig(chainId);
     const getFunc = async () => {
-      const response = await fetch(config.bundlerUrl, {
+      const response = await fetch(chainConfig.bundlerUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -203,14 +192,11 @@ export const useAbstractAccount = (ethClient: PublicClient, aaAddress: Address) 
 
   //
   const buildCallData = async (operations: BuildUserOperationParams): Promise<Hex> => {
-    const chainId = await ethClient.getChainId();
-    const config = getChainConfig(chainId);
-    
     const allowance = await ethClient.readContract({
       address: GAS_ADDRESS,
       abi: Erc20Abi,
       functionName: 'allowance',
-      args: [aaAddress, config.paymasterAddr as Address],
+      args: [aaAddress, chainConfig.paymasterAddr as Address],
     });
 
     if (allowance === BigInt(0)) {
@@ -220,7 +206,7 @@ export const useAbstractAccount = (ethClient: PublicClient, aaAddress: Address) 
         data: encodeFunctionData({
           abi: Erc20Abi,
           functionName: 'approve',
-          args: [config.paymasterAddr as Address, maxUint256],
+          args: [chainConfig.paymasterAddr as Address, maxUint256],
         }),
       });
     }
@@ -260,13 +246,11 @@ export const useAbstractAccount = (ethClient: PublicClient, aaAddress: Address) 
     signMessageFunc?: (message: Hex) => Promise<Hex>
   ): Promise<BuildUserOperationResult> => {
     try {
-      const chainId = await ethClient.getChainId();
-      const config = getChainConfig(chainId);
       const nonce = (await passKeyAccountContract.read.getNonce()) as bigint;
       const feeData = await calculateGasFees(ethClient);
       const callGasLimit = await calculateCallGasLimit(
         ethClient,
-        config.entrypointAddr as Address,
+        chainConfig.entrypointAddr as Address,
         aaAddress,
         callData
       );
@@ -291,25 +275,22 @@ export const useAbstractAccount = (ethClient: PublicClient, aaAddress: Address) 
       // userOp.preVerificationGas = BigInt(estimatedGas.preVerificationGas);
       // userOp.verificationGasLimit = BigInt(estimatedGas.verificationGasLimit);
 
-      if (!chainId) {
-        throw new Error('Chain ID not found');
-      }
-      const paymasterAndData = await getPaymasterSign(userOp, chainId, GAS_ADDRESS);
+      const paymasterAndData = await getPaymasterSign(userOp, GAS_ADDRESS);
       userOp.paymasterAndData = paymasterAndData;
 
       const userOpHash = await calculateUserOpHash(
         ethClient,
         userOp,
-        config.entrypointAddr as Address,
-        chainId
+        chainConfig.entrypointAddr as Address,
+        chainConfig.chainId
       );
 
       // const validatePaymasterAndData = await ethClient.readContract({
-      //   address: config.paymasterAddr as Address,
+      //   address: chainConfig.paymasterAddr as Address,
       //   abi: PaymasterAbi,
       //   functionName: 'validatePaymasterUserOp' as any,
       //   args: [userOp, userOpHash, BigInt(0)] as any,
-      //   account: config.entrypointAddr as Address,
+      //   account: chainConfig.entrypointAddr as Address,
       // });
       // console.log('validatePaymasterAndData:', validatePaymasterAndData);
 
@@ -383,7 +364,7 @@ export const useAbstractAccount = (ethClient: PublicClient, aaAddress: Address) 
         abi: AccountAbi,
         functionName: 'validateUserOp' as any,
         args: [userOp, userOpHash, BigInt(0)] as any,
-        account: config.entrypointAddr as Address,
+        account: chainConfig.entrypointAddr as Address,
       });
       console.log('validateUserOp:', validateUserOp);
 

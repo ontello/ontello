@@ -23,7 +23,6 @@ import { UserOperationReceipt } from '@src/app/hooks/web3/types';
 import { AsyncStatus, useAsyncCallback } from '@src/app/hooks/useAsyncCallback';
 import { Address } from 'viem';
 import { useAbstractAccount } from '@src/app/hooks/web3/useAbstractAccount';
-import { useWeb3PublicClient } from '@src/app/hooks/web3/useWeb3Client';
 import FocusTrap from 'focus-trap-react';
 import { useMatrixClient } from '@src/app/hooks/useMatrixClient';
 
@@ -40,9 +39,8 @@ export function OwnerItem({
   aaAddress,
   deleteCallback,
 }: OwnerItemProps) {
-  const { publicClient } = useWeb3PublicClient();
   const mx = useMatrixClient();
-  const { removeOwner } = useAbstractAccount(publicClient, aaAddress);
+  const { removeOwner } = useAbstractAccount(aaAddress);
   const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false);
 
   const deletePasskey = async () => {

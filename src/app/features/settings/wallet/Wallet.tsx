@@ -32,7 +32,6 @@ import { SettingTile } from '../../../components/setting-tile';
 import { getSecret } from '../../../../client/state/auth';
 import { useFetchPasskeyList } from '../../../hooks/useFetchPasskeyList';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
-import { useWeb3PublicClient } from '../../../hooks/web3/useWeb3Client';
 import { useAbstractAccount } from '../../../hooks/web3/useAbstractAccount';
 import { useAsyncCallback, AsyncStatus } from '../../../hooks/useAsyncCallback';
 import { OwnerItem } from './OwnerItem';
@@ -48,9 +47,8 @@ export function Wallet({ requestClose }: Props) {
   const mx = useMatrixClient();
   const userId = mx.getUserId();
   const [passkeyData, refetch] = useFetchPasskeyList(userId!);
-  const { publicClient } = useWeb3PublicClient();
 
-  const { addOwnerByAddress } = useAbstractAccount(publicClient, aaAddress as Address);
+  const { addOwnerByAddress } = useAbstractAccount(aaAddress as Address);
 
   const [addState, startAddOwnerByAddress] = useAsyncCallback<
     UserOperationReceipt,
@@ -59,7 +57,6 @@ export function Wallet({ requestClose }: Props) {
   >(useCallback(addOwnerByAddress, [addOwnerByAddress]));
 
   const [copyChecked, setCopyChecked] = useState(false);
-  console.log('publicClient', publicClient);
 
   const handleGenerateRecovery = async () => {
     const mnemonic = generateMnemonic(english);
