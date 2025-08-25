@@ -69,6 +69,17 @@ export const useChainConfig = () => {
     [availableChains]
   );
 
+  const getChainConfig = useCallback(
+    (chainId: number) => {
+      const config = availableChains.find((chain) => chain.chainId === chainId);
+      if (!config) {
+        throw new Error(`Chain config not found for chainId: ${chainId}`);
+      }
+      return config;
+    },
+    [availableChains]
+  );
+
   useEffect(() => {
     if (!chainConfig && !isLoading && !loadingRef.current) {
       loadChainConfig();
@@ -84,6 +95,7 @@ export const useChainConfig = () => {
 
     loadChainConfig,
     isChainSupported,
+    getChainConfig,
     refreshConfig: () => loadChainConfig(true),
   };
 };

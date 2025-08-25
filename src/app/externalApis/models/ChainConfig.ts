@@ -77,6 +77,12 @@ export interface ChainConfig {
     accountFactoryAddr: string;
     /**
      * 
+     * @type {string}
+     * @memberof ChainConfig
+     */
+    paymasterAddr: string;
+    /**
+     * 
      * @type {boolean}
      * @memberof ChainConfig
      */
@@ -101,6 +107,7 @@ export function instanceOfChainConfig(value: object): value is ChainConfig {
     if (!('rpcUrls' in value) || value['rpcUrls'] === undefined) return false;
     if (!('entrypointAddr' in value) || value['entrypointAddr'] === undefined) return false;
     if (!('accountFactoryAddr' in value) || value['accountFactoryAddr'] === undefined) return false;
+    if (!('paymasterAddr' in value) || value['paymasterAddr'] === undefined) return false;
     if (!('isMain' in value) || value['isMain'] === undefined) return false;
     if (!('bundlerUrl' in value) || value['bundlerUrl'] === undefined) return false;
     return true;
@@ -124,6 +131,7 @@ export function ChainConfigFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'rpcUrls': json['rpcUrls'],
         'entrypointAddr': json['entrypointAddr'],
         'accountFactoryAddr': json['accountFactoryAddr'],
+        'paymasterAddr': json['paymasterAddr'],
         'isMain': json['isMain'],
         'bundlerUrl': json['bundlerUrl'],
     };
@@ -148,6 +156,7 @@ export function ChainConfigToJSONTyped(value?: ChainConfig | null, ignoreDiscrim
         'rpcUrls': value['rpcUrls'],
         'entrypointAddr': value['entrypointAddr'],
         'accountFactoryAddr': value['accountFactoryAddr'],
+        'paymasterAddr': value['paymasterAddr'],
         'isMain': value['isMain'],
         'bundlerUrl': value['bundlerUrl'],
     };
