@@ -439,6 +439,42 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
     const receipt = await getUserOperationReceipt(userOpHash);
     return receipt;
   };
+
+  const transfer = async (to: Address, amount: bigint, tokenAddress?: Address) => {
+    const keyIndex = await getCurrentKeyIndex();
+
+    let operations: BuildUserOperationParams;
+
+    if (tokenAddress) {
+      operations = [
+        {
+          type: AccountCallType.Execute,
+          target: tokenAddress,
+          data: encodeFunctionData({
+            abi: Erc20Abi,
+            functionName: 'transfer',
+            args: [to, amount],
+          }),
+        },
+      ];
+    } else {
+      operations = [
+        {
+          type: AccountCallType.Execute,
+          target: to,
+          value: amount,
+          data: '0x' as Hex,
+        },
+      ];
+    }
+
+    const callData = await buildCallData(operations);
+    const { userOp, userOpHash } = await buildUserOperation(callData, keyIndex);
+
+    await sendUserOperation(userOp);
+    const receipt = await getUserOperationReceipt(userOpHash);
+    return receipt;
+  };
   return {
     buildCallData,
     buildUserOperation,
@@ -448,5 +484,6 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
     recoveryAccount,
     removeOwner,
     addOwnerByAddress,
+    transfer,
   };
 };
