@@ -5,6 +5,9 @@ import { DefaultReset, color, config, toRem } from 'folds';
 export const PageNav = recipe({
   variants: {
     size: {
+      '501': {
+        width: toRem(412),
+      },
       '400': {
         width: toRem(256),
       },
