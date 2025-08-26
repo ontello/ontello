@@ -1,7 +1,9 @@
-import React, { useRef } from 'react';
+import React, { useState } from 'react';
 import { Box, Text } from 'folds';
-import { useNavToActivePathMapper } from '../../../hooks/useNavToActivePathMapper';
-import { PageNav, PageNavContent, PageNavHeader } from '../../../components/page';
+import { PageNav, PageNavHeader } from '../../../components/page';
+import { WalletHomepage } from './WalletHomepage';
+import { WalletSend } from './WalletSend';
+import { WalletNavMode } from './types';
 
 function WalletHeader() {
   return (
@@ -18,23 +20,13 @@ function WalletHeader() {
 }
 
 export function Wallet() {
-  useNavToActivePathMapper('agent');
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const [navMode, setNavMode] = useState<WalletNavMode>(WalletNavMode.Main);
 
   return (
-    <PageNav>
+    <PageNav size="501">
       <WalletHeader />
-      <PageNavContent scrollRef={scrollRef}>
-        <Box direction="Column" gap="300">
-          <div
-            style={{
-              position: 'relative',
-            }}
-          >
-            Hello
-          </div>
-        </Box>
-      </PageNavContent>
+      {navMode === WalletNavMode.Main && <WalletHomepage setNavMode={setNavMode} />}
+      {navMode === WalletNavMode.Send && <WalletSend setNavMode={setNavMode} />}
     </PageNav>
   );
 }
