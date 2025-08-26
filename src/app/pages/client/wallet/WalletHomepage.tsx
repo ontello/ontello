@@ -3,7 +3,11 @@ import { Box, Button, Text, toRem } from 'folds';
 import { PageNavContent } from '../../../components/page';
 import { WalletNavMode } from './types';
 
-export function WalletHomepage({ setNavMode }: { setNavMode: (mode: WalletNavMode) => void }) {
+export function WalletHomepage({
+  setWalletNavMode,
+}: {
+  setWalletNavMode: (mode: WalletNavMode) => void;
+}) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   return (
@@ -48,7 +52,7 @@ export function WalletHomepage({ setNavMode }: { setNavMode: (mode: WalletNavMod
                   background: '#fff',
                 }}
               >
-                <Button onClick={() => setNavMode(WalletNavMode.Send)}>Send</Button>
+                <Button onClick={() => setWalletNavMode(WalletNavMode.Send)}>Send</Button>
               </div>
             </Box>
           </Box>

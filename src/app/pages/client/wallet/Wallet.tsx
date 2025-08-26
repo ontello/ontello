@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Box, Text } from 'folds';
 import { PageNav, PageNavHeader } from '../../../components/page';
 import { WalletHomepage } from './WalletHomepage';
-import { WalletSend } from './WalletSend';
+import { Send } from './Send/Send';
 import { WalletNavMode } from './types';
 
 function WalletHeader() {
@@ -20,13 +20,15 @@ function WalletHeader() {
 }
 
 export function Wallet() {
-  const [navMode, setNavMode] = useState<WalletNavMode>(WalletNavMode.Main);
+  const [walletNavMode, setWalletNavMode] = useState<WalletNavMode>(WalletNavMode.Main);
 
   return (
     <PageNav size="501">
       <WalletHeader />
-      {navMode === WalletNavMode.Main && <WalletHomepage setNavMode={setNavMode} />}
-      {navMode === WalletNavMode.Send && <WalletSend setNavMode={setNavMode} />}
+      {walletNavMode === WalletNavMode.Main && (
+        <WalletHomepage setWalletNavMode={setWalletNavMode} />
+      )}
+      {walletNavMode === WalletNavMode.Send && <Send setWalletNavMode={setWalletNavMode} />}
     </PageNav>
   );
 }
