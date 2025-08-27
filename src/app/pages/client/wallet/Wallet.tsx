@@ -23,7 +23,7 @@ export function Wallet() {
   const [walletNavMode, setWalletNavMode] = useState<WalletNavMode>(WalletNavMode.Main);
 
   return (
-    <PageNav size="501">
+    <PageNav>
       <WalletHeader />
       {walletNavMode === WalletNavMode.Main && (
         <WalletHomepage setWalletNavMode={setWalletNavMode} />
