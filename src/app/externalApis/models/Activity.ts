@@ -13,14 +13,6 @@
  */
 
 import { mapValues } from '../runtime';
-import type { Token } from './Token';
-import {
-    TokenFromJSON,
-    TokenFromJSONTyped,
-    TokenToJSON,
-    TokenToJSONTyped,
-} from './Token';
-
 /**
  * 
  * @export
@@ -65,34 +57,22 @@ export interface Activity {
     assetIcon: string;
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof Activity
      */
-    amount: string;
+    amount?: number;
     /**
-     * 
-     * @type {string}
-     * @memberof Activity
-     */
-    gas?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof Activity
-     */
-    gasCurrency?: string;
-    /**
-     * 
+     * 3=received; 4=sent
      * @type {number}
      * @memberof Activity
      */
     txType?: number;
     /**
-     * 
-     * @type {string}
+     * 1=Confirmed 2=Failed 3=Pending
+     * @type {number}
      * @memberof Activity
      */
-    status?: string;
+    status?: number;
     /**
      * 
      * @type {number}
@@ -107,16 +87,22 @@ export interface Activity {
     blockHeight?: number;
     /**
      * 
-     * @type {Token}
-     * @memberof Activity
-     */
-    payMasterGas?: Token;
-    /**
-     * 
      * @type {string}
      * @memberof Activity
      */
-    payMasterGasAmount?: string;
+    networkFee?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof Activity
+     */
+    chainId: number;
+    /**
+     * USDT 总价值
+     * @type {string}
+     * @memberof Activity
+     */
+    value: string;
 }
 
 /**
@@ -129,7 +115,8 @@ export function instanceOfActivity(value: object): value is Activity {
     if (!('receiveAddress' in value) || value['receiveAddress'] === undefined) return false;
     if (!('assetSymbol' in value) || value['assetSymbol'] === undefined) return false;
     if (!('assetIcon' in value) || value['assetIcon'] === undefined) return false;
-    if (!('amount' in value) || value['amount'] === undefined) return false;
+    if (!('chainId' in value) || value['chainId'] === undefined) return false;
+    if (!('value' in value) || value['value'] === undefined) return false;
     return true;
 }
 
@@ -149,15 +136,14 @@ export function ActivityFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'receiveAddress': json['receiveAddress'],
         'assetSymbol': json['assetSymbol'],
         'assetIcon': json['assetIcon'],
-        'amount': json['amount'],
-        'gas': json['gas'] == null ? undefined : json['gas'],
-        'gasCurrency': json['gasCurrency'] == null ? undefined : json['gasCurrency'],
+        'amount': json['amount'] == null ? undefined : json['amount'],
         'txType': json['txType'] == null ? undefined : json['txType'],
         'status': json['status'] == null ? undefined : json['status'],
         'createTime': json['createTime'] == null ? undefined : json['createTime'],
         'blockHeight': json['blockHeight'] == null ? undefined : json['blockHeight'],
-        'payMasterGas': json['payMasterGas'] == null ? undefined : TokenFromJSON(json['payMasterGas']),
-        'payMasterGasAmount': json['payMasterGasAmount'] == null ? undefined : json['payMasterGasAmount'],
+        'networkFee': json['networkFee'] == null ? undefined : json['networkFee'],
+        'chainId': json['chainId'],
+        'value': json['value'],
     };
 }
 
@@ -179,14 +165,13 @@ export function ActivityToJSONTyped(value?: Activity | null, ignoreDiscriminator
         'assetSymbol': value['assetSymbol'],
         'assetIcon': value['assetIcon'],
         'amount': value['amount'],
-        'gas': value['gas'],
-        'gasCurrency': value['gasCurrency'],
         'txType': value['txType'],
         'status': value['status'],
         'createTime': value['createTime'],
         'blockHeight': value['blockHeight'],
-        'payMasterGas': TokenToJSON(value['payMasterGas']),
-        'payMasterGasAmount': value['payMasterGasAmount'],
+        'networkFee': value['networkFee'],
+        'chainId': value['chainId'],
+        'value': value['value'],
     };
 }
 

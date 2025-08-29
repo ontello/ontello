@@ -15,6 +15,7 @@
 
 import * as runtime from '../runtime';
 import type {
+  WalletdataActivityGet200Response,
   WalletdataChainConfigGet200Response,
   WalletdataEnsGet200Response,
   WalletdataGasTokenGet200Response,
@@ -22,6 +23,8 @@ import type {
   WalletdataTransferBalanceGet200Response,
 } from '../models/index';
 import {
+    WalletdataActivityGet200ResponseFromJSON,
+    WalletdataActivityGet200ResponseToJSON,
     WalletdataChainConfigGet200ResponseFromJSON,
     WalletdataChainConfigGet200ResponseToJSON,
     WalletdataEnsGet200ResponseFromJSON,
@@ -78,7 +81,7 @@ export class ImWalletApi extends runtime.BaseAPI {
      * 
      * activity
      */
-    async walletdataActivityGetRaw(requestParameters: WalletdataActivityGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<object>> {
+    async walletdataActivityGetRaw(requestParameters: WalletdataActivityGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<WalletdataActivityGet200Response>> {
         if (requestParameters['addr'] == null) {
             throw new runtime.RequiredError(
                 'addr',
@@ -113,14 +116,14 @@ export class ImWalletApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse<any>(response);
+        return new runtime.JSONApiResponse(response, (jsonValue) => WalletdataActivityGet200ResponseFromJSON(jsonValue));
     }
 
     /**
      * 
      * activity
      */
-    async walletdataActivityGet(requestParameters: WalletdataActivityGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<object> {
+    async walletdataActivityGet(requestParameters: WalletdataActivityGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<WalletdataActivityGet200Response> {
         const response = await this.walletdataActivityGetRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -310,7 +313,7 @@ export class ImWalletApi extends runtime.BaseAPI {
 
     /**
      * 
-     * transfer_balance
+     * 查账户中的某个token
      */
     async walletdataTransferBalanceGetRaw(requestParameters: WalletdataTransferBalanceGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<WalletdataTransferBalanceGet200Response>> {
         if (requestParameters['chain_id'] == null) {
@@ -366,7 +369,7 @@ export class ImWalletApi extends runtime.BaseAPI {
 
     /**
      * 
-     * transfer_balance
+     * 查账户中的某个token
      */
     async walletdataTransferBalanceGet(requestParameters: WalletdataTransferBalanceGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<WalletdataTransferBalanceGet200Response> {
         const response = await this.walletdataTransferBalanceGetRaw(requestParameters, initOverrides);

@@ -13,13 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
-import type { WalletdataTokensGet200ResponseError } from './WalletdataTokensGet200ResponseError';
+import type { WalletdataActivityGet200ResponseError } from './WalletdataActivityGet200ResponseError';
 import {
-    WalletdataTokensGet200ResponseErrorFromJSON,
-    WalletdataTokensGet200ResponseErrorFromJSONTyped,
-    WalletdataTokensGet200ResponseErrorToJSON,
-    WalletdataTokensGet200ResponseErrorToJSONTyped,
-} from './WalletdataTokensGet200ResponseError';
+    WalletdataActivityGet200ResponseErrorFromJSON,
+    WalletdataActivityGet200ResponseErrorFromJSONTyped,
+    WalletdataActivityGet200ResponseErrorToJSON,
+    WalletdataActivityGet200ResponseErrorToJSONTyped,
+} from './WalletdataActivityGet200ResponseError';
 
 /**
  * 
@@ -35,10 +35,10 @@ export interface BusinessBotDetailGet200Response {
     result?: string;
     /**
      * 
-     * @type {WalletdataTokensGet200ResponseError}
+     * @type {WalletdataActivityGet200ResponseError}
      * @memberof BusinessBotDetailGet200Response
      */
-    error: WalletdataTokensGet200ResponseError;
+    error: WalletdataActivityGet200ResponseError;
 }
 
 /**
@@ -60,7 +60,7 @@ export function BusinessBotDetailGet200ResponseFromJSONTyped(json: any, ignoreDi
     return {
         
         'result': json['result'] == null ? undefined : json['result'],
-        'error': WalletdataTokensGet200ResponseErrorFromJSON(json['error']),
+        'error': WalletdataActivityGet200ResponseErrorFromJSON(json['error']),
     };
 }
 
@@ -76,7 +76,7 @@ export function BusinessBotDetailGet200ResponseToJSONTyped(value?: BusinessBotDe
     return {
         
         'result': value['result'],
-        'error': WalletdataTokensGet200ResponseErrorToJSON(value['error']),
+        'error': WalletdataActivityGet200ResponseErrorToJSON(value['error']),
     };
 }
 

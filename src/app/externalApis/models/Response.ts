@@ -13,13 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
-import type { WalletdataTokensGet200ResponseError } from './WalletdataTokensGet200ResponseError';
+import type { WalletdataActivityGet200ResponseError } from './WalletdataActivityGet200ResponseError';
 import {
-    WalletdataTokensGet200ResponseErrorFromJSON,
-    WalletdataTokensGet200ResponseErrorFromJSONTyped,
-    WalletdataTokensGet200ResponseErrorToJSON,
-    WalletdataTokensGet200ResponseErrorToJSONTyped,
-} from './WalletdataTokensGet200ResponseError';
+    WalletdataActivityGet200ResponseErrorFromJSON,
+    WalletdataActivityGet200ResponseErrorFromJSONTyped,
+    WalletdataActivityGet200ResponseErrorToJSON,
+    WalletdataActivityGet200ResponseErrorToJSONTyped,
+} from './WalletdataActivityGet200ResponseError';
 
 /**
  * 
@@ -35,10 +35,10 @@ export interface Response {
     result: string;
     /**
      * 
-     * @type {WalletdataTokensGet200ResponseError}
+     * @type {WalletdataActivityGet200ResponseError}
      * @memberof Response
      */
-    error: WalletdataTokensGet200ResponseError;
+    error: WalletdataActivityGet200ResponseError;
 }
 
 /**
@@ -61,7 +61,7 @@ export function ResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
     return {
         
         'result': json['result'],
-        'error': WalletdataTokensGet200ResponseErrorFromJSON(json['error']),
+        'error': WalletdataActivityGet200ResponseErrorFromJSON(json['error']),
     };
 }
 
@@ -77,7 +77,7 @@ export function ResponseToJSONTyped(value?: Response | null, ignoreDiscriminator
     return {
         
         'result': value['result'],
-        'error': WalletdataTokensGet200ResponseErrorToJSON(value['error']),
+        'error': WalletdataActivityGet200ResponseErrorToJSON(value['error']),
     };
 }
 

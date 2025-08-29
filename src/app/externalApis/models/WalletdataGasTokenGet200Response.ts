@@ -13,6 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
+import type { WalletdataActivityGet200ResponseError } from './WalletdataActivityGet200ResponseError';
+import {
+    WalletdataActivityGet200ResponseErrorFromJSON,
+    WalletdataActivityGet200ResponseErrorFromJSONTyped,
+    WalletdataActivityGet200ResponseErrorToJSON,
+    WalletdataActivityGet200ResponseErrorToJSONTyped,
+} from './WalletdataActivityGet200ResponseError';
 import type { Token } from './Token';
 import {
     TokenFromJSON,
@@ -20,13 +27,6 @@ import {
     TokenToJSON,
     TokenToJSONTyped,
 } from './Token';
-import type { WalletdataTokensGet200ResponseError } from './WalletdataTokensGet200ResponseError';
-import {
-    WalletdataTokensGet200ResponseErrorFromJSON,
-    WalletdataTokensGet200ResponseErrorFromJSONTyped,
-    WalletdataTokensGet200ResponseErrorToJSON,
-    WalletdataTokensGet200ResponseErrorToJSONTyped,
-} from './WalletdataTokensGet200ResponseError';
 
 /**
  * 
@@ -36,10 +36,10 @@ import {
 export interface WalletdataGasTokenGet200Response {
     /**
      * 
-     * @type {WalletdataTokensGet200ResponseError}
+     * @type {WalletdataActivityGet200ResponseError}
      * @memberof WalletdataGasTokenGet200Response
      */
-    error: WalletdataTokensGet200ResponseError;
+    error: WalletdataActivityGet200ResponseError;
     /**
      * 
      * @type {Array<Token>}
@@ -67,7 +67,7 @@ export function WalletdataGasTokenGet200ResponseFromJSONTyped(json: any, ignoreD
     }
     return {
         
-        'error': WalletdataTokensGet200ResponseErrorFromJSON(json['error']),
+        'error': WalletdataActivityGet200ResponseErrorFromJSON(json['error']),
         'result': ((json['result'] as Array<any>).map(TokenFromJSON)),
     };
 }
@@ -83,7 +83,7 @@ export function WalletdataGasTokenGet200ResponseToJSONTyped(value?: WalletdataGa
 
     return {
         
-        'error': WalletdataTokensGet200ResponseErrorToJSON(value['error']),
+        'error': WalletdataActivityGet200ResponseErrorToJSON(value['error']),
         'result': ((value['result'] as Array<any>).map(TokenToJSON)),
     };
 }
