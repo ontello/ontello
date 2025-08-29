@@ -20,13 +20,13 @@ import {
     EnsDataToJSON,
     EnsDataToJSONTyped,
 } from './EnsData';
-import type { WalletdataTokensGet200ResponseError } from './WalletdataTokensGet200ResponseError';
+import type { WalletdataActivityGet200ResponseError } from './WalletdataActivityGet200ResponseError';
 import {
-    WalletdataTokensGet200ResponseErrorFromJSON,
-    WalletdataTokensGet200ResponseErrorFromJSONTyped,
-    WalletdataTokensGet200ResponseErrorToJSON,
-    WalletdataTokensGet200ResponseErrorToJSONTyped,
-} from './WalletdataTokensGet200ResponseError';
+    WalletdataActivityGet200ResponseErrorFromJSON,
+    WalletdataActivityGet200ResponseErrorFromJSONTyped,
+    WalletdataActivityGet200ResponseErrorToJSON,
+    WalletdataActivityGet200ResponseErrorToJSONTyped,
+} from './WalletdataActivityGet200ResponseError';
 
 /**
  * 
@@ -36,10 +36,10 @@ import {
 export interface WalletdataEnsGet200Response {
     /**
      * 
-     * @type {WalletdataTokensGet200ResponseError}
+     * @type {WalletdataActivityGet200ResponseError}
      * @memberof WalletdataEnsGet200Response
      */
-    error: WalletdataTokensGet200ResponseError;
+    error: WalletdataActivityGet200ResponseError;
     /**
      * 
      * @type {Array<EnsData>}
@@ -67,7 +67,7 @@ export function WalletdataEnsGet200ResponseFromJSONTyped(json: any, ignoreDiscri
     }
     return {
         
-        'error': WalletdataTokensGet200ResponseErrorFromJSON(json['error']),
+        'error': WalletdataActivityGet200ResponseErrorFromJSON(json['error']),
         'result': ((json['result'] as Array<any>).map(EnsDataFromJSON)),
     };
 }
@@ -83,7 +83,7 @@ export function WalletdataEnsGet200ResponseToJSONTyped(value?: WalletdataEnsGet2
 
     return {
         
-        'error': WalletdataTokensGet200ResponseErrorToJSON(value['error']),
+        'error': WalletdataActivityGet200ResponseErrorToJSON(value['error']),
         'result': ((value['result'] as Array<any>).map(EnsDataToJSON)),
     };
 }

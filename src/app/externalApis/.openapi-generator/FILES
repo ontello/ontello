@@ -13,11 +13,13 @@ models/EnsData.ts
 models/LinkInfo.ts
 models/Response.ts
 models/Token.ts
+models/WalletdataActivityGet200Response.ts
+models/WalletdataActivityGet200ResponseError.ts
+models/WalletdataActivityGet200ResponseResult.ts
 models/WalletdataChainConfigGet200Response.ts
 models/WalletdataEnsGet200Response.ts
 models/WalletdataGasTokenGet200Response.ts
 models/WalletdataTokensGet200Response.ts
-models/WalletdataTokensGet200ResponseError.ts
 models/WalletdataTransferBalanceGet200Response.ts
 models/index.ts
 runtime.ts

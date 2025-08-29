@@ -20,13 +20,13 @@ import {
     BusinessBotsGet200ResponseResultToJSON,
     BusinessBotsGet200ResponseResultToJSONTyped,
 } from './BusinessBotsGet200ResponseResult';
-import type { WalletdataTokensGet200ResponseError } from './WalletdataTokensGet200ResponseError';
+import type { WalletdataActivityGet200ResponseError } from './WalletdataActivityGet200ResponseError';
 import {
-    WalletdataTokensGet200ResponseErrorFromJSON,
-    WalletdataTokensGet200ResponseErrorFromJSONTyped,
-    WalletdataTokensGet200ResponseErrorToJSON,
-    WalletdataTokensGet200ResponseErrorToJSONTyped,
-} from './WalletdataTokensGet200ResponseError';
+    WalletdataActivityGet200ResponseErrorFromJSON,
+    WalletdataActivityGet200ResponseErrorFromJSONTyped,
+    WalletdataActivityGet200ResponseErrorToJSON,
+    WalletdataActivityGet200ResponseErrorToJSONTyped,
+} from './WalletdataActivityGet200ResponseError';
 
 /**
  * 
@@ -36,10 +36,10 @@ import {
 export interface BusinessBotsGet200Response {
     /**
      * 
-     * @type {WalletdataTokensGet200ResponseError}
+     * @type {WalletdataActivityGet200ResponseError}
      * @memberof BusinessBotsGet200Response
      */
-    error: WalletdataTokensGet200ResponseError;
+    error: WalletdataActivityGet200ResponseError;
     /**
      * 
      * @type {BusinessBotsGet200ResponseResult}
@@ -67,7 +67,7 @@ export function BusinessBotsGet200ResponseFromJSONTyped(json: any, ignoreDiscrim
     }
     return {
         
-        'error': WalletdataTokensGet200ResponseErrorFromJSON(json['error']),
+        'error': WalletdataActivityGet200ResponseErrorFromJSON(json['error']),
         'result': BusinessBotsGet200ResponseResultFromJSON(json['result']),
     };
 }
@@ -83,7 +83,7 @@ export function BusinessBotsGet200ResponseToJSONTyped(value?: BusinessBotsGet200
 
     return {
         
-        'error': WalletdataTokensGet200ResponseErrorToJSON(value['error']),
+        'error': WalletdataActivityGet200ResponseErrorToJSON(value['error']),
         'result': BusinessBotsGet200ResponseResultToJSON(value['result']),
     };
 }
