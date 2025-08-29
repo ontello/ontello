@@ -1,6 +1,10 @@
-import { Token, ChainConfig } from '../../../externalApis/models';
+import { Token, ChainConfig, Activity } from '../../../externalApis/models';
 
 export interface TokenWithChain extends Token {
+  chain?: ChainConfig;
+}
+
+export interface ActivityWithChain extends Activity {
   chain?: ChainConfig;
 }
 

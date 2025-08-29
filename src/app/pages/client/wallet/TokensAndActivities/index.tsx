@@ -7,14 +7,17 @@ import { useFetchPasskeyList } from '../../../../hooks/useFetchPasskeyList';
 import { useMatrixClient } from '../../../../hooks/useMatrixClient';
 import { walletApi } from '../../../../externalApis';
 import { Token, Activity, ChainConfig } from '../../../../externalApis/models';
-import { TokenWithChain } from '../types';
-import { mockChains, mockTokens } from './MockData';
+import { TokenWithChain, ActivityWithChain } from '../types';
+import { mockChains, mockTokens, mockActivities } from './MockData';
 
 export function TokensAndActivities() {
   const [activeTab, setActiveTab] = useState<'tokens' | 'activities'>('tokens');
   const [tokens, setTokens] = useState<Token[]>([]);
   const [tokensForSelectedNetwork, setTokensForSelectedNetwork] = useState<TokenWithChain[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [activitiesForSelectedNetwork, setActivitiesForSelectedNetwork] = useState<
+    ActivityWithChain[]
+  >([]);
   const [activitiesPageNum, setActivitiesPageNum] = useState(0);
   const [activitiesPageTotal, setActivitiesPageTotal] = useState(0);
   const [mockDataFlag, setMockDataFlag] = useState(true);
@@ -49,20 +52,33 @@ export function TokensAndActivities() {
     [tokens, allChains]
   );
 
+  const activitiesWithChain: ActivityWithChain[] = useMemo(
+    () =>
+      activities.map((activity) => ({
+        ...activity,
+        chain: allChains.find((chain) => chain.chainId === activity.chainId),
+      })),
+    [activities, allChains]
+  );
+
   useEffect(() => {
     if (selectedNetwork.chainId === AllChainId) {
       setTokensForSelectedNetwork(tokensWithChain);
+      setActivitiesForSelectedNetwork(activitiesWithChain);
     } else {
       setTokensForSelectedNetwork(
         tokensWithChain.filter((token) => token.chainId === selectedNetwork.chainId)
       );
+      setActivitiesForSelectedNetwork(
+        activitiesWithChain.filter((activity) => activity.chainId === selectedNetwork.chainId)
+      );
     }
-  }, [selectedNetwork, tokensWithChain]);
+  }, [selectedNetwork, tokensWithChain, activitiesWithChain]);
 
   useEffect(() => {
     if (mockDataFlag) {
       setTokens(mockTokens);
-      setActivities([]);
+      setActivities(mockActivities);
       return;
     }
 
@@ -132,7 +148,7 @@ export function TokensAndActivities() {
 
       {activeTab === 'tokens' && <TokensList tokens={tokensForSelectedNetwork} />}
 
-      {activeTab === 'activities' && <ActivityList />}
+      {activeTab === 'activities' && <ActivityList activities={activitiesForSelectedNetwork} />}
     </Box>
   );
 }

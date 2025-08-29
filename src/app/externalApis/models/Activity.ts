@@ -93,10 +93,10 @@ export interface Activity {
     networkFee?: string;
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof Activity
      */
-    chainId: string;
+    chainId: number;
     /**
      * USDT 总价值
      * @type {string}

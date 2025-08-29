@@ -5,7 +5,7 @@ import { TokenWithChain } from '../types';
 
 export function TokensList({ tokens }: { tokens: TokenWithChain[] }) {
   return (
-    <Box direction="Column" gap="300">
+    <Box direction="Column" gap="300" style={{ marginTop: '10px' }}>
       {tokens.map((token) => (
         <TokenItem key={token.symbol} token={token} />
       ))}
