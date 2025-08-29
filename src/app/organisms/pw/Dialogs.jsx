@@ -7,6 +7,7 @@ import CreateRoom from '../create-room/CreateRoom';
 import JoinAlias from '../join-alias/JoinAlias';
 
 import ReusableDialog from '../../molecules/dialog/ReusableDialog';
+import { ReviewTransferDialog } from '../../components/review-transfer';
 
 function Dialogs() {
   return (
@@ -18,6 +19,7 @@ function Dialogs() {
       <Search />
 
       <ReusableDialog />
+      <ReviewTransferDialog />
     </>
   );
 }

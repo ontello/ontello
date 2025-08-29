@@ -64,6 +64,13 @@ class Navigation extends EventEmitter {
           action.afterClose,
         );
       },
+      [cons.actions.navigation.OPEN_REVIEW_TRANSFER]: () => {
+        this.emit(
+          cons.events.navigation.REVIEW_TRANSFER_OPENED,
+          action.transferData,
+          action.onConfirm,
+        );
+      },
     };
     actions[action.type]?.();
   }

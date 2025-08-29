@@ -68,3 +68,10 @@ export function openReusableDialog(title, render, afterClose) {
   });
 }
 
+export function openReviewTransfer(transferData) {
+  appDispatcher.dispatch({
+    type: cons.actions.navigation.OPEN_REVIEW_TRANSFER,
+    transferData,
+  });
+}
+

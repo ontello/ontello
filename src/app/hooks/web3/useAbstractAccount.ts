@@ -67,6 +67,7 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
 
   // paymaster
   const getPaymasterSign = async (userOp: UserOperation, gasTokenAddress: string): Promise<Hex> => {
+    // TODO
     const response = await fetch(
       `https://service-test.onto.app/S5/v2/ontoservice/aa/paymaster_sign`,
       {
@@ -281,8 +282,7 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
       const userOpHash = await calculateUserOpHash(
         ethClient,
         userOp,
-        chainConfig.entrypointAddr as Address,
-        chainConfig.chainId
+        chainConfig.entrypointAddr as Address
       );
 
       // const validatePaymasterAndData = await ethClient.readContract({

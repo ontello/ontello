@@ -14,9 +14,9 @@ import { EntryPointAbi } from '../static/abis';
 export const calculateUserOpHash = async (
   ethClient: PublicClient,
   userop: UserOperation,
-  entryPoint: Address,
-  chainId: number
+  entryPoint: Address
 ): Promise<Hex> => {
+  // const chainId = await ethClient.getChainId();
   // const packed = encodeAbiParameters(
   //   parseAbiParameters(
   //     'address, uint256, bytes32, bytes32, uint256, uint256, uint256, uint256, uint256, bytes32'
