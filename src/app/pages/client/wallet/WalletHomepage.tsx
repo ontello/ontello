@@ -6,6 +6,7 @@ import { ContainerColor } from '../../../styles/ContainerColor.css';
 import OntIdIconSvg from '../../../static/icons/svgs/ONTID.svg';
 import TopUp from '../../../static/icons/TopUp';
 import Send from '../../../static/icons/Send';
+import { TokensAndActivities } from './TokensAndActivities';
 
 export function WalletHomepage({
   setWalletNavMode,
@@ -23,16 +24,21 @@ export function WalletHomepage({
               $0.00
             </Text>
           </Box>
+
           <Box gap="100">
             <img src={OntIdIconSvg} alt="ONTID" />
             <Text size="T300">Chichi.ont.id</Text>
           </Box>
+
           <Box>
             <Text size="T300">0xAdsdQnSGNfA43...GCh91s</Text>
           </Box>
+
           <Box gap="300">
             <Box
               grow="Yes"
+              shrink="Yes"
+              basis="No"
               gap="200"
               alignItems="Center"
               justifyContent="Center"
@@ -44,6 +50,8 @@ export function WalletHomepage({
             </Box>
             <Box
               grow="Yes"
+              shrink="Yes"
+              basis="No"
               gap="200"
               alignItems="Center"
               justifyContent="Center"
@@ -55,6 +63,8 @@ export function WalletHomepage({
               <Text size="T200">Send</Text>
             </Box>
           </Box>
+
+          <TokensAndActivities />
         </Box>
       </PageNavContent>
     </Box>
