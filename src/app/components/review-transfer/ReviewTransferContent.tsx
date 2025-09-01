@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import FocusTrap from 'focus-trap-react';
 import {
   Box,
@@ -17,12 +17,15 @@ import {
 
 import { useAbstractAccount } from '@src/app/hooks/web3/useAbstractAccount';
 import cons from '@src/client/state/cons';
-import { Address, parseUnits } from 'viem';
+import { Address, parseUnits, formatEther } from 'viem';
+import { walletApi } from '@src/app/externalApis';
 import { useAsyncCallback, AsyncStatus } from '../../hooks/useAsyncCallback';
 import { stopPropagation } from '../../utils/keyboard';
 import { useChainConfig } from '../../hooks/web3/useChainConfig';
 import * as css from './ReviewTransfer.css';
 import type { ReviewTransferContentProps } from './types';
+
+import type { WalletdataTransferBalanceGet200Response } from '../../externalApis/models/WalletdataTransferBalanceGet200Response';
 
 export function ReviewTransferContent({
   isOpen,
@@ -31,10 +34,69 @@ export function ReviewTransferContent({
 }: ReviewTransferContentProps) {
   const { getChainConfig } = useChainConfig();
   const chainConfig = getChainConfig(transferData.chainId);
-  const { transfer } = useAbstractAccount(
+  const { transfer, estimateTransfer } = useAbstractAccount(
     localStorage.getItem(cons.secretKey.AA_ADDRESS) as Address,
     chainConfig.chainId
   );
+
+  const [gasInfo, setGasInfo] = useState<WalletdataTransferBalanceGet200Response | null>(null);
+  const [feeEstimate, setFeeEstimate] = useState<{
+    estimatedEthFee: bigint;
+    maxEthFee: bigint;
+  } | null>(null);
+
+  useEffect(() => {
+    const calculateFee = async () => {
+      if (!feeEstimate) {
+        try {
+          const amountWithDecimals = parseUnits(
+            transferData.token.amount,
+            Number(transferData.token.decimals)
+          );
+
+          const estimateResult = await estimateTransfer(
+            transferData.recipient.address,
+            amountWithDecimals,
+            transferData.feeAddress,
+            transferData.token.address
+          );
+
+          setFeeEstimate(estimateResult);
+        } catch (error) {
+          console.error('Failed to calculate fee:', error);
+        }
+      }
+    };
+
+    const fetchTokenBalance = async () => {
+      if (!gasInfo && transferData.feeAddress) {
+        try {
+          const balanceInfo = await walletApi.walletdataTransferBalanceGet({
+            chain_id: transferData.chainId,
+            token_addr: transferData.feeAddress,
+            addr: localStorage.getItem(cons.secretKey.AA_ADDRESS) as string,
+          });
+          setGasInfo(balanceInfo);
+        } catch (error) {
+          console.error('Failed to fetch token balance:', error);
+        }
+      }
+    };
+
+    // Execute both functions in parallel
+    calculateFee();
+    fetchTokenBalance();
+  }, [
+    feeEstimate,
+    gasInfo,
+    transferData.chainId,
+    transferData.token.address,
+    transferData.token.amount,
+    transferData.token.decimals,
+    transferData.recipient.address,
+    transferData.feeAddress,
+    estimateTransfer,
+  ]);
 
   const [transferState, executeTransfer] = useAsyncCallback<void, Error, []>(
     useCallback(async () => {
@@ -46,12 +108,21 @@ export function ReviewTransferContent({
       const receipt = await transfer(
         transferData.recipient.address,
         amountWithDecimals,
+        transferData.feeAddress,
         transferData.token.address
       );
 
       console.log(receipt);
     }, [transferData, transfer])
   );
+
+  const feeDisplay = useMemo(() => {
+    if (gasInfo && feeEstimate) {
+      // feeEstimate.maxEthFee
+      return `${formatEther(feeEstimate.maxEthFee)}ETH`;
+    }
+    return 'Calculating';
+  }, [gasInfo, feeEstimate]);
 
   const handleConfirm = () => {
     executeTransfer();
@@ -97,27 +168,21 @@ export function ReviewTransferContent({
             <Box className={css.Content}>
               {/* Token Section */}
               <Box className={css.TokenSection}>
-                {transferData.token.icon && (
-                  <Box className={css.TokenIcon}>
-                    <img
-                      className={css.TokenIconImg}
-                      src={transferData.token.icon}
-                      alt={transferData.token.name}
-                    />
-                  </Box>
-                )}
+                <Box className={css.TokenIcon}>
+                  <img
+                    className={css.TokenIconImg}
+                    src={transferData.token.icon}
+                    alt={transferData.token.name}
+                  />
+                </Box>
                 <Box className={css.TokenInfo}>
                   <Text size="H5" priority="500">
                     {transferData.token.name}
                   </Text>
-                  <Text size="T300" priority="300">
-                    {transferData.token.amount} {transferData.token.name}
-                  </Text>
                 </Box>
                 <Box className={css.TokenValue}>
-                  <Text size="T400" priority="400">
-                    {transferData.token.usdValue}
-                  </Text>
+                  <Text>{transferData.token.amount}</Text>
+                  <Text>${transferData.token.usdValue}</Text>
                 </Box>
               </Box>
 
@@ -163,10 +228,12 @@ export function ReviewTransferContent({
                 </Box>
               </Box>
 
-              {/* Fee Address Section */}
+              {/* Fee Section */}
               <Box className={css.Section}>
-                <Text size="L400">Fee Address</Text>
-                <Text size="B400">{transferData.feeAddress}</Text>
+                <Text size="L400">Transaction Fee</Text>
+                <Box className={css.Network}>
+                  <Text size="B400">{feeDisplay || 'Loading...'}</Text>
+                </Box>
               </Box>
 
               {/* Error Section */}

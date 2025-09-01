@@ -31,7 +31,7 @@ function TestComponent() {
     openReviewTransfer(testData);
   };
 
-  return <Button onClick={handleTestTransfer}>测试 Review Transfer</Button>;
+  return <Button onClick={handleTestTransfer}>Review Transfer</Button>;
 }
 
 export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavMode) => void }) {

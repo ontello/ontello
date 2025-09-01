@@ -34,9 +34,6 @@ export const Content = style([
 export const TokenSection = style([
   DefaultReset,
   {
-    backgroundColor: color.SurfaceVariant.Container,
-    borderRadius: config.radii.R400,
-    padding: config.space.S400,
     display: 'flex',
     alignItems: 'center',
     gap: config.space.S400,

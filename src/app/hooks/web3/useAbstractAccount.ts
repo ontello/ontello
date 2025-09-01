@@ -23,7 +23,7 @@ import {
 } from './types';
 import {
   bigIntSerializer,
-  calculateCallGasLimit,
+  // calculateCallGasLimit,
   calculateGasFees,
   calculateUserOpHash,
   serializerToHex,
@@ -31,7 +31,7 @@ import {
 import cons from '../../../client/state/cons';
 
 // TODO
-const GAS_ADDRESS = '0xd878dfE2b33A07E7FB290c1578A0b3cbc8aDadEA';
+const MAIN_NETWORK_GAS_ADDRESS = '0xd878dfE2b33A07E7FB290c1578A0b3cbc8aDadEA';
 
 export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
   const { publicClient: ethClient, chainConfig } = useWeb3PublicClient(chainId);
@@ -192,9 +192,12 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
   };
 
   //
-  const buildCallData = async (operations: BuildUserOperationParams): Promise<Hex> => {
+  const buildCallData = async (
+    operations: BuildUserOperationParams,
+    gasAddress: Address = MAIN_NETWORK_GAS_ADDRESS
+  ): Promise<Hex> => {
     const allowance = await ethClient.readContract({
-      address: GAS_ADDRESS,
+      address: gasAddress,
       abi: Erc20Abi,
       functionName: 'allowance',
       args: [aaAddress, chainConfig.paymasterAddr as Address],
@@ -203,7 +206,7 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
     if (allowance === BigInt(0)) {
       operations.unshift({
         type: AccountCallType.Execute,
-        target: GAS_ADDRESS,
+        target: gasAddress,
         data: encodeFunctionData({
           abi: Erc20Abi,
           functionName: 'approve',
@@ -244,17 +247,18 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
   const buildUserOperation = async (
     callData: Hex,
     keyIndex: bigint,
-    signMessageFunc?: (message: Hex) => Promise<Hex>
+    signMessageFunc?: (message: Hex) => Promise<Hex>,
+    gasAddress: Address = MAIN_NETWORK_GAS_ADDRESS
   ): Promise<BuildUserOperationResult> => {
     try {
       const nonce = (await passKeyAccountContract.read.getNonce()) as bigint;
       const feeData = await calculateGasFees(ethClient);
-      const callGasLimit = await calculateCallGasLimit(
-        ethClient,
-        chainConfig.entrypointAddr as Address,
-        aaAddress,
-        callData
-      );
+      // const callGasLimit = await calculateCallGasLimit(
+      //   ethClient,
+      //   chainConfig.entrypointAddr as Address,
+      //   aaAddress,
+      //   callData
+      // );
       console.log('nonce', nonce);
 
       const userOp = {
@@ -262,22 +266,26 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
         nonce,
         initCode: '0x' as Hex,
         callData,
-        callGasLimit,
+        callGasLimit: BigInt(21000),
         verificationGasLimit: BigInt(500_000),
         preVerificationGas: BigInt(200_000),
         maxFeePerGas: feeData.maxFeePerGas,
         maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
         paymasterAndData: '0x' as Hex,
-        signature: '0x' as Hex,
+        signature:
+          '0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000260000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000000001200000000000000000000000000000000000000000000000000000000000000017000000000000000000000000000000000000000000000000000000000000000168bd76d24faae41e9b10fa547c74f6d82ef3baf9ecfb18f828abb0fc13888b5bff4aa483155037396e6ca63771f0cba4585cb91a08d6492325d7f61518508eaf000000000000000000000000000000000000000000000000000000000000002549960de5880e8c687434170f6476605b8fe4aeb9a28632c7995cf3ba831d97631d0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f37b2274797065223a22176562617574686e2e676574222c226368616c6c656e6765223a224b33624e59524e524f767432776b4f5449376f6d7153384a56794e5431536d544c56646d68586d6d357851222c226f726967696e223a22687474703a2f2f6c6f63616c686f73743a38303830222c2263726f73734f726967696e223a66616c73652c226f746865725f6b6579735f63616e5f62655f61646465645f68657265223a22646f206e6f7420636f6d7061726520636c69656e74446174614a534f4e20616761696e737420612074656d706c6174652e205365652068747470733a2f2f676f6f2e666c2f796162506577227d00000000000000000000000000' as Hex, // init
       };
 
-      // const estimatedGas = await estimateUserOperationGas(userOp);
-      // console.log('estimatedGas:', estimatedGas);
-      // userOp.preVerificationGas = BigInt(estimatedGas.preVerificationGas);
-      // userOp.verificationGasLimit = BigInt(estimatedGas.verificationGasLimit);
-
-      const paymasterAndData = await getPaymasterSign(userOp, GAS_ADDRESS);
+      const paymasterAndData = await getPaymasterSign(userOp, gasAddress);
       userOp.paymasterAndData = paymasterAndData;
+
+      const estimatedGas = await estimateUserOperationGas(userOp);
+      userOp.preVerificationGas = BigInt(estimatedGas.preVerificationGas);
+      userOp.verificationGasLimit = BigInt(estimatedGas.verificationGasLimit);
+      userOp.callGasLimit = BigInt(estimatedGas.callGasLimit);
+
+      const paymasterAndData2 = await getPaymasterSign(userOp, gasAddress);
+      userOp.paymasterAndData = paymasterAndData2;
 
       const userOpHash = await calculateUserOpHash(
         ethClient,
@@ -440,7 +448,12 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
     return receipt;
   };
 
-  const transfer = async (to: Address, amount: bigint, tokenAddress?: Address) => {
+  const transfer = async (
+    to: Address,
+    amount: bigint,
+    gasAddress: Address,
+    tokenAddress?: Address
+  ) => {
     const keyIndex = await getCurrentKeyIndex();
 
     let operations: BuildUserOperationParams;
@@ -468,13 +481,101 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
       ];
     }
 
-    const callData = await buildCallData(operations);
+    const callData = await buildCallData(operations, gasAddress);
     const { userOp, userOpHash } = await buildUserOperation(callData, keyIndex);
 
     await sendUserOperation(userOp);
     const receipt = await getUserOperationReceipt(userOpHash);
     return receipt;
   };
+  const estimateTransfer = async (
+    to: Address,
+    amount: bigint,
+    gasAddress: Address,
+    tokenAddress?: Address
+  ) => {
+    try {
+      const keyIndex = await getCurrentKeyIndex();
+      let operations: BuildUserOperationParams;
+
+      if (tokenAddress) {
+        operations = [
+          {
+            type: AccountCallType.Execute,
+            target: tokenAddress,
+            data: encodeFunctionData({
+              abi: Erc20Abi,
+              functionName: 'transfer',
+              args: [to, amount],
+            }),
+          },
+        ];
+      } else {
+        operations = [
+          {
+            type: AccountCallType.Execute,
+            target: to,
+            value: amount,
+            data: '0x' as Hex,
+          },
+        ];
+      }
+
+      const callData = await buildCallData(operations, gasAddress);
+      const feeData = await calculateGasFees(ethClient);
+
+      // Build initial UserOperation with fixed gas values
+      const nonce = (await passKeyAccountContract.read.getNonce()) as bigint;
+      const userOp = {
+        sender: aaAddress,
+        nonce,
+        initCode: '0x' as Hex,
+        callData,
+        callGasLimit: BigInt(21000),
+        verificationGasLimit: BigInt(500_000),
+        preVerificationGas: BigInt(200_000),
+        maxFeePerGas: feeData.maxFeePerGas,
+        maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
+        paymasterAndData: '0x' as Hex,
+        signature:
+          '0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000260000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000000001200000000000000000000000000000000000000000000000000000000000000017000000000000000000000000000000000000000000000000000000000000000168bd76d24faae41e9b10fa547c74f6d82ef3baf9ecfb18f828abb0fc13888b5bff4aa483155037396e6ca63771f0cba4585cb91a08d6492325d7f61518508eaf000000000000000000000000000000000000000000000000000000000000002549960de5880e8c687434170f6476605b8fe4aeb9a28632c7995cf3ba831d97631d0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f37b2274797065223a22176562617574686e2e676574222c226368616c6c656e6765223a224b33624e59524e524f767432776b4f5449376f6d7153384a56794e5431536d544c56646d68586d6d357851222c226f726967696e223a22687474703a2f2f6c6f63616c686f73743a38303830222c2263726f73734f726967696e223a66616c73652c226f746865725f6b6579735f63616e5f62655f61646465645f68657265223a22646f206e6f7420636f6d7061726520636c69656e74446174614a534f4e20616761696e737420612074656d706c6174652e205365652068747470733a2f2f676f6f2e666c2f796162506577227d00000000000000000000000000' as Hex,
+      };
+
+      // Get Paymaster signature
+      const paymasterAndData = await getPaymasterSign(userOp, gasAddress);
+      userOp.paymasterAndData = paymasterAndData;
+
+      // Get accurate gas estimation from Bundler
+      const estimatedGas = await estimateUserOperationGas(userOp);
+      const actualCallGasLimit = BigInt(estimatedGas.callGasLimit);
+      const actualVerificationGasLimit = BigInt(estimatedGas.verificationGasLimit);
+      const actualPreVerificationGas = BigInt(estimatedGas.preVerificationGas);
+
+      // Calculate total gas usage
+      const totalGasLimit =
+        actualCallGasLimit + actualVerificationGasLimit + actualPreVerificationGas;
+
+      // Calculate estimated fee based on current network conditions
+      const block = await ethClient.getBlock();
+      const baseFee = block.baseFeePerGas ?? BigInt(0);
+      const effectiveGasPrice = baseFee + feeData.maxPriorityFeePerGas;
+      const estimatedEthFee =
+        totalGasLimit *
+        (effectiveGasPrice < feeData.maxFeePerGas ? effectiveGasPrice : feeData.maxFeePerGas);
+
+      // Maximum possible fee
+      const maxEthFee = totalGasLimit * feeData.maxFeePerGas;
+
+      return {
+        estimatedEthFee,
+        maxEthFee,
+      };
+    } catch (error) {
+      console.error('estimateTransfer failed:', error);
+      throw error;
+    }
+  };
+
   return {
     buildCallData,
     buildUserOperation,
@@ -485,5 +586,6 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
     removeOwner,
     addOwnerByAddress,
     transfer,
+    estimateTransfer,
   };
 };

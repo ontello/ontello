@@ -28,7 +28,7 @@ export function ReviewTransferDialog() {
     setTransferData(null);
   };
 
-  return transferData ? (
+  return transferData && isOpen ? (
     <ReviewTransferContent
       isOpen={isOpen}
       onClose={handleClose}
