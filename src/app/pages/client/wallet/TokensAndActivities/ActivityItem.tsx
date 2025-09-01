@@ -1,7 +1,8 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Box, Text } from 'folds';
 import { AssetAndChainIcon } from '../../../../components/wallet/AssetAndChainIcon';
 import { ActivityWithChain } from '../types';
+import { ActivityDetail } from './ActivityDetail';
 
 export function ActivityItem({ activity }: { activity: ActivityWithChain }) {
   const sendAndReceiveText = useMemo(() => {
@@ -40,26 +41,50 @@ export function ActivityItem({ activity }: { activity: ActivityWithChain }) {
     return '';
   }, [activity.status]);
 
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const handleRequestClose = useCallback(() => {
+    setIsDialogOpen(false);
+  }, []);
+
   return (
-    <Box justifyContent="SpaceBetween" alignItems="Center" gap="300">
-      <Box gap="100" alignItems="Center">
-        <AssetAndChainIcon asset={activity.assetIcon} chain={activity.chain?.iconUrls[0]} />
-        <Box direction="Column">
-          <Text size="H5">{sendAndReceiveText}</Text>
-          <Text size="T300" style={{ color: statusColor }}>
-            {statusText}
+    <>
+      <Box
+        justifyContent="SpaceBetween"
+        alignItems="Center"
+        gap="300"
+        onClick={() => setIsDialogOpen(true)}
+        style={{ cursor: 'pointer' }}
+      >
+        <Box gap="100" alignItems="Center">
+          <AssetAndChainIcon asset={activity.assetIcon} chain={activity.chain?.iconUrls[0]} />
+          <Box direction="Column">
+            <Text size="H5">{sendAndReceiveText}</Text>
+            <Text size="T300" style={{ color: statusColor }}>
+              {statusText}
+            </Text>
+          </Box>
+        </Box>
+
+        <Box direction="Column" alignItems="End">
+          <Text size="H6">
+            {activity.txType === 3 ? '+' : '-'} ${activity.value}
+          </Text>
+          <Text size="T300" priority="300">
+            {activity.amount} {activity.assetSymbol}
           </Text>
         </Box>
       </Box>
 
-      <Box direction="Column" alignItems="End">
-        <Text size="H6">
-          {activity.txType === 3 ? '+' : '-'} ${activity.value}
-        </Text>
-        <Text size="T300" priority="300">
-          {activity.amount} {activity.assetSymbol}
-        </Text>
-      </Box>
-    </Box>
+      {isDialogOpen && (
+        <ActivityDetail
+          activity={activity}
+          sendAndReceiveText={sendAndReceiveText}
+          statusText={statusText}
+          statusColor={statusColor}
+          onClose={handleRequestClose}
+        />
+      )}
+    </>
   );
 }

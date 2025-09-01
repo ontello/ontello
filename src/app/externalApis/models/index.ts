@@ -10,6 +10,7 @@ export * from './BusinessUserRoomsGet200Response';
 export * from './ChainConfig';
 export * from './EnsData';
 export * from './LinkInfo';
+export * from './NetworkFeeData';
 export * from './Response';
 export * from './Token';
 export * from './WalletdataActivityGet200Response';
