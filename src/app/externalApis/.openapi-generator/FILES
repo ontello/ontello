@@ -11,6 +11,7 @@ models/BusinessUserRoomsGet200Response.ts
 models/ChainConfig.ts
 models/EnsData.ts
 models/LinkInfo.ts
+models/NetworkFeeData.ts
 models/Response.ts
 models/Token.ts
 models/WalletdataActivityGet200Response.ts

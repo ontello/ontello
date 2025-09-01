@@ -13,6 +13,21 @@
  */
 
 import { mapValues } from '../runtime';
+import type { EnsData } from './EnsData';
+import {
+    EnsDataFromJSON,
+    EnsDataFromJSONTyped,
+    EnsDataToJSON,
+    EnsDataToJSONTyped,
+} from './EnsData';
+import type { NetworkFeeData } from './NetworkFeeData';
+import {
+    NetworkFeeDataFromJSON,
+    NetworkFeeDataFromJSONTyped,
+    NetworkFeeDataToJSON,
+    NetworkFeeDataToJSONTyped,
+} from './NetworkFeeData';
+
 /**
  * 
  * @export
@@ -33,16 +48,16 @@ export interface Activity {
     transferHash: string;
     /**
      * 
-     * @type {string}
+     * @type {EnsData}
      * @memberof Activity
      */
-    sendAddress: string;
+    sendData: EnsData;
     /**
      * 
-     * @type {string}
+     * @type {EnsData}
      * @memberof Activity
      */
-    receiveAddress: string;
+    receiveData: EnsData;
     /**
      * 
      * @type {string}
@@ -57,10 +72,10 @@ export interface Activity {
     assetIcon: string;
     /**
      * 
-     * @type {number}
+     * @type {string}
      * @memberof Activity
      */
-    amount?: number;
+    amount?: string;
     /**
      * 3=received; 4=sent
      * @type {number}
@@ -87,10 +102,10 @@ export interface Activity {
     blockHeight?: number;
     /**
      * 
-     * @type {string}
+     * @type {NetworkFeeData}
      * @memberof Activity
      */
-    networkFee?: string;
+    networkData?: NetworkFeeData;
     /**
      * 
      * @type {number}
@@ -111,8 +126,8 @@ export interface Activity {
 export function instanceOfActivity(value: object): value is Activity {
     if (!('chainType' in value) || value['chainType'] === undefined) return false;
     if (!('transferHash' in value) || value['transferHash'] === undefined) return false;
-    if (!('sendAddress' in value) || value['sendAddress'] === undefined) return false;
-    if (!('receiveAddress' in value) || value['receiveAddress'] === undefined) return false;
+    if (!('sendData' in value) || value['sendData'] === undefined) return false;
+    if (!('receiveData' in value) || value['receiveData'] === undefined) return false;
     if (!('assetSymbol' in value) || value['assetSymbol'] === undefined) return false;
     if (!('assetIcon' in value) || value['assetIcon'] === undefined) return false;
     if (!('chainId' in value) || value['chainId'] === undefined) return false;
@@ -132,8 +147,8 @@ export function ActivityFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         
         'chainType': json['chainType'],
         'transferHash': json['transferHash'],
-        'sendAddress': json['sendAddress'],
-        'receiveAddress': json['receiveAddress'],
+        'sendData': EnsDataFromJSON(json['sendData']),
+        'receiveData': EnsDataFromJSON(json['receiveData']),
         'assetSymbol': json['assetSymbol'],
         'assetIcon': json['assetIcon'],
         'amount': json['amount'] == null ? undefined : json['amount'],
@@ -141,7 +156,7 @@ export function ActivityFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'status': json['status'] == null ? undefined : json['status'],
         'createTime': json['createTime'] == null ? undefined : json['createTime'],
         'blockHeight': json['blockHeight'] == null ? undefined : json['blockHeight'],
-        'networkFee': json['networkFee'] == null ? undefined : json['networkFee'],
+        'networkData': json['networkData'] == null ? undefined : NetworkFeeDataFromJSON(json['networkData']),
         'chainId': json['chainId'],
         'value': json['value'],
     };
@@ -160,8 +175,8 @@ export function ActivityToJSONTyped(value?: Activity | null, ignoreDiscriminator
         
         'chainType': value['chainType'],
         'transferHash': value['transferHash'],
-        'sendAddress': value['sendAddress'],
-        'receiveAddress': value['receiveAddress'],
+        'sendData': EnsDataToJSON(value['sendData']),
+        'receiveData': EnsDataToJSON(value['receiveData']),
         'assetSymbol': value['assetSymbol'],
         'assetIcon': value['assetIcon'],
         'amount': value['amount'],
@@ -169,7 +184,7 @@ export function ActivityToJSONTyped(value?: Activity | null, ignoreDiscriminator
         'status': value['status'],
         'createTime': value['createTime'],
         'blockHeight': value['blockHeight'],
-        'networkFee': value['networkFee'],
+        'networkData': NetworkFeeDataToJSON(value['networkData']),
         'chainId': value['chainId'],
         'value': value['value'],
     };
