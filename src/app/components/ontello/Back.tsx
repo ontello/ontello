@@ -2,9 +2,17 @@ import React from 'react';
 import { Box } from 'folds';
 import backIcon from '../../static/icons/svgs/back.svg';
 
-export function Back({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
+export function Back({
+  onClick,
+  children,
+  style,
+}: {
+  onClick: () => void;
+  children: React.ReactNode;
+  style?: React.CSSProperties;
+}) {
   return (
-    <Box gap="100" style={{ position: 'relative' }}>
+    <Box gap="100" style={{ position: 'relative', ...style }}>
       <Box
         shrink="No"
         grow="No"
