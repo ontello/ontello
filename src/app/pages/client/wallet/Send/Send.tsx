@@ -2,11 +2,12 @@ import React, { useRef, useState } from 'react';
 import { Box, Button, Text } from 'folds';
 import { openReviewTransfer } from '@src/client/action/navigation';
 import { PageNavContent } from '../../../../components/page';
-import { WalletNavMode, SendNavMode } from '../types';
+import { WalletNavMode, SendNavMode, TokenWithChain } from '../types';
 import { SelectAsset } from './SelectAsset';
 import { SelectToAddress } from './SelectToAddress';
 import { Back } from '../../../../components/ontello/Back';
 import { ContainerColor } from '../../../../styles/ContainerColor.css';
+import { TokenItem } from '../components/TokenItem';
 
 function TestComponent() {
   const handleTestTransfer = () => {
@@ -36,6 +37,7 @@ function TestComponent() {
 
 export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavMode) => void }) {
   const [sendNavMode, setSendNavMode] = useState<SendNavMode>(SendNavMode.SendMain);
+  const [selectedToken, setSelectedToken] = useState<TokenWithChain | null>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -53,13 +55,19 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
             <Button onClick={() => setSendNavMode(SendNavMode.SendSelectAsset)}>
               Select asset
             </Button>
+            {selectedToken && (
+              <TokenItem
+                token={selectedToken}
+                onSelect={() => setSendNavMode(SendNavMode.SendSelectAsset)}
+              />
+            )}
             <Button onClick={() => setSendNavMode(SendNavMode.SendSelectToAddress)}>
               Select to address
             </Button>
           </Box>
         )}
         {sendNavMode === SendNavMode.SendSelectAsset && (
-          <SelectAsset setSendNavMode={setSendNavMode} />
+          <SelectAsset setSendNavMode={setSendNavMode} setSelectedToken={setSelectedToken} />
         )}
         {sendNavMode === SendNavMode.SendSelectToAddress && (
           <SelectToAddress setSendNavMode={setSendNavMode} />

@@ -5,7 +5,13 @@ import { TokenWithChain } from '../types';
 import { useTokensContext } from '../hooks/useTokens';
 import { AllChainId } from '../const';
 
-export function TokensList({ filterChainId }: { filterChainId: number }) {
+export function TokensList({
+  filterChainId,
+  onSelect,
+}: {
+  filterChainId: number;
+  onSelect: (token: TokenWithChain) => void;
+}) {
   const [tokensForSelectedNetwork, setTokensForSelectedNetwork] = useState<TokenWithChain[]>([]);
   const { tokensWithChain, getTokens } = useTokensContext();
 
@@ -29,7 +35,7 @@ export function TokensList({ filterChainId }: { filterChainId: number }) {
   return (
     <Box direction="Column" gap="300" style={{ marginTop: '10px' }}>
       {tokensForSelectedNetwork.map((token) => (
-        <TokenItem key={token.symbol} token={token} />
+        <TokenItem key={token.symbol} token={token} onSelect={onSelect} />
       ))}
     </Box>
   );

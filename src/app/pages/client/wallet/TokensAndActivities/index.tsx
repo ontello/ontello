@@ -105,7 +105,10 @@ export function TokensAndActivities() {
         <NetworkSelect selectedChainId={selectedNetworkChainId} onSelect={handleNetworkSelect} />
       </Box>
 
-      {activeTab === 'tokens' && <TokensList filterChainId={selectedNetworkChainId} />}
+      {activeTab === 'tokens' && (
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        <TokensList filterChainId={selectedNetworkChainId} onSelect={() => {}} />
+      )}
 
       {activeTab === 'activities' && <ActivityList activities={activitiesForSelectedNetwork} />}
     </Box>

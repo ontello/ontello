@@ -3,9 +3,15 @@ import { Box, Text } from 'folds';
 import { AssetAndChainIcon } from '../../../../components/wallet/AssetAndChainIcon';
 import { TokenWithChain } from '../types';
 
-export function TokenItem({ token }: { token: TokenWithChain }) {
+export function TokenItem({
+  token,
+  onSelect,
+}: {
+  token: TokenWithChain;
+  onSelect: (token: TokenWithChain) => void;
+}) {
   return (
-    <Box style={{ width: '100%' }}>
+    <Box style={{ width: '100%', cursor: 'pointer' }} onClick={() => onSelect(token)}>
       <Box gap="200" shrink="Yes" grow="Yes" alignItems="Center">
         <AssetAndChainIcon asset={token.icon} chain={token.chain?.iconUrls?.[0]} />
         <Box>
