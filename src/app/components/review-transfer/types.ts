@@ -1,3 +1,4 @@
+import { EnsData } from '@src/app/externalApis';
 import { Address } from 'viem';
 
 export interface TokenInfo {
@@ -9,16 +10,9 @@ export interface TokenInfo {
   icon: string;
 }
 
-export interface RecipientInfo {
-  address: Address;
-  avatar?: string;
-  ontId?: string;
-  ens?: string;
-}
-
 export interface TransferData {
   token: TokenInfo;
-  recipient: RecipientInfo;
+  recipient: EnsData;
   chainId: number;
   feeAddress: Address;
 }

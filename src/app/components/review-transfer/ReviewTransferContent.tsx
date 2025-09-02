@@ -26,6 +26,7 @@ import * as css from './ReviewTransfer.css';
 import type { ReviewTransferContentProps } from './types';
 
 import type { WalletdataTransferBalanceGet200Response } from '../../externalApis/models/WalletdataTransferBalanceGet200Response';
+import { AvatarAndEnsData } from '../wallet/AvatarAndEnsData';
 
 export function ReviewTransferContent({
   isOpen,
@@ -55,7 +56,7 @@ export function ReviewTransferContent({
           );
 
           const estimateResult = await estimateTransfer(
-            transferData.recipient.address,
+            transferData.recipient.addr as Address,
             amountWithDecimals,
             transferData.feeAddress,
             transferData.token.address
@@ -93,9 +94,9 @@ export function ReviewTransferContent({
     transferData.token.address,
     transferData.token.amount,
     transferData.token.decimals,
-    transferData.recipient.address,
     transferData.feeAddress,
     estimateTransfer,
+    transferData.recipient.addr,
   ]);
 
   const [transferState, executeTransfer] = useAsyncCallback<void, Error, []>(
@@ -106,7 +107,7 @@ export function ReviewTransferContent({
       );
 
       const receipt = await transfer(
-        transferData.recipient.address,
+        transferData.recipient.addr as Address,
         amountWithDecimals,
         transferData.feeAddress,
         transferData.token.address
@@ -118,10 +119,9 @@ export function ReviewTransferContent({
 
   const feeDisplay = useMemo(() => {
     if (gasInfo && feeEstimate) {
-      // feeEstimate.maxEthFee
       return `${formatEther(feeEstimate.maxEthFee)}ETH`;
     }
-    return 'Calculating';
+    return 'Calculating...';
   }, [gasInfo, feeEstimate]);
 
   const handleConfirm = () => {
@@ -136,13 +136,13 @@ export function ReviewTransferContent({
     }
   };
 
-  const getRecipientDisplay = () => {
-    const { ontId, ens, address } = transferData.recipient;
+  // const getRecipientDisplay = () => {
+  //   const { ontId, ens, address } = transferData.recipient;
 
-    if (ontId) return ontId;
-    if (ens) return ens;
-    return address;
-  };
+  //   if (ontId) return ontId;
+  //   if (ens) return ens;
+  //   return address;
+  // };
 
   return (
     <Overlay open={isOpen} backdrop={<OverlayBackdrop />}>
@@ -188,27 +188,7 @@ export function ReviewTransferContent({
 
               {/* Recipient Section */}
               <Box className={css.Section}>
-                <Box className={css.SectionHeader}>
-                  <Text size="L400">Send to</Text>
-                </Box>
-                <Box className={css.Recipient}>
-                  {transferData.recipient.avatar && (
-                    <Box className={css.RecipientAvatar}>
-                      <img
-                        className={css.RecipientAvatarImg}
-                        src={transferData.recipient.avatar}
-                        alt="Recipient"
-                      />
-                    </Box>
-                  )}
-                  <Box className={css.RecipientInfo}>
-                    <Box className={css.RecipientAddress}>
-                      <Text className={css.AddressText} size="T300">
-                        {getRecipientDisplay()}
-                      </Text>
-                    </Box>
-                  </Box>
-                </Box>
+                <AvatarAndEnsData ensData={transferData.recipient} />
               </Box>
 
               {/* Network Section */}
@@ -230,7 +210,7 @@ export function ReviewTransferContent({
 
               {/* Fee Section */}
               <Box className={css.Section}>
-                <Text size="L400">Transaction Fee</Text>
+                <Text size="L400">Network Fee</Text>
                 <Box className={css.Network}>
                   <Text size="B400">{feeDisplay || 'Loading...'}</Text>
                 </Box>
