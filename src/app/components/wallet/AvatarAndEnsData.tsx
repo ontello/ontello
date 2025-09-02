@@ -80,7 +80,7 @@ export function AvatarAndEnsData({
         </Box>
       </Box>
       {showAddress && ensData.domain && (
-        <Text as="div">
+        <Text as="div" style={{ wordBreak: 'break-all' }}>
           <Text as="span" size="T300">
             {showShortAddress ? formatAddress(ensData.addr) : ensData.addr}
           </Text>

@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Box, Icon, Text, config } from 'folds';
 import { PageNavContent } from '../../../components/page';
 import { WalletNavMode } from './types';
@@ -7,6 +7,7 @@ import OntIdIconSvg from '../../../static/icons/svgs/ONTID.svg';
 import TopUp from '../../../static/icons/TopUp';
 import Send from '../../../static/icons/Send';
 import { TokensAndActivities } from './TokensAndActivities';
+import { Receive } from './Receive/Receive';
 
 export function WalletHomepage({
   setWalletNavMode,
@@ -14,6 +15,7 @@ export function WalletHomepage({
   setWalletNavMode: (mode: WalletNavMode) => void;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [showReceive, setShowReceive] = useState(false);
 
   return (
     <Box grow="Yes" direction="Column" className={ContainerColor({ variant: 'Surface' })}>
@@ -43,7 +45,8 @@ export function WalletHomepage({
               alignItems="Center"
               justifyContent="Center"
               className={ContainerColor({ variant: 'SurfaceVariant' })}
-              style={{ height: '52px', borderRadius: config.radii.R400 }}
+              style={{ height: '52px', borderRadius: config.radii.R400, cursor: 'pointer' }}
+              onClick={() => setShowReceive(true)}
             >
               <Icon src={TopUp} size="Inherit" style={{ fontSize: '12px' }} />
               <Text size="T200">Top up</Text>
@@ -67,6 +70,7 @@ export function WalletHomepage({
           <TokensAndActivities />
         </Box>
       </PageNavContent>
+      {showReceive && <Receive onClose={() => setShowReceive(false)} />}
     </Box>
   );
 }

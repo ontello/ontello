@@ -10,6 +10,10 @@ export interface ActivityWithChain extends Activity {
   chain?: ChainConfig;
 }
 
+export interface ChainConfigWithTotalCurrency extends ChainConfig {
+  totalCurrency?: string;
+}
+
 export enum WalletNavMode {
   Main = 'main',
   Send = 'send',
