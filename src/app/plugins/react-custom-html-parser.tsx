@@ -208,10 +208,15 @@ export const factoryRenderLinkifyWithMention = (
     return (
       <a
         {...attributes}
+        role="link"
+        tabIndex={0}
         onClick={(e) => {
           e.preventDefault();
           handleExternalLinkClick(attributes.href);
         }}
+        onKeyDown={onEnterOrSpace(() => {
+          handleExternalLinkClick(attributes.href);
+        })}
       >
         {content}
       </a>
