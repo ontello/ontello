@@ -33,6 +33,8 @@ import {
 import { onEnterOrSpace } from '../utils/keyboard';
 import { tryDecodeURIComponent } from '../utils/dom';
 import { confirmDialog } from '../molecules/confirm-dialog/ConfirmDialog';
+import { testOntelloLink, parseOntelloLink } from './ontello-link';
+import { openReviewTransfer } from '../../client/action/navigation';
 
 const ReactPrism = lazy(() => import('./react-prism/ReactPrism'));
 
@@ -420,6 +422,38 @@ export const getReactCustomHtmlParser = (
           );
 
           if (mention) return mention;
+        }
+
+        if (name === 'a' && testOntelloLink(tryDecodeURIComponent(props.href))) {
+          const ontelloData = parseOntelloLink(tryDecodeURIComponent(props.href));
+          if (ontelloData) {
+            const handleOntelloClick: ReactEventHandler<HTMLElement> = (e) => {
+              e.preventDefault();
+              // Handle different types of Ontello links
+              switch (ontelloData.type) {
+                case 'transfer':
+                  openReviewTransfer(ontelloData.data);
+                  break;
+                // Future: add other types here
+                default:
+                  break;
+              }
+            };
+
+            return (
+              <a
+                {...props}
+                style={{ cursor: 'pointer' }}
+                role="link"
+                tabIndex={0}
+                onKeyDown={onEnterOrSpace(handleOntelloClick)}
+                onClick={handleOntelloClick}
+                data-ontello-link={ontelloData.type}
+              >
+                {domToReact(children, opts)}
+              </a>
+            );
+          }
         }
 
         if (name === 'a' && props.href) {
