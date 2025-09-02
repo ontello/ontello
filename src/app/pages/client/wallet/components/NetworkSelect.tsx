@@ -2,57 +2,95 @@ import React, { MouseEventHandler, useMemo, useState } from 'react';
 import { as, Box, Chip, Icon, Icons, Menu, MenuItem, PopOut, RectCords, Text, config } from 'folds';
 import FocusTrap from 'focus-trap-react';
 import { stopPropagation } from '../../../../utils/keyboard';
-import { ChainConfig } from '../../../../externalApis/models';
 import { useChainConfig } from '../../../../hooks/web3/useChainConfig';
 import { AllChainId } from '../const';
+import { useTokensContext } from '../hooks/useTokens';
+import { ChainConfigWithTotalCurrency } from '../types';
 
 type NetworkSelectorProps = {
   selectedChainId: number;
   onSelect: (chainId: number) => void;
+  hideAllNetwork?: boolean;
+  showTotalCurrency?: boolean;
 };
 
-const NetworkSelector = as<'div', NetworkSelectorProps & { networks: ChainConfig[] }>(
-  ({ networks, selectedChainId, onSelect, ...props }, ref) => (
-    <Menu {...props} ref={ref}>
-      <Box direction="Column" gap="100" style={{ padding: config.space.S100 }}>
-        {networks.map((network) => (
-          <MenuItem
-            key={network.chainId}
-            size="300"
-            variant={network.chainId === selectedChainId ? 'Primary' : 'Surface'}
-            radii="300"
-            onClick={() => onSelect(network.chainId)}
-          >
-            <Text size="T300" align="Center">
-              {network.chainName}
-            </Text>
-          </MenuItem>
-        ))}
-      </Box>
-    </Menu>
-  )
-);
+const NetworkSelector = as<
+  'div',
+  NetworkSelectorProps & { networks: ChainConfigWithTotalCurrency[] }
+>(({ networks, selectedChainId, onSelect, showTotalCurrency, ...props }, ref) => (
+  <Menu {...props} ref={ref}>
+    <Box direction="Column" gap="100" style={{ padding: config.space.S100 }}>
+      {networks.map((network) => (
+        <MenuItem
+          key={network.chainId}
+          size={showTotalCurrency ? '400' : '300'}
+          variant={network.chainId === selectedChainId ? 'Primary' : 'Surface'}
+          radii="300"
+          onClick={() => onSelect(network.chainId)}
+        >
+          <Box direction="Row" gap="100" alignItems="Center">
+            {network.iconUrls[0] && (
+              <img
+                src={network.iconUrls[0]}
+                alt={network.chainName}
+                style={{ width: '18px', height: '18px', borderRadius: '50%', overflow: 'hidden' }}
+              />
+            )}
+            <Box direction="Column" gap="100" alignItems="Start">
+              <Text size="T300" align="Left" style={{ lineHeight: '14px', height: '14px' }}>
+                {network.chainName}
+              </Text>
+              {network.totalCurrency && (
+                <Text size="T200" align="Left" style={{ lineHeight: '12px', height: '12px' }}>
+                  ${network.totalCurrency}
+                </Text>
+              )}
+            </Box>
+          </Box>
+        </MenuItem>
+      ))}
+    </Box>
+  </Menu>
+));
 
-export function NetworkSelect({ selectedChainId, onSelect }: NetworkSelectorProps) {
+export function NetworkSelect({
+  selectedChainId,
+  onSelect,
+  hideAllNetwork = false,
+  showTotalCurrency = false,
+}: NetworkSelectorProps) {
   const [networkCords, setNetworkCords] = useState<RectCords>();
   const { availableChains } = useChainConfig();
+  const { tokensWithChain } = useTokensContext();
 
-  const allChains: ChainConfig[] = useMemo(
+  const allChainsWithTotalCurrency: ChainConfigWithTotalCurrency[] = useMemo(
     () => [
-      {
-        chainId: AllChainId,
-        chainName: 'All Networks',
-        iconUrls: [],
-        blockExplorerUrls: [],
-      } as unknown as ChainConfig,
-      ...availableChains,
+      ...(hideAllNetwork
+        ? []
+        : [
+            {
+              chainId: AllChainId,
+              chainName: 'All Networks',
+              iconUrls: [],
+              blockExplorerUrls: [],
+            } as unknown as ChainConfigWithTotalCurrency,
+          ]),
+      ...availableChains.map((chain) => ({
+        ...chain,
+        totalCurrency: showTotalCurrency
+          ? tokensWithChain
+              .filter((token) => token.chainId === chain.chainId)
+              .reduce((acc, token) => acc + Number(token.currency || 0), 0)
+              .toFixed(2)
+          : undefined,
+      })),
     ],
-    [availableChains]
+    [availableChains, hideAllNetwork, tokensWithChain, showTotalCurrency]
   );
 
   const selected = useMemo(
-    () => allChains.find((network) => network.chainId === selectedChainId),
-    [allChains, selectedChainId]
+    () => allChainsWithTotalCurrency.find((network) => network.chainId === selectedChainId),
+    [allChainsWithTotalCurrency, selectedChainId]
   );
 
   const handleSelectNetwork: MouseEventHandler<HTMLButtonElement> = (evt) => {
@@ -75,9 +113,24 @@ export function NetworkSelect({ selectedChainId, onSelect }: NetworkSelectorProp
         onClick={handleSelectNetwork}
         style={{ position: 'relative' }}
       >
-        <Text size="B400" align="Center" style={{ minWidth: '80px' }}>
-          {selected?.chainName}
-        </Text>
+        <Box
+          direction="Row"
+          gap="100"
+          alignItems="Center"
+          justifyContent="Start"
+          style={{ minWidth: '80px' }}
+        >
+          {selected?.iconUrls[0] && (
+            <img
+              src={selected.iconUrls[0]}
+              alt={selected.chainName}
+              style={{ width: '18px', height: '18px', borderRadius: '50%', overflow: 'hidden' }}
+            />
+          )}
+          <Text size="B400" align="Center">
+            {selected?.chainName}
+          </Text>
+        </Box>
       </Chip>
       <PopOut
         anchor={networkCords}
@@ -98,9 +151,10 @@ export function NetworkSelect({ selectedChainId, onSelect }: NetworkSelectorProp
             }}
           >
             <NetworkSelector
-              networks={allChains}
+              networks={allChainsWithTotalCurrency}
               selectedChainId={selectedChainId}
               onSelect={handleNetworkSelect}
+              showTotalCurrency={showTotalCurrency}
             />
           </FocusTrap>
         }

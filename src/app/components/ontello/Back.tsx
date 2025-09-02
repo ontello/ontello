@@ -23,6 +23,7 @@ export function Back({
           left: 0,
           top: '50%',
           transform: 'translateY(-50%)',
+          width: '15.5px',
         }}
       >
         <BackSvg />

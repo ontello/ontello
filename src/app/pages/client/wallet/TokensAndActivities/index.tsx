@@ -102,7 +102,11 @@ export function TokensAndActivities() {
       </Box>
 
       <Box style={{ position: 'relative' }}>
-        <NetworkSelect selectedChainId={selectedNetworkChainId} onSelect={handleNetworkSelect} />
+        <NetworkSelect
+          selectedChainId={selectedNetworkChainId}
+          onSelect={handleNetworkSelect}
+          showTotalCurrency
+        />
       </Box>
 
       {activeTab === 'tokens' && (
