@@ -1,26 +1,27 @@
-import React, { MouseEventHandler, useState } from 'react';
+import React, { MouseEventHandler, useMemo, useState } from 'react';
 import { as, Box, Chip, Icon, Icons, Menu, MenuItem, PopOut, RectCords, Text, config } from 'folds';
 import FocusTrap from 'focus-trap-react';
 import { stopPropagation } from '../../../../utils/keyboard';
 import { ChainConfig } from '../../../../externalApis/models';
+import { useChainConfig } from '../../../../hooks/web3/useChainConfig';
+import { AllChainId } from '../const';
 
 type NetworkSelectorProps = {
-  networks: ChainConfig[];
-  selected: ChainConfig;
-  onSelect: (network: ChainConfig) => void;
+  selectedChainId: number;
+  onSelect: (chainId: number) => void;
 };
 
-const NetworkSelector = as<'div', NetworkSelectorProps>(
-  ({ networks, selected, onSelect, ...props }, ref) => (
+const NetworkSelector = as<'div', NetworkSelectorProps & { networks: ChainConfig[] }>(
+  ({ networks, selectedChainId, onSelect, ...props }, ref) => (
     <Menu {...props} ref={ref}>
       <Box direction="Column" gap="100" style={{ padding: config.space.S100 }}>
         {networks.map((network) => (
           <MenuItem
             key={network.chainId}
             size="300"
-            variant={network.chainId === selected.chainId ? 'Primary' : 'Surface'}
+            variant={network.chainId === selectedChainId ? 'Primary' : 'Surface'}
             radii="300"
-            onClick={() => onSelect(network)}
+            onClick={() => onSelect(network.chainId)}
           >
             <Text size="T300" align="Center">
               {network.chainName}
@@ -32,16 +33,35 @@ const NetworkSelector = as<'div', NetworkSelectorProps>(
   )
 );
 
-export function NetworkSelect({ networks, selected, onSelect }: NetworkSelectorProps) {
+export function NetworkSelect({ selectedChainId, onSelect }: NetworkSelectorProps) {
   const [networkCords, setNetworkCords] = useState<RectCords>();
+  const { availableChains } = useChainConfig();
+
+  const allChains: ChainConfig[] = useMemo(
+    () => [
+      {
+        chainId: AllChainId,
+        chainName: 'All Networks',
+        iconUrls: [],
+        blockExplorerUrls: [],
+      } as unknown as ChainConfig,
+      ...availableChains,
+    ],
+    [availableChains]
+  );
+
+  const selected = useMemo(
+    () => allChains.find((network) => network.chainId === selectedChainId),
+    [allChains, selectedChainId]
+  );
 
   const handleSelectNetwork: MouseEventHandler<HTMLButtonElement> = (evt) => {
     const rect = evt.currentTarget.getBoundingClientRect();
     setNetworkCords(rect);
   };
 
-  const handleNetworkSelect = (network: ChainConfig) => {
-    onSelect(network);
+  const handleNetworkSelect = (chainId: number) => {
+    onSelect(chainId);
     setNetworkCords(undefined);
   };
 
@@ -56,7 +76,7 @@ export function NetworkSelect({ networks, selected, onSelect }: NetworkSelectorP
         style={{ position: 'relative' }}
       >
         <Text size="B400" align="Center" style={{ minWidth: '80px' }}>
-          {selected.chainName}
+          {selected?.chainName}
         </Text>
       </Chip>
       <PopOut
@@ -78,8 +98,8 @@ export function NetworkSelect({ networks, selected, onSelect }: NetworkSelectorP
             }}
           >
             <NetworkSelector
-              networks={networks}
-              selected={selected}
+              networks={allChains}
+              selectedChainId={selectedChainId}
               onSelect={handleNetworkSelect}
             />
           </FocusTrap>

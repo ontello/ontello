@@ -5,6 +5,7 @@ import { PageNavContent } from '../../../../components/page';
 import { WalletNavMode, SendNavMode } from '../types';
 import { SelectAsset } from './SelectAsset';
 import { SelectToAddress } from './SelectToAddress';
+import { Back } from '../../../../components/ontello/Back';
 import { ContainerColor } from '../../../../styles/ContainerColor.css';
 
 function TestComponent() {
@@ -44,8 +45,12 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
       <PageNavContent scrollRef={scrollRef}>
         {sendNavMode === SendNavMode.SendMain && (
           <Box direction="Column" gap="300">
+            <Back onClick={() => setWalletNavMode(WalletNavMode.Main)}>
+              <Text size="H5" align="Center" style={{ width: '100%' }}>
+                Send
+              </Text>
+            </Back>
             <Text size="H4">This is Send Homepage</Text>
-            <Button onClick={() => setWalletNavMode(WalletNavMode.Main)}>Back</Button>
             <Button onClick={() => setSendNavMode(SendNavMode.SendSelectAsset)}>
               Select asset
             </Button>

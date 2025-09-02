@@ -4,6 +4,7 @@ import { PageNav, PageNavHeader } from '../../../components/page';
 import { WalletHomepage } from './WalletHomepage';
 import { Send } from './Send/Send';
 import { WalletNavMode } from './types';
+import { TokensProvider, useTokens } from './hooks/useTokens';
 
 function WalletHeader() {
   return (
@@ -21,14 +22,17 @@ function WalletHeader() {
 
 export function Wallet() {
   const [walletNavMode, setWalletNavMode] = useState<WalletNavMode>(WalletNavMode.Main);
+  const { tokensWithChain, getTokens, mockDataFlag, setMockDataFlag } = useTokens();
 
   return (
-    <PageNav>
-      <WalletHeader />
-      {walletNavMode === WalletNavMode.Main && (
-        <WalletHomepage setWalletNavMode={setWalletNavMode} />
-      )}
-      {walletNavMode === WalletNavMode.Send && <Send setWalletNavMode={setWalletNavMode} />}
-    </PageNav>
+    <TokensProvider value={{ tokensWithChain, getTokens, mockDataFlag, setMockDataFlag }}>
+      <PageNav>
+        <WalletHeader />
+        {walletNavMode === WalletNavMode.Main && (
+          <WalletHomepage setWalletNavMode={setWalletNavMode} />
+        )}
+        {walletNavMode === WalletNavMode.Send && <Send setWalletNavMode={setWalletNavMode} />}
+      </PageNav>
+    </TokensProvider>
   );
 }

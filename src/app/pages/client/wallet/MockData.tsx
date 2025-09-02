@@ -1,7 +1,7 @@
-import { Token, Activity, ChainConfig } from '../../../../externalApis/models';
-import usdtIcon from './testImgs/usdt.svg';
-import bscIcon from './testImgs/bsc.svg';
-import ovmIcon from './testImgs/OVM.svg';
+import { Token, Activity, ChainConfig } from '../../../externalApis/models';
+import usdtIcon from './TokensAndActivities/testImgs/usdt.svg';
+import bscIcon from './TokensAndActivities/testImgs/bsc.svg';
+import ovmIcon from './TokensAndActivities/testImgs/OVM.svg';
 
 export const mockChains: ChainConfig[] = [
   {
@@ -108,7 +108,7 @@ export const mockActivities: Activity[] = [
       domain: 'HAHA.ont.id',
       chainIcon: bscIcon,
     },
-    transferHash: '0x123',
+    transferHash: '0x12333562534234124124313414133',
     blockHeight: 1,
     networkData: {
       networkFee: '0.0001',
@@ -136,7 +136,7 @@ export const mockActivities: Activity[] = [
       domain: '',
       chainIcon: bscIcon,
     },
-    transferHash: '0x1234',
+    transferHash: '0x12341111111111112142141231241241',
     blockHeight: 1,
     networkData: {
       networkFee: '0.0001',
@@ -164,7 +164,7 @@ export const mockActivities: Activity[] = [
       domain: 'HAHA.ont.id',
       chainIcon: bscIcon,
     },
-    transferHash: '0x12345',
+    transferHash: '0x1234511121441231234214124312314',
     blockHeight: 1,
     networkData: {
       networkFee: '0.0001',
@@ -192,7 +192,7 @@ export const mockActivities: Activity[] = [
       domain: 'HAHA.ont.id',
       chainIcon: bscIcon,
     },
-    transferHash: '0x223',
+    transferHash: '0x22312321431534523891849190909',
     blockHeight: 1,
     networkData: {
       networkFee: '0.0001',
@@ -220,7 +220,7 @@ export const mockActivities: Activity[] = [
       domain: '',
       chainIcon: bscIcon,
     },
-    transferHash: '0x2234',
+    transferHash: '0x22340x22340x22340x22340x22340x22340x22340x22340x2234',
     blockHeight: 1,
     networkData: {
       networkFee: '0.0001',
@@ -248,7 +248,7 @@ export const mockActivities: Activity[] = [
       domain: '',
       chainIcon: bscIcon,
     },
-    transferHash: '0x22345',
+    transferHash: '0x2234512313124122312312341234123412341234',
     blockHeight: 1,
     networkData: {
       networkFee: '0.0001',

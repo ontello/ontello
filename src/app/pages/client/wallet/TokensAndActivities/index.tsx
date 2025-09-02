@@ -1,19 +1,19 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Box, Text } from 'folds';
-import { NetworkSelect } from './NetworkSelect';
-import { TokensList } from './TokensList';
+import { NetworkSelect } from '../components/NetworkSelect';
+import { TokensList } from '../components/TokensList';
 import { ActivityList } from './ActivityList';
 import { useFetchPasskeyList } from '../../../../hooks/useFetchPasskeyList';
 import { useMatrixClient } from '../../../../hooks/useMatrixClient';
 import { walletApi } from '../../../../externalApis';
-import { Token, Activity, ChainConfig } from '../../../../externalApis/models';
-import { TokenWithChain, ActivityWithChain } from '../types';
-import { mockChains, mockTokens, mockActivities } from './MockData';
+import { Activity } from '../../../../externalApis/models';
+import { ActivityWithChain } from '../types';
+import { mockActivities } from '../MockData';
+import { AllChainId } from '../const';
+import { useChainConfig } from '../../../../hooks/web3/useChainConfig';
 
 export function TokensAndActivities() {
   const [activeTab, setActiveTab] = useState<'tokens' | 'activities'>('tokens');
-  const [tokens, setTokens] = useState<Token[]>([]);
-  const [tokensForSelectedNetwork, setTokensForSelectedNetwork] = useState<TokenWithChain[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [activitiesForSelectedNetwork, setActivitiesForSelectedNetwork] = useState<
     ActivityWithChain[]
@@ -26,72 +26,35 @@ export function TokensAndActivities() {
   const userId = mx.getUserId();
   const [passkeyData] = useFetchPasskeyList(userId!);
 
-  const AllChainId = 100010011111;
-
-  const allChains: ChainConfig[] = useMemo(
-    () => [
-      {
-        chainId: AllChainId,
-        chainName: 'All Networks',
-        iconUrls: [],
-        blockExplorerUrls: [],
-      } as unknown as ChainConfig,
-      ...mockChains,
-    ],
-    []
-  );
-
-  const [selectedNetwork, setSelectedNetwork] = useState<ChainConfig>(allChains[0]);
-
-  const tokensWithChain: TokenWithChain[] = useMemo(
-    () =>
-      tokens.map((token) => ({
-        ...token,
-        chain: allChains.find((chain) => chain.chainId === token.chainId),
-      })),
-    [tokens, allChains]
-  );
-
+  const [selectedNetworkChainId, setSelectedNetworkChainId] = useState<number>(AllChainId);
+  const { availableChains } = useChainConfig();
   const activitiesWithChain: ActivityWithChain[] = useMemo(
     () =>
       activities.map((activity) => ({
         ...activity,
-        chain: allChains.find((chain) => chain.chainId === activity.chainId),
+        chain: availableChains.find((chain) => chain.chainId === activity.chainId),
       })),
-    [activities, allChains]
+    [activities, availableChains]
   );
 
   useEffect(() => {
-    if (selectedNetwork.chainId === AllChainId) {
-      setTokensForSelectedNetwork(tokensWithChain);
+    if (selectedNetworkChainId === AllChainId) {
       setActivitiesForSelectedNetwork(activitiesWithChain);
     } else {
-      setTokensForSelectedNetwork(
-        tokensWithChain.filter((token) => token.chainId === selectedNetwork.chainId)
-      );
       setActivitiesForSelectedNetwork(
-        activitiesWithChain.filter((activity) => activity.chainId === selectedNetwork.chainId)
+        activitiesWithChain.filter((activity) => activity.chainId === selectedNetworkChainId)
       );
     }
-  }, [selectedNetwork, tokensWithChain, activitiesWithChain]);
+  }, [selectedNetworkChainId, activitiesWithChain]);
 
   useEffect(() => {
     if (mockDataFlag) {
-      setTokens(mockTokens);
       setActivities(mockActivities);
       return;
     }
 
     if (activeTab === 'tokens') {
-      if (!passkeyData?.walletAddress) return;
-      walletApi
-        .walletdataTokensGet({
-          addr: passkeyData.walletAddress,
-          ont_id: '', // TODO
-        })
-        .then((res) => {
-          setTokens(res.result);
-        });
+      // TODO
     } else {
       if (!passkeyData?.walletAddress) return;
       walletApi
@@ -107,8 +70,8 @@ export function TokensAndActivities() {
     }
   }, [activeTab, activitiesPageNum, passkeyData?.walletAddress, mockDataFlag]);
 
-  const handleNetworkSelect = (network: ChainConfig) => {
-    setSelectedNetwork(network);
+  const handleNetworkSelect = (networkChainId: number) => {
+    setSelectedNetworkChainId(networkChainId);
   };
 
   return (
@@ -139,14 +102,10 @@ export function TokensAndActivities() {
       </Box>
 
       <Box style={{ position: 'relative' }}>
-        <NetworkSelect
-          networks={allChains}
-          selected={selectedNetwork}
-          onSelect={handleNetworkSelect}
-        />
+        <NetworkSelect selectedChainId={selectedNetworkChainId} onSelect={handleNetworkSelect} />
       </Box>
 
-      {activeTab === 'tokens' && <TokensList tokens={tokensForSelectedNetwork} />}
+      {activeTab === 'tokens' && <TokensList filterChainId={selectedNetworkChainId} />}
 
       {activeTab === 'activities' && <ActivityList activities={activitiesForSelectedNetwork} />}
     </Box>
