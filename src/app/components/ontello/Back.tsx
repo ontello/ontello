@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box } from 'folds';
-import backIcon from '../../static/icons/svgs/back.svg';
+import BackSvg from '../../static/icons/svgComponents/back';
 
 export function Back({
   onClick,
@@ -25,7 +25,7 @@ export function Back({
           transform: 'translateY(-50%)',
         }}
       >
-        <img src={backIcon} alt="back" style={{ width: '15px' }} />
+        <BackSvg />
       </Box>
 
       <Box shrink="Yes" grow="Yes">
