@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 import { ClientConfigLoader } from '../components/ClientConfigLoader';
+import { ChainConfigLoader } from '../components/ChainConfigLoader';
 import { ClientConfigProvider } from '../hooks/useClientConfig';
 import { ConfigConfigError, ConfigConfigLoading } from './ConfigConfig';
 import { FeatureCheck } from './FeatureCheck';
@@ -29,7 +30,20 @@ function App() {
             <ClientConfigProvider value={clientConfig}>
               <QueryClientProvider client={queryClient}>
                 <JotaiProvider>
-                  <RouterProvider router={createRouter(clientConfig, screenSize)} />
+                  <ChainConfigLoader
+                    fallback={() => <ConfigConfigLoading />}
+                    error={(err, retry) => (
+                      <ConfigConfigError
+                        error={err}
+                        retry={retry}
+                        ignore={() => {
+                          /* */
+                        }}
+                      />
+                    )}
+                  >
+                    {() => <RouterProvider router={createRouter(clientConfig, screenSize)} />}
+                  </ChainConfigLoader>
                 </JotaiProvider>
                 <ReactQueryDevtools initialIsOpen={false} />
               </QueryClientProvider>
