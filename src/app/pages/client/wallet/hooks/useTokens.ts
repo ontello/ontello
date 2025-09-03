@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, createContext, useContext, useMemo } from 'react';
 import { walletApi } from '@src/app/externalApis';
+import { mxidToOntid } from '@src/app/utils/ontid';
 import { useFetchPasskeyList } from '../../../../hooks/useFetchPasskeyList';
 import { Token } from '../../../../externalApis/models';
 import { useMatrixClient } from '../../../../hooks/useMatrixClient';
@@ -11,15 +12,17 @@ export interface TokensContextType {
   getTokens: () => Promise<void>;
   mockDataFlag: boolean;
   setMockDataFlag: (flag: boolean) => void;
+  totalTokensCurrency: number;
 }
 
 export const useTokens = () => {
   const [tokens, setTokens] = useState<Token[]>([]);
-  const [mockDataFlag, setMockDataFlag] = useState(true);
+  const [mockDataFlag, setMockDataFlag] = useState(false);
 
   const mx = useMatrixClient();
   const userId = mx.getUserId();
   const [passkeyData] = useFetchPasskeyList(userId!);
+  const ontId = mxidToOntid(userId!);
 
   const tokensWithChain: TokenWithChain[] = useMemo(
     () =>
@@ -30,8 +33,12 @@ export const useTokens = () => {
     [tokens]
   );
 
+  const totalTokensCurrency = useMemo(
+    () => tokens.reduce((acc, token) => acc + Number(token.currency || '0'), 0),
+    [tokens]
+  );
+
   const getTokens = useCallback(async () => {
-    console.log('getTokens');
     if (mockDataFlag) {
       setTokens(mockTokens);
       return;
@@ -45,18 +52,18 @@ export const useTokens = () => {
     walletApi
       .walletdataTokensGet({
         addr: passkeyData.walletAddress,
-        ont_id: '', // TODO
+        ont_id: ontId!,
       })
       .then((res) => {
         setTokens(res.result);
       });
-  }, [passkeyData?.walletAddress, mockDataFlag]);
+  }, [passkeyData?.walletAddress, mockDataFlag, ontId]);
 
   useEffect(() => {
     getTokens();
   }, [passkeyData?.walletAddress, getTokens]);
 
-  return { tokensWithChain, getTokens, mockDataFlag, setMockDataFlag };
+  return { tokensWithChain, getTokens, mockDataFlag, setMockDataFlag, totalTokensCurrency };
 };
 
 export const TokensContext = createContext<TokensContextType>({

@@ -35,7 +35,7 @@ export function TokensList({
   return (
     <Box direction="Column" gap="300" style={{ marginTop: '10px' }}>
       {tokensForSelectedNetwork.map((token) => (
-        <TokenItem key={token.symbol} token={token} onSelect={onSelect} />
+        <TokenItem key={token.name + token.tokenAddr} token={token} onSelect={onSelect} />
       ))}
     </Box>
   );

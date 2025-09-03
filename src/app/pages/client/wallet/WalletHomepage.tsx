@@ -1,5 +1,10 @@
 import React, { useRef, useState } from 'react';
 import { Box, Icon, Text, config } from 'folds';
+import { mxidToOntid } from '@src/app/utils/ontid';
+import { useMatrixClient } from '@src/app/hooks/useMatrixClient';
+import { useFetchPasskeyList } from '@src/app/hooks/useFetchPasskeyList';
+import { formatAddress } from '@src/app/utils/formatData';
+
 import { PageNavContent } from '../../../components/page';
 import { WalletNavMode } from './types';
 import { ContainerColor } from '../../../styles/ContainerColor.css';
@@ -8,6 +13,7 @@ import TopUp from '../../../static/icons/TopUp';
 import Send from '../../../static/icons/Send';
 import { TokensAndActivities } from './TokensAndActivities';
 import { Receive } from './Receive/Receive';
+import { useTokensContext } from './hooks/useTokens';
 
 export function WalletHomepage({
   setWalletNavMode,
@@ -16,6 +22,12 @@ export function WalletHomepage({
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [showReceive, setShowReceive] = useState(false);
+  const { totalTokensCurrency } = useTokensContext();
+
+  const mx = useMatrixClient();
+  const userId = mx.getUserId();
+  const ontId = mxidToOntid(userId!);
+  const [passkeyData] = useFetchPasskeyList(userId!);
 
   return (
     <Box grow="Yes" direction="Column" className={ContainerColor({ variant: 'Surface' })}>
@@ -23,17 +35,17 @@ export function WalletHomepage({
         <Box direction="Column" gap="300">
           <Box>
             <Text size="H1" style={{ fontWeight: '500' }}>
-              $0.00
+              ${totalTokensCurrency.toFixed(2)}
             </Text>
           </Box>
 
           <Box gap="100">
             <img src={OntIdIconSvg} alt="ONTID" />
-            <Text size="T300">Chichi.ont.id</Text>
+            <Text size="T300">{ontId}</Text>
           </Box>
 
           <Box>
-            <Text size="T300">0xAdsdQnSGNfA43...GCh91s</Text>
+            <Text size="T300">{formatAddress(passkeyData?.walletAddress || '', 15, 6)}</Text>
           </Box>
 
           <Box gap="300">

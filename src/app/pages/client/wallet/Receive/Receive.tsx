@@ -13,12 +13,12 @@ import {
 } from 'folds';
 import React, { useMemo, useState } from 'react';
 import FocusTrap from 'focus-trap-react';
+import { QRCode } from 'react-qrcode-logo';
 import { stopPropagation } from '../../../../utils/keyboard';
 import { useFetchPasskeyList } from '../../../../hooks/useFetchPasskeyList';
 import { useMatrixClient } from '../../../../hooks/useMatrixClient';
 import { CopyIcon } from '../../../../components/CopyIcon';
 import { ContainerColor } from '../../../../styles/ContainerColor.css';
-import { QRCode } from 'react-qrcode-logo';
 import { useTokensContext } from '../hooks/useTokens';
 import { NetworkSelect } from '../components/NetworkSelect';
 import { useChainConfig } from '../../../../hooks/web3/useChainConfig';
@@ -36,6 +36,11 @@ export function Receive({ onClose }: { onClose: () => void }) {
   const supportedAssets = useMemo(
     () => tokensWithChain.filter((token) => token.chainId === selectedNetworkChainId),
     [tokensWithChain, selectedNetworkChainId]
+  );
+
+  const selectedChain = useMemo(
+    () => availableChains.find((chain) => chain.chainId === selectedNetworkChainId),
+    [availableChains, selectedNetworkChainId]
   );
 
   return (
@@ -73,9 +78,9 @@ export function Receive({ onClose }: { onClose: () => void }) {
             >
               <Box alignItems="Center" justifyContent="Center">
                 <QRCode
-                  value="https://github.com/gcoro/react-qrcode-logo"
+                  value={passkeyData?.walletAddress || ''}
                   size={130}
-                  logoImage={tokensWithChain[0].chain?.iconUrls?.[0]}
+                  logoImage={selectedChain?.iconUrls?.[0]}
                   logoWidth={30}
                   logoHeight={30}
                 />
@@ -91,13 +96,10 @@ export function Receive({ onClose }: { onClose: () => void }) {
                   borderRadius: config.radii.R400,
                 }}
               >
-                {/* TODO */}
                 <Text size="T300" style={{ wordBreak: 'break-all' }}>
-                  {passkeyData?.walletAddress || '0x0000000000000000000000000000000000000000'}
+                  {passkeyData?.walletAddress || ''}
                 </Text>
-                <CopyIcon
-                  text={passkeyData?.walletAddress || '0x0000000000000000000000000000000000000000'}
-                />
+                <CopyIcon text={passkeyData?.walletAddress || ''} />
               </Box>
 
               <Box direction="Row" gap="200" alignItems="Center" justifyContent="Start">
@@ -120,7 +122,7 @@ export function Receive({ onClose }: { onClose: () => void }) {
                 <Box direction="Row" gap="100" alignItems="Center" justifyContent="Start">
                   {supportedAssets.map((asset) => (
                     <img
-                      key={asset.symbol}
+                      key={asset.name + asset.tokenAddr}
                       src={asset.icon}
                       alt={asset.symbol}
                       style={{
