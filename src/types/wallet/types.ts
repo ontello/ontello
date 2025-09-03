@@ -1,4 +1,4 @@
-import type { Token, ChainConfig, Activity } from '../../../externalApis/models';
+import type { Token, ChainConfig, Activity } from '../../app/externalApis/models';
 
 export { Token, ChainConfig, Activity };
 

@@ -18,6 +18,21 @@ const createConfig = () => {
           Authorization: `Bearer ${token}`,
         }
       : undefined,
+    middleware: [
+      {
+        post: async (context) => {
+          // check if the response has an error field,
+          // if it does and the error.code is not 0, throw an error, otherwise return the response
+          const response = context.response.clone() as Response;
+          const data = await response.json();
+          if (data.error && data.error.code !== '0') {
+            throw new Error(data.error.message || data.error.code);
+          } else {
+            return context.response.clone() as Response;
+          }
+        },
+      },
+    ],
   });
 };
 

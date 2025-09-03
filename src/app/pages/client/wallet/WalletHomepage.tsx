@@ -6,14 +6,14 @@ import { useFetchPasskeyList } from '@src/app/hooks/useFetchPasskeyList';
 import { formatAddress } from '@src/app/utils/formatData';
 
 import { PageNavContent } from '../../../components/page';
-import { WalletNavMode } from './types';
+import { WalletNavMode } from '../../../../types/wallet/types';
 import { ContainerColor } from '../../../styles/ContainerColor.css';
 import OntIdIconSvg from '../../../static/icons/svgs/ONTID.svg';
 import TopUp from '../../../static/icons/TopUp';
 import Send from '../../../static/icons/Send';
 import { TokensAndActivities } from './TokensAndActivities';
 import { Receive } from './Receive/Receive';
-import { useTokensContext } from './hooks/useTokens';
+import { useTokensContext } from '../../../hooks/wallet/useTokens';
 
 export function WalletHomepage({
   setWalletNavMode,

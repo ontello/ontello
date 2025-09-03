@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Box } from 'folds';
-import { TokenItem } from './TokenItem';
-import { TokenWithChain } from '../types';
-import { useTokensContext } from '../hooks/useTokens';
-import { AllChainId } from '../const';
+import { TokenWithChain } from '../../../../types/wallet/types';
+import { useTokensContext } from '../../../hooks/wallet/useTokens';
+import { AllChainId } from '../../../../types/wallet/const';
+import { TokensListUi } from './TokensListUi';
 
 export function TokensList({
   filterChainId,
@@ -34,9 +34,7 @@ export function TokensList({
 
   return (
     <Box direction="Column" gap="300" style={{ marginTop: '10px' }}>
-      {tokensForSelectedNetwork.map((token) => (
-        <TokenItem key={token.name + token.tokenAddr} token={token} onSelect={onSelect} />
-      ))}
+      <TokensListUi tokensList={tokensForSelectedNetwork} onSelect={onSelect} />
     </Box>
   );
 }

@@ -3,8 +3,8 @@ import { Box, Text } from 'folds';
 import { PageNav, PageNavHeader } from '../../../components/page';
 import { WalletHomepage } from './WalletHomepage';
 import { Send } from './Send/Send';
-import { WalletNavMode } from './types';
-import { TokensProvider, useTokens } from './hooks/useTokens';
+import { WalletNavMode } from '../../../../types/wallet/types';
+import { TokensProvider, useTokens } from '../../../hooks/wallet/useTokens';
 
 function WalletHeader() {
   return (

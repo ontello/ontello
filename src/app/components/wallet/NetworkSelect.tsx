@@ -1,11 +1,11 @@
 import React, { MouseEventHandler, useMemo, useState } from 'react';
 import { as, Box, Chip, Icon, Icons, Menu, MenuItem, PopOut, RectCords, Text, config } from 'folds';
 import FocusTrap from 'focus-trap-react';
-import { stopPropagation } from '../../../../utils/keyboard';
-import { useChainConfig } from '../../../../hooks/web3/useChainConfig';
-import { AllChainId } from '../const';
-import { useTokensContext } from '../hooks/useTokens';
-import { ChainConfigWithTotalCurrency } from '../types';
+import { stopPropagation } from '../../utils/keyboard';
+import { useChainConfig } from '../../hooks/web3/useChainConfig';
+import { AllChainId } from '../../../types/wallet/const';
+import { useTokensContext } from '../../hooks/wallet/useTokens';
+import { ChainConfigWithTotalCurrency } from '../../../types/wallet/types';
 
 type NetworkSelectorProps = {
   selectedChainId: number;

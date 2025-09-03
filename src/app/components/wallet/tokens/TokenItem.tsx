@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Text } from 'folds';
-import { AssetAndChainIcon } from '../../../../components/wallet/AssetAndChainIcon';
-import { TokenWithChain } from '../types';
+import { AssetAndChainIcon } from '../AssetAndChainIcon';
+import { TokenWithChain } from '../../../../types/wallet/types';
 
 export function TokenItem({
   token,

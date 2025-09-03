@@ -1,11 +1,11 @@
 import { useEffect, useState, useCallback, createContext, useContext, useMemo } from 'react';
 import { walletApi } from '@src/app/externalApis';
 import { mxidToOntid } from '@src/app/utils/ontid';
-import { useFetchPasskeyList } from '../../../../hooks/useFetchPasskeyList';
-import { Token } from '../../../../externalApis/models';
-import { useMatrixClient } from '../../../../hooks/useMatrixClient';
-import { mockChains, mockTokens } from '../MockData';
-import { TokenWithChain } from '../types';
+import { useFetchPasskeyList } from '../../hooks/useFetchPasskeyList';
+import { Token } from '../../externalApis/models';
+import { useMatrixClient } from '../../hooks/useMatrixClient';
+import { mockChains, mockTokens } from '../../pages/client/wallet/MockData';
+import { TokenWithChain } from '../../../types/wallet/types';
 
 export interface TokensContextType {
   tokensWithChain: TokenWithChain[];
@@ -72,6 +72,7 @@ export const TokensContext = createContext<TokensContextType>({
   //   eslint-disable-next-line @typescript-eslint/no-empty-function
   setMockDataFlag: () => {},
   getTokens: async () => Promise.resolve(),
+  totalTokensCurrency: 0,
 });
 
 export const TokensProvider = TokensContext.Provider;
