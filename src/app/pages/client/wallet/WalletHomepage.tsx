@@ -11,8 +11,8 @@ import { ContainerColor } from '../../../styles/ContainerColor.css';
 import OntIdIconSvg from '../../../static/icons/svgs/ONTID.svg';
 import TopUp from '../../../static/icons/TopUp';
 import Send from '../../../static/icons/Send';
-import { TokensAndActivities } from './TokensAndActivities';
-import { Receive } from './Receive/Receive';
+import { TokensAndActivities } from './tokensAndActivities';
+import { Receive } from './receive/Receive';
 import { useTokensContext } from '../../../hooks/wallet/useTokens';
 
 export function WalletHomepage({
