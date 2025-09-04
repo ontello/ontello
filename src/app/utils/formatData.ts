@@ -10,5 +10,5 @@ export const formatTxLink = (chainConfig: ChainConfig | undefined, txHash: strin
   if (!chainConfig) return '';
   const { blockExplorerUrls } = chainConfig;
   const blockExplorerUrl = blockExplorerUrls[0];
-  return `${blockExplorerUrl}/tx/${txHash}`;
+  return `${blockExplorerUrl.replace(/\/$/, '')}/tx/${txHash}`;
 };

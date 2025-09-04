@@ -20,9 +20,9 @@ export function ActivityList({ selectedNetworkChainId }: { selectedNetworkChainI
   const [firstPageIsLoaded, setFirstPageIsLoaded] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
-  const pageSize = 20;
+  const pageSize = 50;
 
-  // 使用 ref 来避免依赖循环
+  // Use ref to avoid dependency loop
   const isLoadingLatestRef = useRef(false);
   const isLoadingMoreRef = useRef(false);
   const hasMoreRef = useRef(true);
@@ -57,6 +57,7 @@ export function ActivityList({ selectedNetworkChainId }: { selectedNetworkChainI
         if (!passkeyData?.walletAddress) {
           setActivities([]);
           setHasMore(false);
+          hasMoreRef.current = false;
           return;
         }
 
@@ -83,7 +84,12 @@ export function ActivityList({ selectedNetworkChainId }: { selectedNetworkChainI
           setHasMore(hasMoreData);
           hasMoreRef.current = hasMoreData;
           setActivitiesPageNum(pageNum);
+        } else if (isLoadLatest) {
+          const hasMoreData = res.result.total > res.result.records.length;
+          setHasMore(hasMoreData);
+          hasMoreRef.current = hasMoreData;
         }
+
         setFirstPageIsLoaded(true);
       } catch (error) {
         console.error('getActivities error', error);
@@ -101,7 +107,7 @@ export function ActivityList({ selectedNetworkChainId }: { selectedNetworkChainI
     [passkeyData?.walletAddress]
   );
 
-  // 加载更多数据的函数
+  // Function to load more data
   const loadMore = useCallback(() => {
     if (!hasMoreRef.current || isLoadingMoreRef.current || !firstPageIsLoaded) return;
 
@@ -118,7 +124,7 @@ export function ActivityList({ selectedNetworkChainId }: { selectedNetworkChainI
     return () => clearInterval(interval);
   }, [getActivities]);
 
-  // 使用 Intersection Observer 监听触底
+  // Use Intersection Observer to listen for the bottom
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -129,8 +135,8 @@ export function ActivityList({ selectedNetworkChainId }: { selectedNetworkChainI
         }
       },
       {
-        root: null, // 使用 viewport 作为根
-        rootMargin: '100px', // 提前100px触发
+        root: null, // Use viewport as the root
+        rootMargin: '0px 0px 100px 0px', // Trigger 100px before the bottom
         threshold: 0.1,
       }
     );
@@ -190,8 +196,7 @@ export function ActivityList({ selectedNetworkChainId }: { selectedNetworkChainI
         </Box>
       ))}
 
-      {/* 加载更多状态 */}
-      {isLoadingMore && (
+      {((isLoadingMore && activities.length > 0) || !firstPageIsLoaded) && (
         <Box direction="Column" gap="200" style={{ padding: '20px', textAlign: 'center' }}>
           <Text size="T200" priority="500">
             Loading...
@@ -199,7 +204,14 @@ export function ActivityList({ selectedNetworkChainId }: { selectedNetworkChainI
         </Box>
       )}
 
-      {/* 没有更多数据 */}
+      {firstPageIsLoaded && activities.length === 0 && (
+        <Box direction="Column" gap="200" style={{ padding: '20px', textAlign: 'center' }}>
+          <Text size="T200" priority="500">
+            No Data
+          </Text>
+        </Box>
+      )}
+
       {!hasMore && activities.length > 0 && (
         <Box direction="Column" gap="200" style={{ padding: '20px', textAlign: 'center' }}>
           <Text size="T200" priority="500">
@@ -208,7 +220,7 @@ export function ActivityList({ selectedNetworkChainId }: { selectedNetworkChainI
         </Box>
       )}
 
-      {/* Intersection Observer 触发元素 */}
+      {/* Intersection Observer trigger element */}
       {hasMore && !isLoadingMore && <div ref={loadMoreRef} style={{ height: '1px' }} />}
     </Box>
   );

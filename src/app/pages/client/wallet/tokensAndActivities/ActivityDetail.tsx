@@ -11,7 +11,7 @@ import {
   Icons,
   Text,
 } from 'folds';
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import FocusTrap from 'focus-trap-react';
 import { ContainerColor } from '@src/app/styles/ContainerColor.css';
 import dayjs from 'dayjs';
@@ -21,6 +21,8 @@ import { LabelBox } from './LabelBox';
 import { AvatarAndEnsData } from '../../../../components/wallet/AvatarAndEnsData';
 import { formatTxLink, formatAddress } from '../../../../utils/formatData';
 import { CopyIcon } from '../../../../components/CopyIcon';
+import { walletApi } from '../../../../externalApis';
+import type { EnsData } from '../../../../externalApis/models';
 
 export function ActivityDetail({
   activity,
@@ -35,6 +37,33 @@ export function ActivityDetail({
   statusColor: string;
   onClose: () => void;
 }) {
+  const [sendAddressEnsData, setSendAddressEnsData] = useState<EnsData>(activity.sendData);
+  const [receiveAddressEnsData, setReceiveAddressEnsData] = useState<EnsData>(activity.receiveData);
+
+  const getEnsData = useCallback(async (address: string) => {
+    const res = await walletApi.walletdataEnsGet({
+      query: address,
+    });
+    return res.result;
+  }, []);
+
+  useEffect(() => {
+    getEnsData(activity.sendData.addr).then((ensDatas) => {
+      ensDatas.forEach((ensData) => {
+        if (ensData.addr.toLowerCase() === activity.sendData.addr.toLowerCase()) {
+          setSendAddressEnsData(ensData);
+        }
+      });
+    });
+    getEnsData(activity.receiveData.addr).then((ensDatas) => {
+      ensDatas.forEach((ensData) => {
+        if (ensData.addr.toLowerCase() === activity.receiveData.addr.toLowerCase()) {
+          setReceiveAddressEnsData(ensData);
+        }
+      });
+    });
+  }, [activity.sendData.addr, activity.receiveData.addr, getEnsData]);
+
   return (
     <Overlay open backdrop={<OverlayBackdrop />}>
       <OverlayCenter>
@@ -89,7 +118,7 @@ export function ActivityDetail({
 
               <LabelBox label="From">
                 <AvatarAndEnsData
-                  ensData={activity.sendData}
+                  ensData={sendAddressEnsData}
                   showShortAddress
                   showCopyAddress
                   directionMode="Column"
@@ -99,7 +128,7 @@ export function ActivityDetail({
 
               <LabelBox label="To">
                 <AvatarAndEnsData
-                  ensData={activity.receiveData}
+                  ensData={receiveAddressEnsData}
                   showShortAddress
                   showCopyAddress
                   directionMode="Column"

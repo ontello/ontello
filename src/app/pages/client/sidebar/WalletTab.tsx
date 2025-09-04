@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Icon } from 'folds';
 import WalletSideBarIcon from '@app/static/icons/WalletSideBarIcon';
 import { SidebarAvatar, SidebarItem, SidebarItemTooltip } from '../../../components/sidebar';
-import { WALLET_DIRECT_PATH } from '../../paths';
+import { WALLET_PATH } from '../../paths';
 import { useWalletSelected } from '../../../hooks/router/useWalletSelected';
 
 export function WalletTab() {
@@ -11,7 +11,7 @@ export function WalletTab() {
 
   const navigate = useNavigate();
   const handleClick = () => {
-    navigate(WALLET_DIRECT_PATH);
+    navigate(WALLET_PATH);
   };
 
   return (

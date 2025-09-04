@@ -13,7 +13,11 @@ export function TokensListUi({
   return (
     <Box direction="Column" gap="200" style={{ marginTop: '10px' }}>
       {tokensList.map((token) => (
-        <TokenItem key={token.name + token.tokenAddr} token={token} onSelect={onSelect} />
+        <TokenItem
+          key={token.name + token.tokenAddr + token.icon}
+          token={token}
+          onSelect={onSelect}
+        />
       ))}
     </Box>
   );
