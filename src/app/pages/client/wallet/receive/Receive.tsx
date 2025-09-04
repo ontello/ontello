@@ -27,15 +27,15 @@ export function Receive({ onClose }: { onClose: () => void }) {
   const mx = useMatrixClient();
   const userId = mx.getUserId();
   const [passkeyData] = useFetchPasskeyList(userId!);
-  const { tokensWithChain } = useTokensContext();
+  const { tokens } = useTokensContext();
   const { availableChains } = useChainConfig();
   const [selectedNetworkChainId, setSelectedNetworkChainId] = useState<number>(
     availableChains[0]?.chainId
   );
 
   const supportedAssets = useMemo(
-    () => tokensWithChain.filter((token) => token.chainId === selectedNetworkChainId),
-    [tokensWithChain, selectedNetworkChainId]
+    () => tokens.filter((token) => token.chainId === selectedNetworkChainId),
+    [tokens, selectedNetworkChainId]
   );
 
   const selectedChain = useMemo(

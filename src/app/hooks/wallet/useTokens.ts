@@ -4,34 +4,20 @@ import { mxidToOntid } from '@src/app/utils/ontid';
 import { useFetchPasskeyList } from '../../hooks/useFetchPasskeyList';
 import { Token } from '../../externalApis/models';
 import { useMatrixClient } from '../../hooks/useMatrixClient';
-import { mockChains, mockTokens } from '../../pages/client/wallet/MockData';
-import { TokenWithChain } from '../../../types/wallet/types';
 
 export interface TokensContextType {
-  tokensWithChain: TokenWithChain[];
+  tokens: Token[];
   getTokens: () => Promise<void>;
-  mockDataFlag: boolean;
-  setMockDataFlag: (flag: boolean) => void;
   totalTokensCurrency: number;
 }
 
 export const useTokens = () => {
   const [tokens, setTokens] = useState<Token[]>([]);
-  const [mockDataFlag, setMockDataFlag] = useState(false);
 
   const mx = useMatrixClient();
   const userId = mx.getUserId();
   const [passkeyData] = useFetchPasskeyList(userId!);
   const ontId = mxidToOntid(userId!);
-
-  const tokensWithChain: TokenWithChain[] = useMemo(
-    () =>
-      tokens.map((token) => ({
-        ...token,
-        chain: mockChains.find((chain) => chain.chainId === token.chainId),
-      })),
-    [tokens]
-  );
 
   const totalTokensCurrency = useMemo(
     () => tokens.reduce((acc, token) => acc + Number(token.currency || '0'), 0),
@@ -39,11 +25,6 @@ export const useTokens = () => {
   );
 
   const getTokens = useCallback(async () => {
-    if (mockDataFlag) {
-      setTokens(mockTokens);
-      return;
-    }
-
     if (!passkeyData?.walletAddress) {
       setTokens([]);
       return;
@@ -57,20 +38,17 @@ export const useTokens = () => {
       .then((res) => {
         setTokens(res.result);
       });
-  }, [passkeyData?.walletAddress, mockDataFlag, ontId]);
+  }, [passkeyData?.walletAddress, ontId]);
 
   useEffect(() => {
     getTokens();
   }, [passkeyData?.walletAddress, getTokens]);
 
-  return { tokensWithChain, getTokens, mockDataFlag, setMockDataFlag, totalTokensCurrency };
+  return { tokens, getTokens, totalTokensCurrency };
 };
 
 export const TokensContext = createContext<TokensContextType>({
-  tokensWithChain: [],
-  mockDataFlag: false,
-  //   eslint-disable-next-line @typescript-eslint/no-empty-function
-  setMockDataFlag: () => {},
+  tokens: [],
   getTokens: async () => Promise.resolve(),
   totalTokensCurrency: 0,
 });

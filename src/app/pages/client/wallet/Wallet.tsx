@@ -22,13 +22,10 @@ function WalletHeader() {
 
 export function Wallet() {
   const [walletNavMode, setWalletNavMode] = useState<WalletNavMode>(WalletNavMode.Main);
-  const { tokensWithChain, getTokens, mockDataFlag, setMockDataFlag, totalTokensCurrency } =
-    useTokens();
+  const { tokens, getTokens, totalTokensCurrency } = useTokens();
 
   return (
-    <TokensProvider
-      value={{ tokensWithChain, getTokens, mockDataFlag, setMockDataFlag, totalTokensCurrency }}
-    >
+    <TokensProvider value={{ tokens, getTokens, totalTokensCurrency }}>
       <PageNav>
         <WalletHeader />
         {walletNavMode === WalletNavMode.Main && (

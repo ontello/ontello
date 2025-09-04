@@ -10,10 +10,10 @@ export function TokensList({
   onSelect,
 }: {
   filterChainId: number;
-  onSelect: (token: TokenWithChain) => void;
+  onSelect: ((token: TokenWithChain) => void) | null;
 }) {
   const [tokensForSelectedNetwork, setTokensForSelectedNetwork] = useState<TokenWithChain[]>([]);
-  const { tokensWithChain, getTokens } = useTokensContext();
+  const { tokens, getTokens } = useTokensContext();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -24,13 +24,11 @@ export function TokensList({
 
   useEffect(() => {
     if (filterChainId === AllChainId) {
-      setTokensForSelectedNetwork(tokensWithChain);
+      setTokensForSelectedNetwork(tokens);
     } else {
-      setTokensForSelectedNetwork(
-        tokensWithChain.filter((token) => token.chainId === filterChainId)
-      );
+      setTokensForSelectedNetwork(tokens.filter((token) => token.chainId === filterChainId));
     }
-  }, [filterChainId, tokensWithChain]);
+  }, [filterChainId, tokens]);
 
   return (
     <Box direction="Column" gap="300" style={{ marginTop: '10px' }}>

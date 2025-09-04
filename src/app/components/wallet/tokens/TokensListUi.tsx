@@ -8,10 +8,10 @@ export function TokensListUi({
   onSelect,
 }: {
   tokensList: TokenWithChain[];
-  onSelect: (token: TokenWithChain) => void;
+  onSelect: ((token: TokenWithChain) => void) | null;
 }) {
   return (
-    <Box direction="Column" gap="300" style={{ marginTop: '10px' }}>
+    <Box direction="Column" gap="200" style={{ marginTop: '10px' }}>
       {tokensList.map((token) => (
         <TokenItem key={token.name + token.tokenAddr} token={token} onSelect={onSelect} />
       ))}

@@ -28,7 +28,7 @@ const NetworkSelector = as<
           radii="300"
           onClick={() => onSelect(network.chainId)}
         >
-          <Box direction="Row" gap="100" alignItems="Center">
+          <Box direction="Row" gap="100" alignItems="Center" style={{ minWidth: '80px' }}>
             {network.iconUrls[0] && (
               <img
                 src={network.iconUrls[0]}
@@ -61,7 +61,7 @@ export function NetworkSelect({
 }: NetworkSelectorProps) {
   const [networkCords, setNetworkCords] = useState<RectCords>();
   const { availableChains } = useChainConfig();
-  const { tokensWithChain } = useTokensContext();
+  const { tokens } = useTokensContext();
 
   const allChainsWithTotalCurrency: ChainConfigWithTotalCurrency[] = useMemo(
     () => [
@@ -78,14 +78,14 @@ export function NetworkSelect({
       ...availableChains.map((chain) => ({
         ...chain,
         totalCurrency: showTotalCurrency
-          ? tokensWithChain
+          ? tokens
               .filter((token) => token.chainId === chain.chainId)
               .reduce((acc, token) => acc + Number(token.currency || 0), 0)
               .toFixed(2)
           : undefined,
       })),
     ],
-    [availableChains, hideAllNetwork, tokensWithChain, showTotalCurrency]
+    [availableChains, hideAllNetwork, tokens, showTotalCurrency]
   );
 
   const selected = useMemo(
@@ -136,7 +136,7 @@ export function NetworkSelect({
         anchor={networkCords}
         offset={5}
         position="Bottom"
-        align="End"
+        align="Start"
         content={
           <FocusTrap
             focusTrapOptions={{

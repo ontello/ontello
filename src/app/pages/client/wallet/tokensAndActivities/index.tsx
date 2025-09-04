@@ -47,7 +47,7 @@ export function TokensAndActivities() {
 
       {activeTab === 'tokens' && (
         // eslint-disable-next-line @typescript-eslint/no-empty-function
-        <TokensList filterChainId={selectedNetworkChainId} onSelect={() => {}} />
+        <TokensList filterChainId={selectedNetworkChainId} onSelect={null} />
       )}
 
       {activeTab === 'activities' && (
