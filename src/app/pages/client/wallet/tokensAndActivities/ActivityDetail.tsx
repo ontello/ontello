@@ -1,21 +1,7 @@
-import {
-  Dialog,
-  Overlay,
-  OverlayBackdrop,
-  OverlayCenter,
-  Box,
-  config,
-  Header,
-  Icon,
-  IconButton,
-  Icons,
-  Text,
-} from 'folds';
+import { Box, config, Header, Icon, IconButton, Icons, Text } from 'folds';
 import React, { useCallback, useEffect, useState } from 'react';
-import FocusTrap from 'focus-trap-react';
 import { ContainerColor } from '@src/app/styles/ContainerColor.css';
 import dayjs from 'dayjs';
-import { stopPropagation } from '../../../../utils/keyboard';
 import { ActivityWithChain } from '../../../../../types/wallet/types';
 import { LabelBox } from './LabelBox';
 import { AvatarAndEnsData } from '../../../../components/wallet/AvatarAndEnsData';
