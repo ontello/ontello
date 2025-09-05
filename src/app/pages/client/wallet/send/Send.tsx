@@ -18,24 +18,19 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
   const [passkeyData] = useFetchPasskeyList(userId || '');
   const aaAddress = passkeyData?.walletAddress;
 
-  // Form state
   const [amount, setAmount] = useState('');
   const [selectedToken, setSelectedToken] = useState<TokenWithChain | null>(null);
   const [recipient, setRecipient] = useState<RecipientInfo | null>(null);
   const [feeToken, setFeeToken] = useState<TokenWithChain | null>(null);
 
-
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Clear fee token when chain changes
   useEffect(() => {
     if (selectedToken && feeToken) {
-      // If chain ID changed, clear the fee token selection
       setFeeToken(null);
     }
-  }, [selectedToken?.chainId]); // Only depend on chainId
+  }, [selectedToken?.chainId]);
 
-  // Calculate USD value
   const usdValue = useMemo(() => {
     if (!amount || !selectedToken || !selectedToken.currencyPrice) return '0.00';
     const amountNum = parseFloat(amount);
@@ -43,14 +38,12 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
     return (amountNum * pricePerToken).toFixed(2);
   }, [amount, selectedToken]);
 
-  // Handle Max button click
   const handleMaxClick = () => {
     if (selectedToken) {
       setAmount(selectedToken.balance || '0');
     }
   };
 
-  // Form validation
   const isFormValid = useMemo(() => {
     if (!amount || !selectedToken || !recipient || !feeToken) return false;
 
@@ -60,7 +53,6 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
     return amountNum > 0 && amountNum <= maxAmount;
   }, [amount, selectedToken, recipient, feeToken]);
 
-  // Handle Pay button click
   const handlePay = () => {
     if (!isFormValid || !selectedToken || !recipient || !feeToken) return;
 
@@ -124,11 +116,7 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
                   }}
                 />
               </Box>
-              <Text
-                size="H3"
-                style={{ minWidth: 'fit-content' }}
-                priority="300"
-              >
+              <Text size="H3" style={{ minWidth: 'fit-content' }} priority="300">
                 {selectedToken?.symbol || 'USDC'}
               </Text>
               <Button
@@ -148,15 +136,9 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
           {/* Selection Areas */}
           {aaAddress && (
             <Box direction="Column" gap="300">
-              <AssetSelector
-                value={selectedToken}
-                onChange={setSelectedToken}
-              />
+              <AssetSelector value={selectedToken} onChange={setSelectedToken} />
 
-              <RecipientSelector
-                value={recipient}
-                onChange={setRecipient}
-              />
+              <RecipientSelector value={recipient} onChange={setRecipient} />
 
               {selectedToken && selectedToken.chainId && (
                 <FeeTokenSelector
@@ -187,7 +169,6 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
           </Button>
         </Box>
       </PageNavContent>
-
     </Box>
   );
 }

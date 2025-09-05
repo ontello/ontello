@@ -11,6 +11,9 @@ import {
   HOME_PATH,
   HOME_ROOM_PATH,
   HOME_SEARCH_PATH,
+  WALLET_PATH,
+  WALLET_CHECK_AGENT_PATH,
+  WALLET_DIRECT_PATH,
   LOGIN_PATH,
   INBOX_INVITES_PATH,
   INBOX_NOTIFICATIONS_PATH,
@@ -104,6 +107,17 @@ export const getHomeRoomPath = (roomIdOrAlias: string, eventId?: string): string
   };
 
   return generatePath(HOME_ROOM_PATH, params);
+};
+
+export const getWalletPath = (): string => WALLET_PATH;
+export const getWalletCheckAgentPath = (): string => WALLET_CHECK_AGENT_PATH;
+export const getWalletDirectPath = (roomIdOrAlias: string, eventId?: string): string => {
+  const params = {
+    roomIdOrAlias: encodeURIComponent(roomIdOrAlias),
+    eventId: eventId ? encodeURIComponent(eventId) : null,
+  };
+
+  return generatePath(WALLET_DIRECT_PATH, params);
 };
 
 export const getDirectPath = (): string => DIRECT_PATH;

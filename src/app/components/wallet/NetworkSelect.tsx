@@ -75,15 +75,17 @@ export function NetworkSelect({
               blockExplorerUrls: [],
             } as unknown as ChainConfigWithTotalCurrency,
           ]),
-      ...availableChains.map((chain) => ({
-        ...chain,
-        totalCurrency: showTotalCurrency
-          ? tokens
-              .filter((token) => token.chainId === chain.chainId)
-              .reduce((acc, token) => acc + Number(token.currency || 0), 0)
-              .toFixed(2)
-          : undefined,
-      })),
+      ...availableChains
+        .map((chain) => ({
+          ...chain,
+          totalCurrency: showTotalCurrency
+            ? tokens
+                .filter((token) => token.chainId === chain.chainId)
+                .reduce((acc, token) => acc + Number(token.currency || 0), 0)
+                .toFixed(2)
+            : undefined,
+        }))
+        .sort((a, b) => Number(b.totalCurrency || 0) - Number(a.totalCurrency || 0)),
     ],
     [availableChains, hideAllNetwork, tokens, showTotalCurrency]
   );

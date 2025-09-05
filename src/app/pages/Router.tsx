@@ -31,6 +31,7 @@ import {
   RECOVERY_ACCOUNT_PATH,
   AGENT_PATH,
   WALLET_PATH,
+  WALLET_CHECK_AGENT_PATH,
   WALLET_DIRECT_PATH,
   STORE_PATH,
   DIRECT_ROOM_PATH,
@@ -77,6 +78,7 @@ import { CreateSpaceModalRenderer } from '../features/create-space';
 import { Agent } from './client/agent/Agent';
 import { AgentStore } from './client/agent/AgentStore';
 import { Wallet } from './client/wallet/Wallet';
+import { CheckAgent } from './client/wallet/CheckAgent';
 
 export const createRouter = (clientConfig: ClientConfig, screenSize: ScreenSize) => {
   const { hashRouter } = clientConfig;
@@ -250,7 +252,8 @@ export const createRouter = (clientConfig: ClientConfig, screenSize: ScreenSize)
             </PageRoot>
           }
         >
-          <Route index element={<div>Wallet Test</div>} />
+          {mobile ? null : <Route index element={<CheckAgent />} />}
+          <Route path={WALLET_CHECK_AGENT_PATH} element={<CheckAgent />} />
           <Route
             path={WALLET_DIRECT_PATH}
             element={
