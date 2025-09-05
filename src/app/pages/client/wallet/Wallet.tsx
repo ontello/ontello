@@ -5,16 +5,22 @@ import { WalletHomepage } from './WalletHomepage';
 import { Send } from './send/Send';
 import { WalletNavMode } from '../../../../types/wallet/types';
 import { TokensProvider, useTokens } from '../../../hooks/wallet/useTokens';
+import { AgentLogo } from '../../../components/wallet/AgentLogo';
+import { useScreenSizeContext, ScreenSize } from '../../../hooks/useScreenSize';
 
 function WalletHeader() {
+  const screenSize = useScreenSizeContext();
+  const isMobile = screenSize === ScreenSize.Mobile;
+
   return (
     <PageNavHeader>
-      <Box alignItems="Center" grow="Yes" gap="300">
+      <Box alignItems="Center" justifyContent="SpaceBetween" grow="Yes" gap="300">
         <Box grow="Yes">
           <Text size="H4" truncate>
             Smart wallet
           </Text>
         </Box>
+        {isMobile && <AgentLogo />}
       </Box>
     </PageNavHeader>
   );

@@ -1,10 +1,9 @@
 import { useMatrixClient } from '@src/app/hooks/useMatrixClient';
-import { getDMRoomFor } from '@src/app/utils/matrix';
-import { KnownMembership } from 'matrix-js-sdk';
 import { useNavigate } from 'react-router-dom';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Box, Text, Spinner } from 'folds';
-import { WALLET_PATH } from '../../paths';
+import { Membership } from '@src/types/matrix/room';
+import { getWalletDirectPath } from '../../pathUtils';
 import * as roomActions from '../../../../client/action/room';
 
 const walletAgentId = '@smartwallet.agent:ont.network';
@@ -21,23 +20,23 @@ export function CheckAgent() {
     try {
       const rooms = mx
         .getRooms()
-        .filter((room) => room.hasEncryptionStateEvent() && room.getMembers().length <= 2)
+        .filter(
+          (room) =>
+            room.hasEncryptionStateEvent() &&
+            room.getMyMembership() === Membership.Join &&
+            room.getMembers().length <= 2
+        )
+        .filter((room) => room.roomId !== mx.getUserId()!)
         .filter((room) => room.getMember(walletAgentId));
 
-      const validateRoom = rooms.find((room) => {
-        const member = room?.getMember(mx.getUserId()!);
-        if (member && member.membership !== KnownMembership.Leave) {
-          return true;
-        }
-        return false;
-      });
+      const validateRoom = rooms[0];
 
       if (validateRoom) {
-        navigate(`${WALLET_PATH}/direct/${validateRoom.roomId}`);
+        navigate(getWalletDirectPath(validateRoom.roomId));
         return;
       }
       const result = await roomActions.createDM(mx, walletAgentId);
-      navigate(`${WALLET_PATH}/direct/${result.room_id}`);
+      navigate(getWalletDirectPath(result.room_id));
     } catch (error: any) {
       setAddError(error.message || 'Failed to add agent to chats');
     } finally {

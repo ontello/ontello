@@ -4,10 +4,18 @@ import {
   getDirectPath,
   getExplorePath,
   getHomePath,
+  getWalletPath,
   getInboxPath,
   getSpacePath,
 } from '../pages/pathUtils';
-import { DIRECT_PATH, EXPLORE_PATH, HOME_PATH, INBOX_PATH, SPACE_PATH } from '../pages/paths';
+import {
+  DIRECT_PATH,
+  EXPLORE_PATH,
+  HOME_PATH,
+  WALLET_PATH,
+  INBOX_PATH,
+  SPACE_PATH,
+} from '../pages/paths';
 
 type BackRouteHandlerProps = {
   children: (onBack: () => void) => ReactNode;
@@ -28,6 +36,19 @@ export function BackRouteHandler({ children }: BackRouteHandlerProps) {
       )
     ) {
       navigate(getHomePath());
+      return;
+    }
+    if (
+      matchPath(
+        {
+          path: WALLET_PATH,
+          caseSensitive: true,
+          end: false,
+        },
+        location.pathname
+      )
+    ) {
+      navigate(getWalletPath());
       return;
     }
     if (

@@ -71,6 +71,7 @@ export const STORE_PATH = 'store/';
 export const AGENT_DIRECT_PATH = `${AGENT_PATH}${DIRECT_ROOM_PATH}`;
 
 export const WALLET_PATH = '/wallet';
+export const WALLET_CHECK_AGENT_PATH = `${WALLET_PATH}/check-agent`;
 export const WALLET_DIRECT_PATH = `${WALLET_PATH}${DIRECT_ROOM_PATH}`;
 
 export type ExploreServerPathSearchParams = {

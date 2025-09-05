@@ -62,8 +62,8 @@ export function ActivityList({ selectedNetworkChainId }: { selectedNetworkChainI
         }
 
         const res = await walletApi.walletdataActivityGet({
-          // addr: passkeyData.walletAddress,
-          addr: '0x8d47747d73be1b68f69ea4510e72cace1977d404',
+          addr: passkeyData.walletAddress,
+          // addr: '0x8d47747d73be1b68f69ea4510e72cace1977d404',
           page_num: pageNum,
           page_size: pageSize,
         });

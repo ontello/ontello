@@ -31,6 +31,7 @@ import {
   RECOVERY_ACCOUNT_PATH,
   AGENT_PATH,
   WALLET_PATH,
+  WALLET_CHECK_AGENT_PATH,
   WALLET_DIRECT_PATH,
   STORE_PATH,
   DIRECT_ROOM_PATH,
@@ -251,7 +252,8 @@ export const createRouter = (clientConfig: ClientConfig, screenSize: ScreenSize)
             </PageRoot>
           }
         >
-          <Route index element={<CheckAgent />} />
+          {mobile ? null : <Route index element={<CheckAgent />} />}
+          <Route path={WALLET_CHECK_AGENT_PATH} element={<CheckAgent />} />
           <Route
             path={WALLET_DIRECT_PATH}
             element={
