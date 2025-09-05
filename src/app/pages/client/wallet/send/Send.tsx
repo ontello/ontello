@@ -1,5 +1,5 @@
 import React, { useRef, useState, useMemo, useEffect } from 'react';
-import { Box, Button, Text, Input, Icon, Icons, color } from 'folds';
+import { Box, Button, Text, color, toRem } from 'folds';
 import { Address } from 'viem';
 import { openReviewTransfer } from '@src/client/action/navigation';
 import { PageNavContent } from '../../../../components/page';
@@ -9,14 +9,17 @@ import { ContainerColor } from '../../../../styles/ContainerColor.css';
 import { AssetSelector } from './AssetSelector';
 import { RecipientSelector, RecipientInfo } from './RecipientSelector';
 import { FeeTokenSelector } from './FeeTokenSelector';
+import { AmountInput } from './AmountInput';
 import { useMatrixClient } from '../../../../hooks/useMatrixClient';
 import { useFetchPasskeyList } from '../../../../hooks/useFetchPasskeyList';
+import { useTokensContext } from '../../../../hooks/wallet/useTokens';
 
 export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavMode) => void }) {
   const mx = useMatrixClient();
   const userId = mx.getUserId();
   const [passkeyData] = useFetchPasskeyList(userId || '');
   const aaAddress = passkeyData?.walletAddress;
+  const { tokens } = useTokensContext();
 
   const [amount, setAmount] = useState('');
   const [selectedToken, setSelectedToken] = useState<TokenWithChain | null>(null);
@@ -25,11 +28,18 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // Set first token as default when tokens are loaded
   useEffect(() => {
-    if (selectedToken && feeToken) {
+    if (tokens && tokens.length > 0 && !selectedToken) {
+      setSelectedToken(tokens[0]);
+    }
+  }, [tokens, selectedToken]);
+
+  useEffect(() => {
+    if (selectedToken) {
       setFeeToken(null);
     }
-  }, [selectedToken?.chainId]);
+  }, [selectedToken]);
 
   const usdValue = useMemo(() => {
     if (!amount || !selectedToken || !selectedToken.currencyPrice) return '0.00';
@@ -60,7 +70,7 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
       token: {
         address: (selectedToken.tokenAddr || '') as Address,
         name: selectedToken.name,
-        decimals: BigInt(selectedToken.decimals),
+        decimals: selectedToken.decimals,
         amount,
         usdValue,
         icon: selectedToken.icon || '',
@@ -88,48 +98,49 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
           </Back>
 
           {/* Amount Input Section */}
-          <Box
-            direction="Column"
-            gap="200"
-            style={{
-              padding: '24px 20px',
-              borderRadius: '16px',
-              backgroundColor: color.Surface.Container,
-              border: `1px solid ${color.Surface.ContainerLine}`,
-            }}
-          >
-            <Box direction="Row" alignItems="Center" gap="200">
-              <Box grow="Yes">
-                <Input
-                  size="500"
-                  type="number"
+          <Box direction="Column" gap="200">
+            <Box direction="Row" alignItems="Center" gap="300">
+              <Box grow="Yes" style={{ flex: 1 }}>
+                <AmountInput
                   value={amount}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAmount(e.target.value)}
+                  onChange={(e) => setAmount(e.target.value)}
                   placeholder="0"
-                  style={{
-                    fontSize: '48px',
-                    fontWeight: '300',
-                    textAlign: 'left',
-                    border: 'none',
-                    backgroundColor: 'transparent',
-                    outline: 'none',
-                  }}
+                  disabled={!selectedToken}
                 />
+
+                <Text
+                  size="H5"
+                  style={{
+                    minWidth: 'fit-content',
+                    fontSize: '24px',
+                    fontWeight: '500',
+                  }}
+                  priority="300"
+                >
+                  {selectedToken?.name}
+                </Text>
               </Box>
-              <Text size="H3" style={{ minWidth: 'fit-content' }} priority="300">
-                {selectedToken?.symbol || 'USDC'}
-              </Text>
               <Button
                 size="300"
                 onClick={handleMaxClick}
                 disabled={!selectedToken}
-                style={{ minWidth: 'fit-content' }}
+                style={{
+                  backgroundColor: 'var(--bg-surface-low)',
+                }}
               >
-                Max
+                <Text style={{ color: color.Secondary.Main }}>Max</Text>
               </Button>
             </Box>
-            <Text size="T300" priority="300">
-              ${usdValue} USD
+            <Text
+              size="T300"
+              priority="300"
+              style={{
+                fontSize: '18px',
+                color: 'var(--tc-surface-low)',
+                opacity: 0.6,
+              }}
+            >
+              {usdValue} USD
             </Text>
           </Box>
 
@@ -150,24 +161,19 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
               )}
             </Box>
           )}
-
-          {/* Pay Button */}
-          <Button
-            size="500"
-            disabled={!isFormValid}
-            onClick={handlePay}
-            style={{
-              marginTop: '32px',
-              width: '100%',
-              height: '56px',
-              borderRadius: '16px',
-              fontSize: '18px',
-              fontWeight: '600',
-            }}
-          >
-            {isFormValid ? 'Pay' : 'Complete form to pay'}
-          </Button>
         </Box>
+        {/* Pay Button */}
+        <Button
+          size="500"
+          disabled={!isFormValid}
+          onClick={handlePay}
+          style={{
+            marginTop: toRem(30),
+            width: '100%',
+          }}
+        >
+          Pay
+        </Button>
       </PageNavContent>
     </Box>
   );

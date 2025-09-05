@@ -55,13 +55,7 @@ export function RecipientSelector({ value, onChange }: RecipientSelectorProps) {
       });
 
       if (response.error.code === '0' && response.result) {
-        // Ensure all results have required chainIcon field
-        const ensDataResults: EnsData[] = response.result.map((result: any) => ({
-          addr: result.addr,
-          domain: result.domain,
-          chainIcon: result.chainIcon || '', // Provide default empty string if undefined
-        }));
-        setSearchResults(ensDataResults);
+        setSearchResults(response.result);
       } else {
         setError('Search failed');
         setSearchResults([]);
@@ -79,13 +73,19 @@ export function RecipientSelector({ value, onChange }: RecipientSelectorProps) {
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       searchRecipients(query);
-    }, 500);
+    }, 300);
 
     return () => clearTimeout(timeoutId);
   }, [query, searchRecipients]);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(event.target.value);
+  };
+
+  const handleClearInput = () => {
+    setQuery('');
+    setSearchResults([]);
+    setError(null);
   };
 
   const handleCardClick = () => {
@@ -183,14 +183,28 @@ export function RecipientSelector({ value, onChange }: RecipientSelectorProps) {
                   </Header>
 
                   <Box
+                    direction="Column"
+                    gap="300"
                     style={{
                       padding: config.space.S300,
                     }}
                   >
+                    <Text>Enter address(0x), ONT ID, or ENS</Text>
                     <Input
                       size="400"
-                      placeholder="Enter address(0x), ONT ID, or ENS"
                       value={query}
+                      after={
+                        query && (
+                          <IconButton 
+                            radii="300" 
+                            size="300" 
+                            variant="Background"
+                            onClick={handleClearInput}
+                          >
+                            <Icon size="100" src={Icons.Cross} />
+                          </IconButton>
+                        )
+                      }
                       onChange={handleInputChange}
                       style={{ width: '100%' }}
                     />
