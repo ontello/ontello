@@ -8,6 +8,7 @@ import { SelectToAddress } from './SelectToAddress';
 import { Back } from '../../../../components/ontello/Back';
 import { ContainerColor } from '../../../../styles/ContainerColor.css';
 import { TokenItem } from '../../../../components/wallet/tokens/TokenItem';
+import { TransferResult, TransferResultEnum } from '../../../../components/wallet/TransferResult';
 
 function TestComponent() {
   const handleTestTransfer = () => {
@@ -38,6 +39,7 @@ function TestComponent() {
 export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavMode) => void }) {
   const [sendNavMode, setSendNavMode] = useState<SendNavMode>(SendNavMode.SendMain);
   const [selectedToken, setSelectedToken] = useState<TokenWithChain | null>(null);
+  const [transferResultOpen, setTransferResultOpen] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -75,6 +77,15 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
       </PageNavContent>
 
       <TestComponent />
+
+      <Button onClick={() => setTransferResultOpen(true)}>Show Transfer Result</Button>
+      {transferResultOpen && (
+        <TransferResult
+          type={TransferResultEnum.Submitted}
+          onClose={() => setTransferResultOpen(false)}
+          viewActivity={() => setTransferResultOpen(false)}
+        />
+      )}
     </Box>
   );
 }
