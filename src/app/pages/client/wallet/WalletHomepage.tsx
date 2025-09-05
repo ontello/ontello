@@ -14,6 +14,7 @@ import Send from '../../../static/icons/Send';
 import { TokensAndActivities } from './tokensAndActivities';
 import { Receive } from './receive/Receive';
 import { useTokensContext } from '../../../hooks/wallet/useTokens';
+import { CopyIcon } from '../../../components/CopyIcon';
 
 export function WalletHomepage({
   setWalletNavMode,
@@ -46,6 +47,7 @@ export function WalletHomepage({
 
           <Box>
             <Text size="T300">{formatAddress(passkeyData?.walletAddress || '', 15, 6)}</Text>
+            <CopyIcon text={passkeyData?.walletAddress || ''} />
           </Box>
 
           <Box gap="300">
