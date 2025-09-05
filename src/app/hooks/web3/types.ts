@@ -66,3 +66,12 @@ export type UserOperationReceipt = {
     effectiveGasPrice: Hex;
   };
 };
+
+export type GasToken = {
+  token_name: string;
+  token_hash: string;
+  token_type: string;
+  decimals: number;
+  currency_price: string;
+  icon: string;
+};

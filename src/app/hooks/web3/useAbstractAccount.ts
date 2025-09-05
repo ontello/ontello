@@ -12,12 +12,14 @@ import {
 import { mnemonicToAccount } from 'viem/accounts';
 import { EntryPointAbi, Erc20Abi, AccountAbi, PaymasterAbi } from '@src/app/static/abis';
 import { polling } from '@src/app/utils/common';
+import { walletApi } from '@src/app/externalApis';
 import { fromBase64Url, registerWithPasskey, signMessageWithPasskey } from '../../utils/passkey';
 import { useWeb3PublicClient } from './useWeb3Client';
 import {
   AccountCallType,
   BuildUserOperationParams,
   BuildUserOperationResult,
+  GasToken,
   UserOperation,
   UserOperationReceipt,
 } from './types';
@@ -98,6 +100,26 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
       throw new Error(`Get paymaster sign failed: ${res.Desc}`);
     }
     return res.Result;
+  };
+
+  const getSupportGasTokens = async (): Promise<GasToken[]> => {
+    const response = await fetch(
+      `https://service-test.onto.app/S5/v2/ontoservice/aa/gas_token/price?chain_type=bsc&currency_name=usd`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    const res = await response.json();
+    if (res.Error !== 0) {
+      throw new Error(`Get supported gas tokens failed: ${res.Desc}`);
+    }
+    return res.Result;
+    // const res = await walletApi.walletdataGasTokenGet({
+
+    // });
   };
 
   // bundler
@@ -570,6 +592,7 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
   };
 
   return {
+    getSupportGasTokens,
     buildCallData,
     buildUserOperation,
     getKeyIndexThroughAddress,
