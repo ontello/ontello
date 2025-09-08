@@ -8,7 +8,7 @@ import { formatAddress } from '@src/app/utils/formatData';
 import { PageNavContent } from '../../../components/page';
 import { WalletNavMode } from '../../../../types/wallet/types';
 import { ContainerColor } from '../../../styles/ContainerColor.css';
-import OntIdIconSvg from '../../../static/icons/svgs/ONTID.svg';
+import OntIdIconSvg from '../../../static/imgs/ONTID.svg';
 import TopUp from '../../../static/icons/TopUp';
 import Send from '../../../static/icons/Send';
 import { TokensAndActivities } from './tokensAndActivities';
