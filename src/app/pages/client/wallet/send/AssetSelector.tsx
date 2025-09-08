@@ -15,9 +15,11 @@ import {
   color,
 } from 'folds';
 import FocusTrap from 'focus-trap-react';
+import { ContainerColor } from '../../../../styles/ContainerColor.css';
 import { TokenWithChain } from '../../../../../types/wallet/types';
 import { useTokensContext } from '../../../../hooks/wallet/useTokens';
 import { TokensListUi } from '../../../../components/wallet/tokens/TokensListUi';
+import { TokenItem } from '../../../../components/wallet/tokens/TokenItem';
 import { stopPropagation } from '../../../../utils/keyboard';
 import { NetworkSelect } from '../../../../components/wallet/NetworkSelect';
 import { AllChainId } from '../../../../../types/wallet/const';
@@ -53,41 +55,37 @@ export function AssetSelector({ value, onChange }: AssetSelectorProps) {
   return (
     <>
       {/* Asset Selection Card */}
-      <Box
-        style={{
-          padding: config.space.S400,
-          borderRadius: config.radii.R400,
-          backgroundColor: color.Surface.Container,
-          border: `${config.borderWidth.B300} solid ${color.Surface.ContainerLine}`,
-          cursor: 'pointer',
-          transition: 'all 0.2s ease',
-        }}
-        onClick={handleCardClick}
-        direction="Row"
-        alignItems="Center"
-        justifyContent="SpaceBetween"
-      >
-        <Box direction="Column" gap="100">
-          <Text size="T300" priority="300">
+      {value && (
+        <Box
+          className={ContainerColor({ variant: 'SurfaceVariant' })}
+          style={{
+            borderRadius: config.radii.R300,
+            padding: config.space.S300,
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+          }}
+          onClick={handleCardClick}
+          direction="Column"
+          gap="200"
+        >
+          <Text size="T300" priority="300" style={{ marginLeft: config.space.S100 }}>
             Send
           </Text>
-          {value ? (
-            <Box direction="Row" alignItems="Center" gap="200">
-              <Text size="T400" style={{ fontWeight: '500' }}>
-                {value.name}
-              </Text>
-              <Text size="T300" priority="300">
-                ${value.currency || '0.00'}
-              </Text>
+          <Box
+            style={{
+              height: '1px',
+              backgroundColor: color.Surface.ContainerLine,
+              width: '100%',
+            }}
+          />
+          <Box direction="Row" alignItems="Center" gap="200">
+            <Box grow="Yes">
+              <TokenItem token={value} onSelect={null} showHoverBg={false} />
             </Box>
-          ) : (
-            <Text size="T400" priority="400">
-              Select asset
-            </Text>
-          )}
+            <Icon src={Icons.ArrowDropRight} size="100" />
+          </Box>
         </Box>
-        <Icon src={Icons.ChevronRight} size="100" />
-      </Box>
+      )}
 
       {/* Asset Selection Modal */}
       {isOpen && (
