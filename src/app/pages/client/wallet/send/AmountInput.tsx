@@ -10,18 +10,56 @@ interface AmountInputProps {
 
 export const AmountInput = forwardRef<HTMLInputElement, AmountInputProps>(
   ({ value, onChange, placeholder = '0', disabled = false }, ref) => {
-    const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-      const char = String.fromCharCode(e.which);
-      const currentValue = e.currentTarget.value;
-      
-      if (!/[0-9.]/.test(char)) {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+      // Allow control keys like backspace, delete, arrow keys, etc.
+      if (
+        e.key === 'Backspace' ||
+        e.key === 'Delete' ||
+        e.key === 'ArrowLeft' ||
+        e.key === 'ArrowRight' ||
+        e.key === 'ArrowUp' ||
+        e.key === 'ArrowDown' ||
+        e.key === 'Tab' ||
+        e.key === 'Enter' ||
+        e.key === 'Escape' ||
+        (e.ctrlKey && (e.key === 'a' || e.key === 'c' || e.key === 'v' || e.key === 'x'))
+      ) {
+        return;
+      }
+
+      // Only allow digits and decimal point
+      if (!/[0-9.]/.test(e.key)) {
         e.preventDefault();
         return;
       }
-      
-      if (char === '.' && currentValue.includes('.')) {
+
+      // Prevent multiple decimal points
+      if (e.key === '.' && e.currentTarget.value.includes('.')) {
         e.preventDefault();
-        return;
+      }
+    };
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newValue = e.target.value;
+      
+      // Filter out any non-digit and non-decimal characters
+      let filtered = newValue.replace(/[^0-9.]/g, '');
+      
+      // Ensure only one decimal point
+      const parts = filtered.split('.');
+      if (parts.length > 2) {
+        filtered = `${parts[0]}.${parts.slice(1).join('')}`;
+      }
+      
+      // Create a new event with the filtered value
+      if (filtered !== newValue) {
+        const syntheticEvent = {
+          ...e,
+          target: { ...e.target, value: filtered }
+        };
+        onChange(syntheticEvent as React.ChangeEvent<HTMLInputElement>);
+      } else {
+        onChange(e);
       }
     };
 
@@ -32,10 +70,11 @@ export const AmountInput = forwardRef<HTMLInputElement, AmountInputProps>(
         inputMode="decimal"
         className={amountInput}
         value={value}
-        onChange={onChange}
-        onKeyPress={handleKeyPress}
+        onChange={handleChange}
+        onKeyDown={handleKeyDown}
         placeholder={placeholder}
         disabled={disabled}
+        name="amount"
       />
     );
   }

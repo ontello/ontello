@@ -100,7 +100,7 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
           {/* Amount Input Section */}
           <Box direction="Column" gap="200">
             <Box direction="Row" alignItems="Center" gap="300">
-              <Box grow="Yes" style={{ flex: 1 }}>
+              <Box style={{ flex: 1 }} direction="Row" alignItems="Center" gap="300">
                 <AmountInput
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
@@ -111,11 +111,9 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
                 <Text
                   size="H5"
                   style={{
-                    minWidth: 'fit-content',
                     fontSize: '24px',
-                    fontWeight: '500',
                   }}
-                  priority="300"
+                  priority="500"
                 >
                   {selectedToken?.name}
                 </Text>
