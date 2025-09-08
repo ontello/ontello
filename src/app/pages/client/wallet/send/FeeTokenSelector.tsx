@@ -23,6 +23,8 @@ import { GasToken } from '../../../../hooks/web3/types';
 import { useAbstractAccount } from '../../../../hooks/web3/useAbstractAccount';
 import { TokensListUi } from '../../../../components/wallet/tokens/TokensListUi';
 import { stopPropagation } from '../../../../utils/keyboard';
+import { AssetAndChainIcon } from '../../../../components/wallet/AssetAndChainIcon';
+import { ContainerColor } from '@src/app/styles/ContainerColor.css';
 
 interface FeeTokenSelectorProps {
   value: TokenWithChain | null;
@@ -86,39 +88,38 @@ export function FeeTokenSelector({ value, onChange, chainId, aaAddress }: FeeTok
     <>
       {/* Fee Token Selection Card */}
       <Box
+        className={ContainerColor({ variant: 'SurfaceVariant' })}
         style={{
-          padding: config.space.S400,
-          borderRadius: config.radii.R400,
-          backgroundColor: color.Surface.Container,
-          border: `${config.borderWidth.B300} solid ${color.Surface.ContainerLine}`,
+          padding: config.space.S200,
+          borderRadius: config.radii.R300,
           cursor: 'pointer',
-          transition: 'all 0.2s ease',
         }}
         onClick={handleCardClick}
         direction="Row"
         alignItems="Center"
-        justifyContent="SpaceBetween"
+        gap="300"
       >
         <Box direction="Column" gap="100">
           <Text size="T300" priority="300">
             Network fee
           </Text>
-          {value ? (
-            <Box direction="Row" alignItems="Center" gap="200">
-              <Text size="T400" style={{ fontWeight: '500' }}>
-                {value.symbol}
-              </Text>
-              <Text size="T300" priority="300">
-                ${value.currencyPrice || '0.01'}
-              </Text>
-            </Box>
-          ) : (
-            <Text size="T400" priority="400">
-              Select fee token
-            </Text>
+        </Box>
+        <Box grow="Yes" direction="Row" alignItems="Center" gap="300">
+          {value && (
+            <>
+              <AssetAndChainIcon asset={value.icon} chain={value.chain?.iconUrls?.[0]} />
+              <Box direction="Column" gap="100" grow="Yes">
+                <Text size="T400" style={{ fontWeight: '500' }}>
+                  {value.symbol}
+                </Text>
+                <Text size="T300" priority="300">
+                  ${value.currencyPrice || ''}
+                </Text>
+              </Box>
+            </>
           )}
         </Box>
-        <Icon src={Icons.ChevronRight} size="100" />
+        <Icon src={Icons.ArrowDropRight} size="100" />
       </Box>
 
       {/* Fee Token Selection Modal */}

@@ -17,6 +17,7 @@ import {
   color,
 } from 'folds';
 import FocusTrap from 'focus-trap-react';
+import { ContainerColor } from '@src/app/styles/ContainerColor.css';
 import { walletApi } from '../../../../externalApis';
 import { EnsData } from '../../../../externalApis/models/EnsData';
 import { stopPropagation } from '../../../../utils/keyboard';
@@ -113,41 +114,44 @@ export function RecipientSelector({ value, onChange }: RecipientSelectorProps) {
     <>
       {/* Recipient Selection Card */}
       <Box
+        className={ContainerColor({ variant: 'SurfaceVariant' })}
         style={{
-          padding: config.space.S400,
-          borderRadius: config.radii.R400,
-          backgroundColor: color.Surface.Container,
-          border: `${config.borderWidth.B300} solid ${color.Surface.ContainerLine}`,
+          padding: config.space.S200,
           cursor: 'pointer',
-          transition: 'all 0.2s ease',
+          borderRadius: config.radii.R300,
         }}
         onClick={handleCardClick}
-        direction="Row"
         alignItems="Center"
+        gap="300"
         justifyContent="SpaceBetween"
       >
         <Box direction="Column" gap="100">
           <Text size="T300" priority="300">
             To
           </Text>
-          {value ? (
-            <Box direction="Column">
-              {value.domain && (
-                <Text size="T400" style={{ fontWeight: '500' }}>
-                  {value.domain}
-                </Text>
-              )}
-              <Text size="T300" priority="300">
-                {value.address.slice(0, 6)}...{value.address.slice(-4)}
-              </Text>
-            </Box>
-          ) : (
-            <Text size="T400" priority="400">
-              Choose a recipient
-            </Text>
-          )}
         </Box>
-        <Icon src={Icons.ChevronRight} size="100" />
+        <Box alignItems="Center">
+          <Box grow="Yes" alignItems="Center" gap="300">
+            {value ? (
+              <AvatarAndEnsData
+                ensData={{
+                  addr: value.address,
+                  domain: value.domain || '',
+                  chainIcon: value.avatar || '',
+                }}
+                hideAddressIfHasEns
+                directionMode="Row"
+                showShortAddress
+                alignItems="Center"
+              />
+            ) : (
+              <Text size="T400" priority="400">
+                Choose a recipient
+              </Text>
+            )}
+          </Box>
+          <Icon src={Icons.ArrowDropRight} size="100" />
+        </Box>
       </Box>
 
       {/* Recipient Selection Modal */}
@@ -195,9 +199,9 @@ export function RecipientSelector({ value, onChange }: RecipientSelectorProps) {
                       value={query}
                       after={
                         query && (
-                          <IconButton 
-                            radii="300" 
-                            size="300" 
+                          <IconButton
+                            radii="300"
+                            size="300"
                             variant="Background"
                             onClick={handleClearInput}
                           >

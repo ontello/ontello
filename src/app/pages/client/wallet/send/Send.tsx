@@ -144,7 +144,7 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
 
           {/* Selection Areas */}
           {aaAddress && (
-            <Box direction="Column" gap="300">
+            <Box direction="Column" gap="300" style={{ marginTop: toRem(30) }}>
               <AssetSelector value={selectedToken} onChange={setSelectedToken} />
 
               <RecipientSelector value={recipient} onChange={setRecipient} />
@@ -162,7 +162,7 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
         </Box>
         {/* Pay Button */}
         <Button
-          size="500"
+          size="400"
           disabled={!isFormValid}
           onClick={handlePay}
           style={{
