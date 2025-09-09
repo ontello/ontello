@@ -18,13 +18,13 @@ import {
 import FocusTrap from 'focus-trap-react';
 import { Address } from 'viem';
 import { useTokensContext } from '@src/app/hooks/wallet/useTokens';
+import { ContainerColor } from '@src/app/styles/ContainerColor.css';
 import { TokenWithChain } from '../../../../../types/wallet/types';
 import { GasToken } from '../../../../hooks/web3/types';
 import { useAbstractAccount } from '../../../../hooks/web3/useAbstractAccount';
 import { TokensListUi } from '../../../../components/wallet/tokens/TokensListUi';
 import { stopPropagation } from '../../../../utils/keyboard';
 import { AssetAndChainIcon } from '../../../../components/wallet/AssetAndChainIcon';
-import { ContainerColor } from '@src/app/styles/ContainerColor.css';
 
 interface FeeTokenSelectorProps {
   value: TokenWithChain | null;
@@ -97,29 +97,20 @@ export function FeeTokenSelector({ value, onChange, chainId, aaAddress }: FeeTok
         onClick={handleCardClick}
         direction="Row"
         alignItems="Center"
+        justifyContent="SpaceBetween"
         gap="300"
       >
-        <Box direction="Column" gap="100">
-          <Text size="T300" priority="300">
-            Network fee
-          </Text>
-        </Box>
-        <Box grow="Yes" direction="Row" alignItems="Center" gap="300">
+        <Text size="T300" priority="300">
+          Network fee
+        </Text>
+        <Box grow="Yes" alignItems="Center" gap="100" justifyContent="End">
           {value && (
-            <>
-              <AssetAndChainIcon asset={value.icon} chain={value.chain?.iconUrls?.[0]} />
-              <Box direction="Column" gap="100" grow="Yes">
-                <Text size="T400" style={{ fontWeight: '500' }}>
-                  {value.symbol}
-                </Text>
-                <Text size="T300" priority="300">
-                  ${value.currencyPrice || ''}
-                </Text>
-              </Box>
-            </>
+            <Text size="T400" style={{ fontWeight: '500' }}>
+              {value.name}
+            </Text>
           )}
+          <Icon src={Icons.ArrowDropRight} size="100" />
         </Box>
-        <Icon src={Icons.ArrowDropRight} size="100" />
       </Box>
 
       {/* Fee Token Selection Modal */}
