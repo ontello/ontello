@@ -86,6 +86,7 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
         address: feeToken.token_hash as Address,
         name: feeToken.token_name,
         exchangeRate: feeToken.exchange_rate,
+        price: feeToken.currency_price,
       },
     };
 

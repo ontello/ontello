@@ -19,6 +19,7 @@ export interface FeeTokenInfo {
   name: string;
   // decimals: bigint;
   exchangeRate: string;
+  price: string;
 }
 export interface TransferData {
   token: TokenInfo;

@@ -25,7 +25,6 @@ import { useChainConfig } from '../../hooks/web3/useChainConfig';
 import * as css from './ReviewTransfer.css';
 import type { ReviewTransferContentProps } from './types';
 
-import type { WalletdataTransferBalanceGet200Response } from '../../externalApis/models/WalletdataTransferBalanceGet200Response';
 import { AvatarAndEnsData } from '../wallet/AvatarAndEnsData';
 
 export function ReviewTransferContent({
@@ -40,9 +39,9 @@ export function ReviewTransferContent({
     chainConfig.chainId
   );
 
-  const [feeBalance, setFeeBalance] = useState<WalletdataTransferBalanceGet200Response | null>(
-    null
-  );
+  // const [feeBalance, setFeeBalance] = useState<WalletdataTransferBalanceGet200Response | null>(
+  //   null
+  // );
   const [feeEstimate, setFeeEstimate] = useState<{
     estimatedEthFee: bigint;
     maxEthFee: bigint;
@@ -71,23 +70,23 @@ export function ReviewTransferContent({
       }
     };
 
-    const fetchTokenBalance = async () => {
-      if (!feeBalance && transferData.fee.address) {
-        try {
-          const balanceInfo = await walletApi.walletdataTransferBalanceGet({
-            chain_id: transferData.chainId,
-            token_addr: transferData.fee.address,
-            addr: localStorage.getItem(cons.secretKey.AA_ADDRESS) as string,
-          });
-          setFeeBalance(balanceInfo);
-        } catch (error) {
-          console.error('Failed to fetch token balance:', error);
-        }
-      }
-    };
+    // const fetchTokenBalance = async () => {
+    //   if (!feeBalance && transferData.fee.address) {
+    //     try {
+    //       const balanceInfo = await walletApi.walletdataTransferBalanceGet({
+    //         chain_id: transferData.chainId,
+    //         token_addr: transferData.fee.address,
+    //         addr: localStorage.getItem(cons.secretKey.AA_ADDRESS) as string,
+    //       });
+    //       setFeeBalance(balanceInfo);
+    //     } catch (error) {
+    //       console.error('Failed to fetch token balance:', error);
+    //     }
+    //   }
+    // };
 
     calculateFee();
-    fetchTokenBalance();
+    // fetchTokenBalance();
   }, [
     feeEstimate,
     transferData.chainId,
@@ -97,7 +96,7 @@ export function ReviewTransferContent({
     transferData.fee.address,
     estimateTransfer,
     transferData.recipient.addr,
-    feeBalance,
+    // feeBalance,
   ]);
 
   const [transferState, executeTransfer] = useAsyncCallback<void, Error, []>(
@@ -127,6 +126,28 @@ export function ReviewTransferContent({
     }
     return 'Calculating...';
   }, [feeEstimate, transferData.fee.exchangeRate, transferData.fee.name]);
+
+  // TODO Mathematical calculation tools
+  const totalCostUSD = useMemo(() => {
+    if (feeEstimate) {
+      const tokenUSDValue = Number(transferData.token.usdValue);
+
+      const feeInEth = Number(formatEther(feeEstimate.maxEthFee));
+      const exchangeRate = Number(transferData.fee.exchangeRate);
+      const feeInToken = feeInEth * exchangeRate; // Convert ETH fee to fee token amount
+      const feeTokenPrice = Number(transferData.fee.price);
+      const feeUSDValue = feeInToken * feeTokenPrice;
+
+      const totalCost = tokenUSDValue + feeUSDValue;
+      return `$${totalCost.toFixed(2)}`;
+    }
+    return 'Calculating...';
+  }, [
+    feeEstimate,
+    transferData.token.usdValue,
+    transferData.fee.price,
+    transferData.fee.exchangeRate,
+  ]);
 
   const handleConfirm = () => {
     executeTransfer();
@@ -209,6 +230,14 @@ export function ReviewTransferContent({
                 <Text size="L400">Network Fee</Text>
                 <Box className={css.Network}>
                   <Text size="B400">{feeDisplay || 'Loading...'}</Text>
+                </Box>
+              </Box>
+
+              {/* cost Section */}
+              <Box className={css.Section}>
+                <Text size="L400">Total Cost</Text>
+                <Box className={css.Network}>
+                  <Text size="B400">{totalCostUSD}</Text>
                 </Box>
               </Box>
 
