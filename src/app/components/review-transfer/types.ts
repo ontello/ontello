@@ -14,12 +14,18 @@ export interface RecipientInfo {
   domain: string;
   chainIcon: string;
 }
-
+export interface FeeTokenInfo {
+  address: Address;
+  name: string;
+  // decimals: bigint;
+  exchangeRate: string;
+}
 export interface TransferData {
   token: TokenInfo;
   recipient: RecipientInfo;
   chainId: number;
-  feeAddress: Address;
+  // feeAddress: Address;
+  fee: FeeTokenInfo;
 }
 
 export interface ReviewTransferDialogProps {

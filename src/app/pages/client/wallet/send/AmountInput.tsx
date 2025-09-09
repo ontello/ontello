@@ -11,7 +11,6 @@ interface AmountInputProps {
 export const AmountInput = forwardRef<HTMLInputElement, AmountInputProps>(
   ({ value, onChange, placeholder = '0', disabled = false }, ref) => {
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-      // Allow control keys like backspace, delete, arrow keys, etc.
       if (
         e.key === 'Backspace' ||
         e.key === 'Delete' ||
@@ -27,13 +26,11 @@ export const AmountInput = forwardRef<HTMLInputElement, AmountInputProps>(
         return;
       }
 
-      // Only allow digits and decimal point
       if (!/[0-9.]/.test(e.key)) {
         e.preventDefault();
         return;
       }
 
-      // Prevent multiple decimal points
       if (e.key === '.' && e.currentTarget.value.includes('.')) {
         e.preventDefault();
       }
@@ -41,21 +38,20 @@ export const AmountInput = forwardRef<HTMLInputElement, AmountInputProps>(
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const newValue = e.target.value;
-      
-      // Filter out any non-digit and non-decimal characters
+
       let filtered = newValue.replace(/[^0-9.]/g, '');
-      
+
       // Ensure only one decimal point
       const parts = filtered.split('.');
       if (parts.length > 2) {
         filtered = `${parts[0]}.${parts.slice(1).join('')}`;
       }
-      
+
       // Create a new event with the filtered value
       if (filtered !== newValue) {
         const syntheticEvent = {
           ...e,
-          target: { ...e.target, value: filtered }
+          target: { ...e.target, value: filtered },
         };
         onChange(syntheticEvent as React.ChangeEvent<HTMLInputElement>);
       } else {

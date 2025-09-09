@@ -2,6 +2,7 @@ import React, { useRef, useState, useMemo, useEffect } from 'react';
 import { Box, Button, Text, color, toRem } from 'folds';
 import { Address } from 'viem';
 import { openReviewTransfer } from '@src/client/action/navigation';
+import { GasToken } from '@src/app/hooks/web3/types';
 import { PageNavContent } from '../../../../components/page';
 import { WalletNavMode, TokenWithChain } from '../../../../../types/wallet/types';
 import { Back } from '../../../../components/ontello/Back';
@@ -24,7 +25,7 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
   const [amount, setAmount] = useState('');
   const [selectedToken, setSelectedToken] = useState<TokenWithChain | null>(null);
   const [recipient, setRecipient] = useState<RecipientInfo | null>(null);
-  const [feeToken, setFeeToken] = useState<TokenWithChain | null>(null);
+  const [feeToken, setFeeToken] = useState<GasToken | null>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -81,7 +82,11 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
         chainIcon: selectedToken.chain?.iconUrls[0],
       },
       chainId: selectedToken.chainId,
-      feeAddress: feeToken.tokenAddr as Address,
+      fee: {
+        address: feeToken.token_hash as Address,
+        name: feeToken.token_name,
+        exchangeRate: feeToken.exchange_rate,
+      },
     };
 
     openReviewTransfer(transferData);

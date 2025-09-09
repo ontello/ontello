@@ -24,11 +24,10 @@ import { GasToken } from '../../../../hooks/web3/types';
 import { useAbstractAccount } from '../../../../hooks/web3/useAbstractAccount';
 import { TokensListUi } from '../../../../components/wallet/tokens/TokensListUi';
 import { stopPropagation } from '../../../../utils/keyboard';
-import { AssetAndChainIcon } from '../../../../components/wallet/AssetAndChainIcon';
 
 interface FeeTokenSelectorProps {
-  value: TokenWithChain | null;
-  onChange: (token: TokenWithChain) => void;
+  value: GasToken | null;
+  onChange: (token: GasToken | null) => void;
   chainId: number;
   aaAddress: Address;
 }
@@ -80,7 +79,8 @@ export function FeeTokenSelector({ value, onChange, chainId, aaAddress }: FeeTok
   };
 
   const handleTokenSelect = (token: TokenWithChain) => {
-    onChange(token);
+    const gasToken = gasTokens.find((item) => item.token_hash === token.tokenAddr);
+    onChange(gasToken || null);
     handleClose();
   };
 
@@ -106,7 +106,7 @@ export function FeeTokenSelector({ value, onChange, chainId, aaAddress }: FeeTok
         <Box grow="Yes" alignItems="Center" gap="100" justifyContent="End">
           {value && (
             <Text size="T400" style={{ fontWeight: '500' }}>
-              {value.name}
+              {value.token_name}
             </Text>
           )}
           <Icon src={Icons.ArrowDropRight} size="100" />

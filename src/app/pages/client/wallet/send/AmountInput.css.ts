@@ -43,11 +43,5 @@ export const amountInput = style([
         margin: 0,
       },
     },
-
-    '@media': {
-      '(max-width: 768px)': {
-        fontSize: '36px',
-      },
-    },
   },
 ]);

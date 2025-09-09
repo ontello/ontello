@@ -40,7 +40,9 @@ export function ReviewTransferContent({
     chainConfig.chainId
   );
 
-  const [gasInfo, setGasInfo] = useState<WalletdataTransferBalanceGet200Response | null>(null);
+  const [feeBalance, setFeeBalance] = useState<WalletdataTransferBalanceGet200Response | null>(
+    null
+  );
   const [feeEstimate, setFeeEstimate] = useState<{
     estimatedEthFee: bigint;
     maxEthFee: bigint;
@@ -58,7 +60,7 @@ export function ReviewTransferContent({
           const estimateResult = await estimateTransfer(
             transferData.recipient.addr as Address,
             amountWithDecimals,
-            transferData.feeAddress,
+            transferData.fee.address,
             transferData.token.address
           );
 
@@ -70,33 +72,32 @@ export function ReviewTransferContent({
     };
 
     const fetchTokenBalance = async () => {
-      if (!gasInfo && transferData.feeAddress) {
+      if (!feeBalance && transferData.fee.address) {
         try {
           const balanceInfo = await walletApi.walletdataTransferBalanceGet({
             chain_id: transferData.chainId,
-            token_addr: transferData.feeAddress,
+            token_addr: transferData.fee.address,
             addr: localStorage.getItem(cons.secretKey.AA_ADDRESS) as string,
           });
-          setGasInfo(balanceInfo);
+          setFeeBalance(balanceInfo);
         } catch (error) {
           console.error('Failed to fetch token balance:', error);
         }
       }
     };
 
-    // Execute both functions in parallel
     calculateFee();
     fetchTokenBalance();
   }, [
     feeEstimate,
-    gasInfo,
     transferData.chainId,
     transferData.token.address,
     transferData.token.amount,
     transferData.token.decimals,
-    transferData.feeAddress,
+    transferData.fee.address,
     estimateTransfer,
     transferData.recipient.addr,
+    feeBalance,
   ]);
 
   const [transferState, executeTransfer] = useAsyncCallback<void, Error, []>(
@@ -109,7 +110,7 @@ export function ReviewTransferContent({
       const receipt = await transfer(
         transferData.recipient.addr as Address,
         amountWithDecimals,
-        transferData.feeAddress,
+        transferData.fee.address,
         transferData.token.address
       );
 
@@ -118,11 +119,14 @@ export function ReviewTransferContent({
   );
 
   const feeDisplay = useMemo(() => {
-    if (gasInfo && feeEstimate) {
-      return `${formatEther(feeEstimate.maxEthFee)}ETH`;
+    if (feeEstimate) {
+      const feeInEth = Number(formatEther(feeEstimate.maxEthFee));
+      const exchangeRate = Number(transferData.fee.exchangeRate);
+      const feeInToken = (feeInEth * exchangeRate).toFixed(2); // 保留6位小数
+      return `${feeInToken} ${transferData.fee.name}`;
     }
     return 'Calculating...';
-  }, [gasInfo, feeEstimate]);
+  }, [feeEstimate, transferData.fee.exchangeRate, transferData.fee.name]);
 
   const handleConfirm = () => {
     executeTransfer();
@@ -135,14 +139,6 @@ export function ReviewTransferContent({
       onClose();
     }
   };
-
-  // const getRecipientDisplay = () => {
-  //   const { ontId, ens, address } = transferData.recipient;
-
-  //   if (ontId) return ontId;
-  //   if (ens) return ens;
-  //   return address;
-  // };
 
   return (
     <Overlay open={isOpen} backdrop={<OverlayBackdrop />}>

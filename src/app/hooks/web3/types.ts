@@ -74,4 +74,5 @@ export type GasToken = {
   decimals: number;
   currency_price: string;
   icon: string;
+  exchange_rate: string;
 };
