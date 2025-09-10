@@ -24,25 +24,28 @@ export interface NetworkFeeData {
      * @type {string}
      * @memberof NetworkFeeData
      */
-    networkFeeToken?: string;
+    networkFeeToken: string;
     /**
      * 表示手续费的法币价值
      * @type {string}
      * @memberof NetworkFeeData
      */
-    networkFeeCurrency?: string;
+    networkFeeCurrency: string;
     /**
      * 表示手续费的数量
      * @type {string}
      * @memberof NetworkFeeData
      */
-    networkFee?: string;
+    networkFee: string;
 }
 
 /**
  * Check if a given object implements the NetworkFeeData interface.
  */
 export function instanceOfNetworkFeeData(value: object): value is NetworkFeeData {
+    if (!('networkFeeToken' in value) || value['networkFeeToken'] === undefined) return false;
+    if (!('networkFeeCurrency' in value) || value['networkFeeCurrency'] === undefined) return false;
+    if (!('networkFee' in value) || value['networkFee'] === undefined) return false;
     return true;
 }
 
@@ -56,9 +59,9 @@ export function NetworkFeeDataFromJSONTyped(json: any, ignoreDiscriminator: bool
     }
     return {
         
-        'networkFeeToken': json['networkFeeToken'] == null ? undefined : json['networkFeeToken'],
-        'networkFeeCurrency': json['networkFeeCurrency'] == null ? undefined : json['networkFeeCurrency'],
-        'networkFee': json['networkFee'] == null ? undefined : json['networkFee'],
+        'networkFeeToken': json['networkFeeToken'],
+        'networkFeeCurrency': json['networkFeeCurrency'],
+        'networkFee': json['networkFee'],
     };
 }
 

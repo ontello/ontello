@@ -30,13 +30,13 @@ export interface EnsData {
      * @type {string}
      * @memberof EnsData
      */
-    domain: string;
+    domain?: string;
     /**
      * 
      * @type {string}
      * @memberof EnsData
      */
-    chainIcon: string;
+    chainIcon?: string;
 }
 
 /**
@@ -44,8 +44,6 @@ export interface EnsData {
  */
 export function instanceOfEnsData(value: object): value is EnsData {
     if (!('addr' in value) || value['addr'] === undefined) return false;
-    if (!('domain' in value) || value['domain'] === undefined) return false;
-    if (!('chainIcon' in value) || value['chainIcon'] === undefined) return false;
     return true;
 }
 
@@ -60,8 +58,8 @@ export function EnsDataFromJSONTyped(json: any, ignoreDiscriminator: boolean): E
     return {
         
         'addr': json['addr'],
-        'domain': json['domain'],
-        'chainIcon': json['chainIcon'],
+        'domain': json['domain'] == null ? undefined : json['domain'],
+        'chainIcon': json['chainIcon'] == null ? undefined : json['chainIcon'],
     };
 }
 
