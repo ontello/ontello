@@ -16,6 +16,7 @@ export function TokensList({
   const { tokens, getTokens } = useTokensContext();
 
   useEffect(() => {
+    getTokens();
     const interval = setInterval(() => {
       getTokens();
     }, 5000);
