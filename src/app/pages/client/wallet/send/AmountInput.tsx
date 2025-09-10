@@ -71,6 +71,7 @@ export const AmountInput = forwardRef<HTMLInputElement, AmountInputProps>(
         placeholder={placeholder}
         disabled={disabled}
         name="amount"
+        autoComplete="off"
       />
     );
   }

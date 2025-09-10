@@ -11,11 +11,11 @@ export enum TransferResultEnum {
 export function TransferResult({
   type,
   onClose,
-  viewActivity,
-}: {
+}: // viewActivity,
+{
   type: TransferResultEnum;
   onClose: () => void;
-  viewActivity: () => void;
+  // viewActivity: () => void;
 }) {
   const emoji = useMemo(() => {
     if (type === TransferResultEnum.Submitted) {
@@ -47,9 +47,9 @@ export function TransferResult({
       >
         <Text size="H1">{emoji}</Text>
         <Text size="H4">{title}</Text>
-        <Button size="400" onClick={viewActivity} style={{ width: '100%' }}>
+        {/* <Button size="400" onClick={viewActivity} style={{ width: '100%' }}>
           View Activity
-        </Button>
+        </Button> */}
       </Box>
     </OntelloDialog>
   );
