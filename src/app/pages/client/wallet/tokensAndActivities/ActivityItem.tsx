@@ -3,6 +3,7 @@ import { Box, Text } from 'folds';
 import { AssetAndChainIcon } from '../../../../components/wallet/AssetAndChainIcon';
 import { ActivityWithChain } from '../../../../../types/wallet/types';
 import { ActivityDetail } from './ActivityDetail';
+import { formatDollarNumber } from '../../../../utils/ontello/number';
 
 export function ActivityItem({ activity }: { activity: ActivityWithChain }) {
   const sendAndReceiveText = useMemo(() => {
@@ -68,7 +69,7 @@ export function ActivityItem({ activity }: { activity: ActivityWithChain }) {
 
         <Box direction="Column" alignItems="End">
           <Text size="H6">
-            {activity.txType === 3 ? '+' : '-'} ${activity.value}
+            {activity.txType === 3 ? '+' : '-'} {formatDollarNumber(activity.value)}
           </Text>
           <Text size="T300" priority="300">
             {activity.amount} {activity.assetSymbol}

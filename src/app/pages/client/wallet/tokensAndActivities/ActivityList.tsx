@@ -20,7 +20,7 @@ export function ActivityList({ selectedNetworkChainId }: { selectedNetworkChainI
   const [firstPageIsLoaded, setFirstPageIsLoaded] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
-  const pageSize = 50;
+  const pageSize = 20;
 
   // Use ref to avoid dependency loop
   const isLoadingLatestRef = useRef(false);
@@ -62,10 +62,11 @@ export function ActivityList({ selectedNetworkChainId }: { selectedNetworkChainI
         }
 
         const res = await walletApi.walletdataActivityGet({
-          addr: passkeyData.walletAddress,
-          // addr: '0x8d47747d73be1b68f69ea4510e72cace1977d404',
+          // addr: passkeyData.walletAddress,
+          addr: '0x8d47747d73be1b68f69ea4510e72cace1977d404',
           page_num: pageNum,
           page_size: pageSize,
+          chain_id: selectedNetworkChainId === AllChainId ? undefined : selectedNetworkChainId,
         });
 
         setActivities((prevActivities) => {
@@ -104,8 +105,18 @@ export function ActivityList({ selectedNetworkChainId }: { selectedNetworkChainI
         }
       }
     },
-    [passkeyData?.walletAddress]
+    [passkeyData?.walletAddress, selectedNetworkChainId]
   );
+
+  useEffect(() => {
+    setActivities([]);
+    setActivitiesPageNum(1);
+    setFirstPageIsLoaded(false);
+    setHasMore(true);
+    setIsLoadingMore(false);
+    setIsLoadingLatest(false);
+    getActivities({ pageNum: 1, isLoadLatest: true });
+  }, [selectedNetworkChainId, getActivities]);
 
   // Function to load more data
   const loadMore = useCallback(() => {
@@ -120,7 +131,7 @@ export function ActivityList({ selectedNetworkChainId }: { selectedNetworkChainI
 
     const interval = setInterval(() => {
       getActivities({ pageNum: 1, isLoadLatest: true });
-    }, 5000);
+    }, 10000);
     return () => clearInterval(interval);
   }, [getActivities]);
 

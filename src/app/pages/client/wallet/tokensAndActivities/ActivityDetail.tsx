@@ -10,6 +10,7 @@ import { CopyIcon } from '../../../../components/CopyIcon';
 import { walletApi } from '../../../../externalApis';
 import type { EnsData } from '../../../../externalApis/models';
 import { OntelloDialog } from '../../../../components/ontello/OntelloDialog';
+import { formatDollarNumber } from '../../../../utils/ontello/number';
 
 export function ActivityDetail({
   activity,
@@ -92,7 +93,7 @@ export function ActivityDetail({
             {activity.amount} {activity.assetSymbol}
           </Text>
           <Text size="T300" priority="300">
-            ≈ ${activity.value}
+            ≈ {formatDollarNumber(activity.value)}
           </Text>
         </Box>
 
@@ -135,7 +136,9 @@ export function ActivityDetail({
 
         <LabelBox label="Network fee">
           <Box direction="Column" gap="100" alignItems="End">
-            <Text size="T300">-${activity.networkData?.networkFeeCurrency}</Text>
+            <Text size="T300">
+              -${formatDollarNumber(activity.networkData?.networkFeeCurrency || 0)}
+            </Text>
             <Text size="T300" priority="300">
               {activity.networkData?.networkFee} {activity.networkData?.networkFeeToken}
             </Text>

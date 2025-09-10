@@ -4,6 +4,7 @@ import { AssetAndChainIcon } from '../AssetAndChainIcon';
 import { useChainConfig } from '../../../hooks/web3/useChainConfig';
 import { Token, TokenWithChain } from '../../../../types/wallet/types';
 import { ContainerColor } from '../../../styles/ContainerColor.css';
+import { formatDollarNumber } from '../../../utils/ontello/number';
 
 export function TokenItem({
   token,
@@ -45,7 +46,7 @@ export function TokenItem({
       </Box>
       <Box direction="Column" shrink="No">
         <Text size="B400" align="Right">
-          ${token.currency}
+          {formatDollarNumber(token.currency || 0)}
         </Text>
         <Text size="T200" align="Right" priority="300">
           {token.balance} {token.symbol}
