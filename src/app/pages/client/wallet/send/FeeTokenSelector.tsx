@@ -19,9 +19,9 @@ import FocusTrap from 'focus-trap-react';
 import { Address } from 'viem';
 import { useTokensContext } from '@src/app/hooks/wallet/useTokens';
 import { ContainerColor } from '@src/app/styles/ContainerColor.css';
+import { usePaymaster } from '@src/app/hooks/web3/usePaymaster';
 import { TokenWithChain } from '../../../../../types/wallet/types';
 import { GasToken } from '../../../../hooks/web3/types';
-import { useAbstractAccount } from '../../../../hooks/web3/useAbstractAccount';
 import { TokensListUi } from '../../../../components/wallet/tokens/TokensListUi';
 import { stopPropagation } from '../../../../utils/keyboard';
 
@@ -29,17 +29,16 @@ interface FeeTokenSelectorProps {
   value: GasToken | null;
   onChange: (token: GasToken | null) => void;
   chainId: number;
-  aaAddress: Address;
 }
 
-export function FeeTokenSelector({ value, onChange, chainId, aaAddress }: FeeTokenSelectorProps) {
+export function FeeTokenSelector({ value, onChange, chainId }: FeeTokenSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [gasTokens, setGasTokens] = useState<GasToken[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const loadedRef = useRef<boolean>(false);
   const { tokens } = useTokensContext();
 
-  const { getSupportGasTokens } = useAbstractAccount(aaAddress, chainId);
+  const { getSupportGasTokens } = usePaymaster(chainId);
 
   useEffect(() => {
     if (isOpen && !loadedRef.current) {

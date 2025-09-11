@@ -37,8 +37,8 @@ export function PasswordStage({
     try {
       const passkeyRes = await loginWithPasskey(name, mx, getIdServer(userId));
       password = passkeyRes.password;
-    } catch (error) {
-      setPassKeyError(error as string);
+    } catch (err) {
+      setPassKeyError(err as string);
       return;
     }
     // if (!password) return;

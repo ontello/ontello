@@ -3,7 +3,7 @@ import { Address } from 'viem';
 export interface TokenInfo {
   address?: Address;
   name: string;
-  decimals: bigint;
+  decimals: number;
   amount: string;
   usdValue: string;
   icon: string;

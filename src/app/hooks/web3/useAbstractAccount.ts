@@ -5,38 +5,28 @@ import {
   getContract,
   encodeFunctionData,
   encodeAbiParameters,
-  fromBytes,
   maxUint256,
   bytesToBigInt,
 } from 'viem';
 import { mnemonicToAccount } from 'viem/accounts';
-import { EntryPointAbi, Erc20Abi, AccountAbi, PaymasterAbi } from '@src/app/static/abis';
-import { polling } from '@src/app/utils/common';
-import { walletApi } from '@src/app/externalApis';
+import { EntryPointAbi, Erc20Abi, AccountAbi } from '@src/app/static/abis';
 import { fromBase64Url, registerWithPasskey, signMessageWithPasskey } from '../../utils/passkey';
 import { useWeb3PublicClient } from './useWeb3Client';
-import {
-  AccountCallType,
-  BuildUserOperationParams,
-  BuildUserOperationResult,
-  GasToken,
-  UserOperation,
-  UserOperationReceipt,
-} from './types';
-import {
-  bigIntSerializer,
-  // calculateCallGasLimit,
-  calculateGasFees,
-  calculateUserOpHash,
-  serializerToHex,
-} from '../../utils/web3';
+import { AccountCallType, BuildUserOperationParams, BuildUserOperationResult } from './types';
+import { calculateGasFees, calculateUserOpHash } from '../../utils/web3';
 import cons from '../../../client/state/cons';
+import { useBundler } from './useBundler';
+import { usePaymaster } from './usePaymaster';
 
 // TODO
 const MAIN_NETWORK_GAS_ADDRESS = '0xd878dfE2b33A07E7FB290c1578A0b3cbc8aDadEA';
 
 export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
   const { publicClient: ethClient, chainConfig } = useWeb3PublicClient(chainId);
+  const { estimateUserOperationGas, sendUserOperation, getUserOperationReceipt } = useBundler(
+    chainConfig.chainId
+  );
+  const { getPaymasterSign } = usePaymaster(chainConfig.chainId);
 
   const passKeyAccountContract = getContract({
     address: aaAddress,
@@ -65,152 +55,6 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
       toHex(new Uint8Array(xy.slice(32)))
     );
     return keyIndex;
-  };
-
-  // paymaster
-  const getPaymasterSign = async (userOp: UserOperation, gasTokenAddress: string): Promise<Hex> => {
-    // TODO
-    const response = await fetch(
-      `https://service-test.onto.app/S5/v2/ontoservice/aa/paymaster_sign`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(
-          {
-            init_code: userOp.initCode,
-            chain_id: chainId,
-            token_hash: gasTokenAddress,
-            max_priority_fee_per_gas: userOp.maxPriorityFeePerGas,
-            sender: userOp.sender,
-            call_data: userOp.callData,
-            verification_gas_limit: userOp.verificationGasLimit,
-            max_fee_per_gas: userOp.maxFeePerGas,
-            pre_verification_gas: userOp.preVerificationGas,
-            call_gas_limit: userOp.callGasLimit,
-            nonce: userOp.nonce,
-          },
-          bigIntSerializer
-        ),
-      }
-    );
-    const res = await response.json();
-    if (res.Error !== 0) {
-      throw new Error(`Get paymaster sign failed: ${res.Desc}`);
-    }
-    return res.Result;
-  };
-
-  const getSupportGasTokens = async (): Promise<GasToken[]> => {
-    const response = await fetch(
-      `https://service-test.onto.app/S5/v2/ontoservice/aa/gas_token/price?chain_type=bsc&currency_name=usd`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-    const res = await response.json();
-    if (res.Error !== 0) {
-      throw new Error(`Get supported gas tokens failed: ${res.Desc}`);
-    }
-    return res.Result;
-    // const res = await walletApi.walletdataGasTokenGet({
-
-    // });
-  };
-
-  // bundler
-  const estimateUserOperationGas = async (
-    userOp: UserOperation
-  ): Promise<{
-    preVerificationGas: Hex;
-    verificationGasLimit: Hex;
-    callGasLimit: Hex;
-    // paymasterVerificationGasLimit: Hex;
-  }> => {
-    const response = await fetch(chainConfig.bundlerUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(
-        {
-          jsonrpc: '2.0',
-          id: 1,
-          method: 'eth_estimateUserOperationGas',
-          params: [userOp, chainConfig.entrypointAddr],
-        },
-        serializerToHex
-      ),
-    });
-    const res = await response.json();
-    if (res.error) {
-      throw new Error(`Estimate failed: ${res.error.message}`);
-    }
-    return res.result;
-  };
-  const sendUserOperation = async (userOp: UserOperation): Promise<Hex> => {
-    const response = await fetch(chainConfig.bundlerUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(
-        {
-          jsonrpc: '2.0',
-          id: 1,
-          method: 'eth_sendUserOperation',
-          params: [userOp, chainConfig.entrypointAddr],
-        },
-        serializerToHex
-      ),
-    });
-    const res = await response.json();
-    if (res.result) {
-      return res.result;
-    }
-    throw new Error(res.error?.message);
-  };
-  const getUserOperationReceipt = async (userOpHash: Hex): Promise<UserOperationReceipt> => {
-    const getFunc = async () => {
-      const response = await fetch(chainConfig.bundlerUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          jsonrpc: '2.0',
-          id: 1,
-          method: 'eth_getUserOperationReceipt',
-          params: [userOpHash],
-        }),
-      });
-      const res = await response.json();
-
-      if (res.error?.code === -32507) {
-        throw new Error(res.error.message);
-      }
-
-      if (res.result) {
-        return res.result;
-      }
-      return null;
-    };
-    const receipt = await polling(getFunc, (res) => {
-      if (res) {
-        return true;
-      }
-      return false;
-    });
-    console.log('receipt:', receipt);
-
-    if (receipt) {
-      return receipt;
-    }
-    throw new Error('Failed to get user operation receipt');
   };
 
   //
@@ -274,15 +118,8 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
   ): Promise<BuildUserOperationResult> => {
     try {
       const nonce = (await passKeyAccountContract.read.getNonce()) as bigint;
-      const feeData = await calculateGasFees(ethClient);
-      // const callGasLimit = await calculateCallGasLimit(
-      //   ethClient,
-      //   chainConfig.entrypointAddr as Address,
-      //   aaAddress,
-      //   callData
-      // );
       console.log('nonce', nonce);
-
+      const feeData = await calculateGasFees(ethClient);
       const userOp = {
         sender: aaAddress,
         nonce,
@@ -592,7 +429,6 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
   };
 
   return {
-    getSupportGasTokens,
     buildCallData,
     buildUserOperation,
     getKeyIndexThroughAddress,

@@ -3,6 +3,7 @@ import { Box, Button, Text, color, toRem } from 'folds';
 import { Address } from 'viem';
 import { openReviewTransfer } from '@src/client/action/navigation';
 import { GasToken } from '@src/app/hooks/web3/types';
+import { TransferData } from '@src/app/components/review-transfer';
 import { PageNavContent } from '../../../../components/page';
 import { WalletNavMode, TokenWithChain } from '../../../../../types/wallet/types';
 import { Back } from '../../../../components/ontello/Back';
@@ -67,7 +68,7 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
   const handlePay = () => {
     if (!isFormValid || !selectedToken || !recipient || !feeToken) return;
 
-    const transferData = {
+    const transferData: TransferData = {
       token: {
         address: (selectedToken.tokenAddr || '') as Address,
         name: selectedToken.name,
@@ -79,7 +80,7 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
       recipient: {
         addr: recipient.address,
         domain: recipient.domain || '',
-        chainIcon: selectedToken.chain?.iconUrls[0],
+        chainIcon: selectedToken.chain?.iconUrls[0] || '',
       },
       chainId: selectedToken.chainId,
       fee: {
@@ -160,7 +161,6 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
                   value={feeToken}
                   onChange={setFeeToken}
                   chainId={selectedToken.chainId}
-                  aaAddress={aaAddress}
                 />
               )}
             </Box>
