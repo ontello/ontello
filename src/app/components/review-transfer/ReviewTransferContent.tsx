@@ -16,6 +16,7 @@ import {
 } from 'folds';
 
 import { useAbstractAccount } from '@src/app/hooks/web3/useAbstractAccount';
+import { walletApi } from '@src/app/externalApis';
 import cons from '@src/client/state/cons';
 import { Address, parseUnits, formatEther } from 'viem';
 import { useAsyncCallback, AsyncStatus } from '../../hooks/useAsyncCallback';
@@ -34,15 +35,48 @@ export function ReviewTransferContent({
 }: ReviewTransferContentProps) {
   const { getChainConfig } = useChainConfig();
   const chainConfig = getChainConfig(transferData.chainId);
-  const { transfer, estimateTransfer } = useAbstractAccount(
-    localStorage.getItem(cons.secretKey.AA_ADDRESS) as Address,
-    chainConfig.chainId
-  );
+  const aaAddress = localStorage.getItem(cons.secretKey.AA_ADDRESS) as Address;
+  const { transfer, estimateTransfer } = useAbstractAccount(aaAddress, chainConfig.chainId);
+
+  // Balance state management
+  const [tokenBalance, setTokenBalance] = useState<string>('0');
+  const [feeTokenBalance, setFeeTokenBalance] = useState<string>('0');
 
   const [feeEstimate, setFeeEstimate] = useState<{
     estimatedEthFee: bigint;
     maxEthFee: bigint;
   } | null>(null);
+
+  // Fetch balances for validation
+  useEffect(() => {
+    const fetchBalances = async () => {
+      try {
+        // Get sending token balance
+        const tokenRes = await walletApi.walletdataTransferBalanceGet({
+          chain_id: transferData.chainId,
+          token_addr: transferData.token.address || '0x0000000000000000000000000000000000000000',
+          addr: aaAddress
+        });
+        setTokenBalance(tokenRes.result.balance || '0');
+        
+        // Get fee token balance
+        const feeRes = await walletApi.walletdataTransferBalanceGet({
+          chain_id: transferData.chainId,
+          token_addr: transferData.fee.address,
+          addr: aaAddress
+        });
+        setFeeTokenBalance(feeRes.result.balance || '0');
+      } catch (error) {
+        console.error('Failed to fetch balances:', error);
+        setTokenBalance('0');
+        setFeeTokenBalance('0');
+      }
+    };
+    
+    if (aaAddress) {
+      fetchBalances();
+    }
+  }, [transferData.chainId, transferData.token.address, transferData.fee.address, aaAddress]);
 
   useEffect(() => {
     const calculateFee = async () => {
@@ -81,6 +115,31 @@ export function ReviewTransferContent({
 
   const [transferState, executeTransfer] = useAsyncCallback<void, Error, []>(
     useCallback(async () => {
+      // Balance validation before transfer
+      const sendAmount = parseFloat(transferData.token.amount);
+      const tokenBal = parseFloat(tokenBalance);
+      
+      // Calculate fee amount
+      const feeInEth = feeEstimate ? Number(formatEther(feeEstimate.maxEthFee)) : 0;
+      const feeInToken = feeInEth * Number(transferData.fee.exchangeRate);
+      const feeBal = parseFloat(feeTokenBalance);
+      
+      // Three scenarios of balance validation
+      if (transferData.token.address?.toLowerCase() === transferData.fee.address.toLowerCase()) {
+        // Same token for both transfer and fee
+        if (tokenBal < sendAmount + feeInToken) {
+          throw new Error('Insufficient balance');
+        }
+      } else {
+        // Different tokens
+        if (tokenBal < sendAmount) {
+          throw new Error('Insufficient balance');
+        }
+        if (feeBal < feeInToken) {
+          throw new Error('Insufficient balance for fee');
+        }
+      }
+
       const amountWithDecimals = parseUnits(
         transferData.token.amount,
         Number(transferData.token.decimals)
@@ -94,7 +153,7 @@ export function ReviewTransferContent({
       );
 
       console.log(receipt);
-    }, [transferData, transfer])
+    }, [transferData, transfer, tokenBalance, feeTokenBalance, feeEstimate])
   );
 
   const feeDisplay = useMemo(() => {
@@ -134,8 +193,6 @@ export function ReviewTransferContent({
   };
 
   const handleClose = () => {
-    console.log(11111);
-
     if (transferState.status === AsyncStatus.Success) {
       onClose();
     } else if (transferState.status !== AsyncStatus.Loading) {
