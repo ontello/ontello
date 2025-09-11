@@ -41,6 +41,7 @@ export interface WalletdataActivityGetRequest {
     addr: string;
     page_num?: number;
     page_size?: number;
+    chain_id?: number;
     Authorization?: string;
 }
 
@@ -55,7 +56,7 @@ export interface WalletdataEnsGetRequest {
 
 export interface WalletdataGasTokenGetRequest {
     chain_id: number;
-    currency_name: string;
+    currency_name?: string;
     Authorization?: string;
 }
 
@@ -101,6 +102,10 @@ export class ImWalletApi extends runtime.BaseAPI {
 
         if (requestParameters['addr'] != null) {
             queryParameters['addr'] = requestParameters['addr'];
+        }
+
+        if (requestParameters['chain_id'] != null) {
+            queryParameters['chain_id'] = requestParameters['chain_id'];
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -205,20 +210,13 @@ export class ImWalletApi extends runtime.BaseAPI {
 
     /**
      * 
-     * gas_token
+     * 支持的gas列表
      */
     async walletdataGasTokenGetRaw(requestParameters: WalletdataGasTokenGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<WalletdataGasTokenGet200Response>> {
         if (requestParameters['chain_id'] == null) {
             throw new runtime.RequiredError(
                 'chain_id',
                 'Required parameter "chain_id" was null or undefined when calling walletdataGasTokenGet().'
-            );
-        }
-
-        if (requestParameters['currency_name'] == null) {
-            throw new runtime.RequiredError(
-                'currency_name',
-                'Required parameter "currency_name" was null or undefined when calling walletdataGasTokenGet().'
             );
         }
 
@@ -250,7 +248,7 @@ export class ImWalletApi extends runtime.BaseAPI {
 
     /**
      * 
-     * gas_token
+     * 支持的gas列表
      */
     async walletdataGasTokenGet(requestParameters: WalletdataGasTokenGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<WalletdataGasTokenGet200Response> {
         const response = await this.walletdataGasTokenGetRaw(requestParameters, initOverrides);

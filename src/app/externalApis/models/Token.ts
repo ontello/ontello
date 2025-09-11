@@ -42,31 +42,31 @@ export interface Token {
      * @type {string}
      * @memberof Token
      */
-    icon?: string;
+    icon: string;
     /**
      * 
      * @type {string}
      * @memberof Token
      */
-    balance?: string;
+    balance: string;
     /**
      * 总价
      * @type {string}
      * @memberof Token
      */
-    currency?: string;
+    currency: string;
     /**
      * 单价
      * @type {string}
      * @memberof Token
      */
-    currencyPrice?: string;
+    currencyPrice: string;
     /**
      * 
      * @type {string}
      * @memberof Token
      */
-    tokenType?: string;
+    tokenType: string;
     /**
      * 
      * @type {number}
@@ -78,7 +78,13 @@ export interface Token {
      * @type {string}
      * @memberof Token
      */
-    tokenAddr?: string;
+    tokenAddr: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof Token
+     */
+    exchangeRate?: string;
 }
 
 /**
@@ -88,7 +94,13 @@ export function instanceOfToken(value: object): value is Token {
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('symbol' in value) || value['symbol'] === undefined) return false;
     if (!('decimals' in value) || value['decimals'] === undefined) return false;
+    if (!('icon' in value) || value['icon'] === undefined) return false;
+    if (!('balance' in value) || value['balance'] === undefined) return false;
+    if (!('currency' in value) || value['currency'] === undefined) return false;
+    if (!('currencyPrice' in value) || value['currencyPrice'] === undefined) return false;
+    if (!('tokenType' in value) || value['tokenType'] === undefined) return false;
     if (!('chainId' in value) || value['chainId'] === undefined) return false;
+    if (!('tokenAddr' in value) || value['tokenAddr'] === undefined) return false;
     return true;
 }
 
@@ -105,13 +117,14 @@ export function TokenFromJSONTyped(json: any, ignoreDiscriminator: boolean): Tok
         'name': json['name'],
         'symbol': json['symbol'],
         'decimals': json['decimals'],
-        'icon': json['icon'] == null ? undefined : json['icon'],
-        'balance': json['balance'] == null ? undefined : json['balance'],
-        'currency': json['currency'] == null ? undefined : json['currency'],
-        'currencyPrice': json['currencyPrice'] == null ? undefined : json['currencyPrice'],
-        'tokenType': json['tokenType'] == null ? undefined : json['tokenType'],
+        'icon': json['icon'],
+        'balance': json['balance'],
+        'currency': json['currency'],
+        'currencyPrice': json['currencyPrice'],
+        'tokenType': json['tokenType'],
         'chainId': json['chainId'],
-        'tokenAddr': json['tokenAddr'] == null ? undefined : json['tokenAddr'],
+        'tokenAddr': json['tokenAddr'],
+        'exchangeRate': json['exchangeRate'] == null ? undefined : json['exchangeRate'],
     };
 }
 
@@ -136,6 +149,7 @@ export function TokenToJSONTyped(value?: Token | null, ignoreDiscriminator: bool
         'tokenType': value['tokenType'],
         'chainId': value['chainId'],
         'tokenAddr': value['tokenAddr'],
+        'exchangeRate': value['exchangeRate'],
     };
 }
 
