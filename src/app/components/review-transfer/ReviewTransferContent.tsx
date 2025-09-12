@@ -55,15 +55,15 @@ export function ReviewTransferContent({
         const tokenRes = await walletApi.walletdataTransferBalanceGet({
           chain_id: transferData.chainId,
           token_addr: transferData.token.address || '0x0000000000000000000000000000000000000000',
-          addr: aaAddress
+          addr: aaAddress,
         });
         setTokenBalance(tokenRes.result.balance || '0');
-        
+
         // Get fee token balance
         const feeRes = await walletApi.walletdataTransferBalanceGet({
           chain_id: transferData.chainId,
           token_addr: transferData.fee.address,
-          addr: aaAddress
+          addr: aaAddress,
         });
         setFeeTokenBalance(feeRes.result.balance || '0');
       } catch (error) {
@@ -72,7 +72,7 @@ export function ReviewTransferContent({
         setFeeTokenBalance('0');
       }
     };
-    
+
     if (aaAddress) {
       fetchBalances();
     }
@@ -118,12 +118,12 @@ export function ReviewTransferContent({
       // Balance validation before transfer
       const sendAmount = parseFloat(transferData.token.amount);
       const tokenBal = parseFloat(tokenBalance);
-      
+
       // Calculate fee amount
       const feeInEth = feeEstimate ? Number(formatEther(feeEstimate.maxEthFee)) : 0;
       const feeInToken = feeInEth * Number(transferData.fee.exchangeRate);
       const feeBal = parseFloat(feeTokenBalance);
-      
+
       // Three scenarios of balance validation
       if (transferData.token.address?.toLowerCase() === transferData.fee.address.toLowerCase()) {
         // Same token for both transfer and fee

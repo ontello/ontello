@@ -9,7 +9,7 @@ import {
   bytesToBigInt,
 } from 'viem';
 import { mnemonicToAccount } from 'viem/accounts';
-import { EntryPointAbi, Erc20Abi, AccountAbi } from '@src/app/static/abis';
+import { EntryPointAbi, Erc20Abi, AccountAbi, AccountFactoryAbi } from '@src/app/static/abis';
 import { fromBase64Url, registerWithPasskey, signMessageWithPasskey } from '../../utils/passkey';
 import { useWeb3PublicClient } from './useWeb3Client';
 import { AccountCallType, BuildUserOperationParams, BuildUserOperationResult } from './types';
@@ -33,6 +33,17 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
     abi: AccountAbi,
     client: ethClient,
   });
+  const isAccountDeployed = async (): Promise<boolean> => {
+    try {
+      const bytecode = await ethClient.getCode({
+        address: aaAddress,
+      });
+      return bytecode !== undefined && bytecode !== '0x';
+    } catch (error) {
+      console.error('Check deployment failed:', error);
+      return false;
+    }
+  };
   const getKeyIndexThroughAddress = async (ownerAddress: Address): Promise<bigint> => {
     const keyIndex = (await passKeyAccountContract.read.indexOfOwnerAddress([
       ownerAddress,
@@ -50,11 +61,15 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
       throw new Error('Public key not found in local storage');
     }
     const xy = fromBase64Url(publicKeyBase64);
-    const keyIndex = await getKeyIndexThroughXy(
-      toHex(new Uint8Array(xy.slice(0, 32))),
-      toHex(new Uint8Array(xy.slice(32)))
-    );
-    return keyIndex;
+    try {
+      const keyIndex = await getKeyIndexThroughXy(
+        toHex(new Uint8Array(xy.slice(0, 32))),
+        toHex(new Uint8Array(xy.slice(32)))
+      );
+      return keyIndex;
+    } catch (error) {
+      return BigInt(0);
+    }
   };
 
   //
@@ -117,13 +132,36 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
     gasAddress: Address = MAIN_NETWORK_GAS_ADDRESS
   ): Promise<BuildUserOperationResult> => {
     try {
-      const nonce = (await passKeyAccountContract.read.getNonce()) as bigint;
+      let nonce = BigInt(0);
+      try {
+        nonce = await passKeyAccountContract.read.getNonce();
+      } catch (error) {
+        // console.error('getNonce failed, use 0 as nonce:', error);
+      }
       console.log('nonce', nonce);
+
+      let initCode = '0x' as Hex;
+      if (await isAccountDeployed()) {
+        //  chainConfig.accountFactoryAddr,
+        const encodedData = encodeFunctionData({
+          abi: AccountFactoryAbi,
+          functionName: 'createAccount',
+          args: [
+            [localStorage.getItem('cinny_public_key') as Address],
+            BigInt(1), // salt: uint256
+          ],
+        });
+        initCode = toHex(
+          (chainConfig.accountFactoryAddr as Address) + encodedData.slice(2) // remove 0x
+        );
+      }
+
       const feeData = await calculateGasFees(ethClient);
+
       const userOp = {
         sender: aaAddress,
         nonce,
-        initCode: '0x' as Hex,
+        initCode,
         callData,
         callGasLimit: BigInt(21000),
         verificationGasLimit: BigInt(500_000),
@@ -382,11 +420,29 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
       const callData = await buildCallData(operations, gasAddress);
       const feeData = await calculateGasFees(ethClient);
 
-      const nonce = (await passKeyAccountContract.read.getNonce()) as bigint;
+      // const nonce = (await passKeyAccountContract.read.getNonce()) as bigint;
+      let nonce = BigInt(0);
+      try {
+        nonce = await passKeyAccountContract.read.getNonce();
+      } catch (error) {
+        //
+      }
+
+      let initCode = '0x' as Hex;
+      if (await isAccountDeployed()) {
+        const encodedData = encodeFunctionData({
+          abi: AccountFactoryAbi,
+          functionName: 'createAccount',
+          args: [[localStorage.getItem('cinny_public_key') as Address], BigInt(1)],
+        });
+        initCode = toHex(
+          (chainConfig.accountFactoryAddr as Address) + encodedData.slice(2) // remove 0x
+        );
+      }
       const userOp = {
         sender: aaAddress,
         nonce,
-        initCode: '0x' as Hex,
+        initCode,
         callData,
         callGasLimit: BigInt(21000),
         verificationGasLimit: BigInt(500_000),
@@ -439,5 +495,6 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
     addOwnerByAddress,
     transfer,
     estimateTransfer,
+    isAccountDeployed,
   };
 };
