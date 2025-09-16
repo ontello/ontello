@@ -1,6 +1,6 @@
 import React, { useRef, useState, useMemo, useEffect } from 'react';
 import { Box, Button, Text, color, toRem } from 'folds';
-import { Address } from 'viem';
+import { Address, parseUnits, formatUnits } from 'viem';
 import { openReviewTransfer } from '@src/client/action/navigation';
 import { GasToken } from '@src/app/hooks/web3/types';
 import { TransferData } from '@src/app/components/review-transfer';
@@ -12,23 +12,28 @@ import { AssetSelector } from './AssetSelector';
 import { RecipientSelector, RecipientInfo } from './RecipientSelector';
 import { FeeTokenSelector } from './FeeTokenSelector';
 import { AmountInput } from './AmountInput';
-import { useMatrixClient } from '../../../../hooks/useMatrixClient';
-import { useFetchPasskeyList } from '../../../../hooks/useFetchPasskeyList';
 import { useTokensContext } from '../../../../hooks/wallet/useTokens';
+import { useAbstractAccount } from '../../../../hooks/web3/useAbstractAccount';
+import { walletApi } from '../../../../externalApis';
 
 export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavMode) => void }) {
-  const mx = useMatrixClient();
-  const userId = mx.getUserId();
-  const [passkeyData] = useFetchPasskeyList(userId || '');
-  const aaAddress = passkeyData?.walletAddress;
+  const aaAddress = localStorage.getItem('cinny_aa_address') as Address;
   const { tokens } = useTokensContext();
 
   const [amount, setAmount] = useState('');
   const [selectedToken, setSelectedToken] = useState<TokenWithChain | null>(null);
   const [recipient, setRecipient] = useState<RecipientInfo | null>(null);
   const [feeToken, setFeeToken] = useState<GasToken | null>(null);
+  const [isMaxAmount, setIsMaxAmount] = useState(false);
+  const [isEstimatingFee, setIsEstimatingFee] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Get abstract account hook at component level
+  const abstractAccount = useAbstractAccount(
+    aaAddress || ('0x0' as Address),
+    selectedToken?.chainId
+  );
 
   // Set first token as default when tokens are loaded
   useEffect(() => {
@@ -40,6 +45,7 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
   useEffect(() => {
     if (selectedToken) {
       setFeeToken(null);
+      setIsMaxAmount(false);
     }
   }, [selectedToken]);
 
@@ -53,7 +59,43 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
   const handleMaxClick = () => {
     if (selectedToken) {
       setAmount(selectedToken.balance || '0');
+      setIsMaxAmount(true);
     }
+  };
+
+  // Helper function to calculate token fee from ETH fee
+  const calculateTokenFeeFromEth = (
+    ethFee: bigint,
+    exchangeRate: string,
+    tokenDecimals: number
+  ): bigint => {
+    const rate = parseFloat(exchangeRate);
+    const ethAmount = formatUnits(ethFee, 18);
+    const tokenAmount = parseFloat(ethAmount) * rate;
+    return parseUnits(tokenAmount.toString(), tokenDecimals);
+  };
+
+  // Helper function to adjust amount for fee
+  const adjustAmountForFee = (
+    originalAmount: string,
+    feeInToken: bigint,
+    tokenDecimals: number
+  ): string => {
+    const amountBigInt = parseUnits(originalAmount, tokenDecimals);
+    const adjustedBigInt = amountBigInt - feeInToken;
+    // Ensure we don't go negative
+    if (adjustedBigInt <= BigInt(0)) {
+      return '0';
+    }
+    return formatUnits(adjustedBigInt, tokenDecimals);
+  };
+
+  // Helper function to calculate USD value
+  const calculateUsdValue = (tokenAmount: string): string => {
+    if (!selectedToken || !selectedToken.currencyPrice) return '0.00';
+    const amountNum = parseFloat(tokenAmount);
+    const pricePerToken = parseFloat(selectedToken.currencyPrice);
+    return (amountNum * pricePerToken).toFixed(2);
   };
 
   const isFormValid = useMemo(() => {
@@ -65,16 +107,62 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
     return amountNum > 0 && amountNum <= maxAmount;
   }, [amount, selectedToken, recipient, feeToken]);
 
-  const handlePay = () => {
-    if (!isFormValid || !selectedToken || !recipient || !feeToken) return;
+  const handlePay = async () => {
+    if (!isFormValid || !selectedToken || !recipient || !feeToken || !aaAddress) return;
+
+    let finalAmount = amount;
+    let finalUsdValue = usdValue;
+
+    // Check if token and fee token are the same and max was clicked
+    if (selectedToken.tokenAddr === feeToken.token_hash && isMaxAmount) {
+      try {
+        setIsEstimatingFee(true);
+
+        // Estimate fee in ETH
+        const { estimatedEthFee } = await abstractAccount.estimateTransfer(
+          recipient.address as Address,
+          parseUnits(amount, selectedToken.decimals),
+          feeToken.token_hash as Address,
+          selectedToken.tokenAddr as Address
+        );
+
+        // Get exchange rate from ETH to token
+        const exchangeRateResponse = await walletApi.walletdataExchangeRateGet({
+          chain_id: selectedToken.chainId,
+          from_token_hash: '', // native token
+          to_token_hash: selectedToken.tokenAddr,
+        });
+
+        // Calculate fee in token amount
+        const feeInToken = calculateTokenFeeFromEth(
+          estimatedEthFee,
+          exchangeRateResponse.result.exchangeRate || '0',
+          selectedToken.decimals
+        );
+
+        // Adjust amount by subtracting fee
+        finalAmount = adjustAmountForFee(
+          amount,
+          (feeInToken * BigInt(12)) / BigInt(10),
+          selectedToken.decimals
+        );
+
+        // Recalculate USD value
+        finalUsdValue = calculateUsdValue(finalAmount);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setIsEstimatingFee(false);
+      }
+    }
 
     const transferData: TransferData = {
       token: {
         address: (selectedToken.tokenAddr || '') as Address,
         name: selectedToken.name,
         decimals: selectedToken.decimals,
-        amount,
-        usdValue,
+        amount: finalAmount,
+        usdValue: finalUsdValue,
         icon: selectedToken.icon || '',
       },
       recipient: {
@@ -110,7 +198,10 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
               <Box style={{ flex: 1 }} direction="Row" alignItems="Center" gap="300">
                 <AmountInput
                   value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
+                  onChange={(e) => {
+                    setAmount(e.target.value);
+                    setIsMaxAmount(false);
+                  }}
                   placeholder="0"
                   disabled={!selectedToken}
                 />
@@ -169,14 +260,14 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
         {/* Pay Button */}
         <Button
           size="400"
-          disabled={!isFormValid}
+          disabled={!isFormValid || isEstimatingFee}
           onClick={handlePay}
           style={{
             marginTop: toRem(30),
             width: '100%',
           }}
         >
-          Pay
+          {isEstimatingFee ? 'Calculating...' : 'Pay'}
         </Button>
       </PageNavContent>
     </Box>

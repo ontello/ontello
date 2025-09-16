@@ -10,6 +10,7 @@ models/BusinessBotsGet200ResponseResult.ts
 models/BusinessUserRoomsGet200Response.ts
 models/ChainConfig.ts
 models/EnsData.ts
+models/ExchangeRate.ts
 models/LinkInfo.ts
 models/NetworkFeeData.ts
 models/Response.ts
@@ -19,6 +20,7 @@ models/WalletdataActivityGet200ResponseError.ts
 models/WalletdataActivityGet200ResponseResult.ts
 models/WalletdataChainConfigGet200Response.ts
 models/WalletdataEnsGet200Response.ts
+models/WalletdataExchangeRateGet200Response.ts
 models/WalletdataGasTokenGet200Response.ts
 models/WalletdataTokensGet200Response.ts
 models/WalletdataTransferBalanceGet200Response.ts

@@ -18,6 +18,7 @@ import type {
   WalletdataActivityGet200Response,
   WalletdataChainConfigGet200Response,
   WalletdataEnsGet200Response,
+  WalletdataExchangeRateGet200Response,
   WalletdataGasTokenGet200Response,
   WalletdataTokensGet200Response,
   WalletdataTransferBalanceGet200Response,
@@ -29,6 +30,8 @@ import {
     WalletdataChainConfigGet200ResponseToJSON,
     WalletdataEnsGet200ResponseFromJSON,
     WalletdataEnsGet200ResponseToJSON,
+    WalletdataExchangeRateGet200ResponseFromJSON,
+    WalletdataExchangeRateGet200ResponseToJSON,
     WalletdataGasTokenGet200ResponseFromJSON,
     WalletdataGasTokenGet200ResponseToJSON,
     WalletdataTokensGet200ResponseFromJSON,
@@ -51,6 +54,13 @@ export interface WalletdataChainConfigGetRequest {
 
 export interface WalletdataEnsGetRequest {
     query: string;
+    Authorization?: string;
+}
+
+export interface WalletdataExchangeRateGetRequest {
+    chain_id: number;
+    from_token_hash?: string;
+    to_token_hash?: string;
     Authorization?: string;
 }
 
@@ -205,6 +215,57 @@ export class ImWalletApi extends runtime.BaseAPI {
      */
     async walletdataEnsGet(requestParameters: WalletdataEnsGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<WalletdataEnsGet200Response> {
         const response = await this.walletdataEnsGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * 
+     * exchange_rate
+     */
+    async walletdataExchangeRateGetRaw(requestParameters: WalletdataExchangeRateGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<WalletdataExchangeRateGet200Response>> {
+        if (requestParameters['chain_id'] == null) {
+            throw new runtime.RequiredError(
+                'chain_id',
+                'Required parameter "chain_id" was null or undefined when calling walletdataExchangeRateGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['chain_id'] != null) {
+            queryParameters['chain_id'] = requestParameters['chain_id'];
+        }
+
+        if (requestParameters['from_token_hash'] != null) {
+            queryParameters['from_token_hash'] = requestParameters['from_token_hash'];
+        }
+
+        if (requestParameters['to_token_hash'] != null) {
+            queryParameters['to_token_hash'] = requestParameters['to_token_hash'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['Authorization'] != null) {
+            headerParameters['Authorization'] = String(requestParameters['Authorization']);
+        }
+
+        const response = await this.request({
+            path: `/walletdata/exchange_rate`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => WalletdataExchangeRateGet200ResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * 
+     * exchange_rate
+     */
+    async walletdataExchangeRateGet(requestParameters: WalletdataExchangeRateGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<WalletdataExchangeRateGet200Response> {
+        const response = await this.walletdataExchangeRateGetRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

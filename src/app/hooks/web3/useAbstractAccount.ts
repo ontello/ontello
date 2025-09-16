@@ -141,8 +141,7 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
       console.log('nonce', nonce);
 
       let initCode = '0x' as Hex;
-      if (await isAccountDeployed()) {
-        //  chainConfig.accountFactoryAddr,
+      if (!(await isAccountDeployed())) {
         const encodedData = encodeFunctionData({
           abi: AccountFactoryAbi,
           functionName: 'createAccount',
@@ -429,7 +428,7 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
       }
 
       let initCode = '0x' as Hex;
-      if (await isAccountDeployed()) {
+      if (!(await isAccountDeployed())) {
         const encodedData = encodeFunctionData({
           abi: AccountFactoryAbi,
           functionName: 'createAccount',
