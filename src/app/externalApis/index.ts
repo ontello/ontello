@@ -20,6 +20,17 @@ const createConfig = () => {
       : undefined,
     middleware: [
       {
+        pre: async (context) => {
+          // Get the latest token from localStorage
+          const latestToken = localStorage.getItem('cinny_access_token');
+          if (latestToken) {
+            context.init.headers = {
+              ...context.init.headers,
+              Authorization: `Bearer ${latestToken}`,
+            };
+          }
+          return context;
+        },
         post: async (context) => {
           // If the response is not 200, throw an error
           if (context.response.status !== 200) {
