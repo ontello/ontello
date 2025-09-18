@@ -44,6 +44,28 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
       return false;
     }
   };
+
+  const buildInitCode = async (): Promise<Hex> => {
+    if (await isAccountDeployed()) {
+      return '0x' as Hex;
+    }
+
+    const publicKeyBase64 = localStorage.getItem(cons.secretKey.PUBLIC_KEY);
+    if (!publicKeyBase64) {
+      throw new Error('Public key not found in local storage');
+    }
+    const xy = fromBase64Url(publicKeyBase64);
+    const xyHex = toHex(new Uint8Array(xy));
+
+    const encodedData = encodeFunctionData({
+      abi: AccountFactoryAbi,
+      functionName: 'createAccount',
+      args: [[xyHex], BigInt(1)],
+    });
+
+    return `${chainConfig.accountFactoryAddr as Address}${encodedData.slice(2)}` as Hex;
+  };
+
   const getKeyIndexThroughAddress = async (ownerAddress: Address): Promise<bigint> => {
     const keyIndex = (await passKeyAccountContract.read.indexOfOwnerAddress([
       ownerAddress,
@@ -140,20 +162,7 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
       }
       console.log('nonce', nonce);
 
-      let initCode = '0x' as Hex;
-      if (!(await isAccountDeployed())) {
-        const encodedData = encodeFunctionData({
-          abi: AccountFactoryAbi,
-          functionName: 'createAccount',
-          args: [
-            [localStorage.getItem('cinny_public_key') as Address],
-            BigInt(1), // salt: uint256
-          ],
-        });
-        initCode = toHex(
-          (chainConfig.accountFactoryAddr as Address) + encodedData.slice(2) // remove 0x
-        );
-      }
+      const initCode = await buildInitCode();
 
       const feeData = await calculateGasFees(ethClient);
 
@@ -427,17 +436,8 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
         //
       }
 
-      let initCode = '0x' as Hex;
-      if (!(await isAccountDeployed())) {
-        const encodedData = encodeFunctionData({
-          abi: AccountFactoryAbi,
-          functionName: 'createAccount',
-          args: [[localStorage.getItem('cinny_public_key') as Address], BigInt(1)],
-        });
-        initCode = toHex(
-          (chainConfig.accountFactoryAddr as Address) + encodedData.slice(2) // remove 0x
-        );
-      }
+      const initCode = await buildInitCode();
+
       const userOp = {
         sender: aaAddress,
         nonce,

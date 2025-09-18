@@ -33,6 +33,21 @@ export const AmountInput = forwardRef<HTMLInputElement, AmountInputProps>(
 
       if (e.key === '.' && e.currentTarget.value.includes('.')) {
         e.preventDefault();
+        return;
+      }
+
+      // Check decimal places limit (5 decimals max)
+      if (/[0-9]/.test(e.key)) {
+        const currentValue = e.currentTarget.value;
+        const decimalIndex = currentValue.indexOf('.');
+        if (decimalIndex !== -1) {
+          const decimals = currentValue.substring(decimalIndex + 1);
+          const selectionStart = e.currentTarget.selectionStart || 0;
+          if (decimals.length >= 5 && selectionStart > decimalIndex) {
+            e.preventDefault();
+            // return;
+          }
+        }
       }
     };
 
@@ -45,6 +60,11 @@ export const AmountInput = forwardRef<HTMLInputElement, AmountInputProps>(
       const parts = filtered.split('.');
       if (parts.length > 2) {
         filtered = `${parts[0]}.${parts.slice(1).join('')}`;
+      }
+
+      // Limit to 5 decimal places
+      if (parts.length === 2 && parts[1].length > 5) {
+        filtered = `${parts[0]}.${parts[1].substring(0, 5)}`;
       }
 
       // Create a new event with the filtered value

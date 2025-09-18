@@ -119,7 +119,7 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
         setIsEstimatingFee(true);
 
         // Estimate fee in ETH
-        const { estimatedEthFee } = await abstractAccount.estimateTransfer(
+        const { maxEthFee } = await abstractAccount.estimateTransfer(
           recipient.address as Address,
           parseUnits(amount, selectedToken.decimals),
           feeToken.token_hash as Address,
@@ -135,7 +135,7 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
 
         // Calculate fee in token amount
         const feeInToken = calculateTokenFeeFromEth(
-          estimatedEthFee,
+          maxEthFee,
           exchangeRateResponse.result.exchangeRate || '0',
           selectedToken.decimals
         );
@@ -194,8 +194,8 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
 
           {/* Amount Input Section */}
           <Box direction="Column" gap="200">
-            <Box direction="Row" alignItems="Center" gap="300">
-              <Box style={{ flex: 1 }} direction="Row" alignItems="Center" gap="300">
+            <Box direction="Row" alignItems="Center" gap="200">
+              <Box style={{ flex: 1 }} direction="Row" alignItems="Center" gap="200">
                 <AmountInput
                   value={amount}
                   onChange={(e) => {
@@ -209,7 +209,7 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
                 <Text
                   size="H5"
                   style={{
-                    fontSize: '24px',
+                    fontSize: '20px',
                   }}
                   priority="500"
                 >
@@ -238,6 +238,19 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
             >
               {usdValue} USD
             </Text>
+            {amount && selectedToken &&
+             parseFloat(amount) > parseFloat(selectedToken.balance || '0') && (
+              <Text
+                size="T300"
+                priority="400"
+                style={{
+                  color: color.Critical.Main,
+                  marginTop: toRem(8),
+                }}
+              >
+                Insufficient balance
+              </Text>
+            )}
           </Box>
 
           {/* Selection Areas */}

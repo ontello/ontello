@@ -10,7 +10,7 @@ export const amountInput = style([
     border: 'none',
     outline: 'none',
     background: 'transparent',
-    fontSize: '24px',
+    fontSize: '22px',
     fontWeight: '500',
     fontFamily: "'Inter', sans-serif",
     color: color.Surface.OnContainer,
