@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Box, config, Text } from 'folds';
+import { Box, config, Text, Icon, Icons, color } from 'folds';
 import { AssetAndChainIcon } from '../AssetAndChainIcon';
 import { useChainConfig } from '../../../hooks/web3/useChainConfig';
 import { Token, TokenWithChain } from '../../../../types/wallet/types';
@@ -10,10 +10,12 @@ export function TokenItem({
   token,
   onSelect,
   showHoverBg = true,
+  isSelected = false,
 }: {
   token: Token;
   onSelect: ((token: TokenWithChain) => void) | null;
   showHoverBg?: boolean;
+  isSelected?: boolean;
 }) {
   const { availableChains } = useChainConfig();
   const [isHovered, setIsHovered] = useState(false);
@@ -52,6 +54,11 @@ export function TokenItem({
           {token.balance} {token.symbol}
         </Text>
       </Box>
+      {isSelected && (
+        <Box shrink="No" alignItems="Center" style={{ marginLeft: config.space.S200 }}>
+          <Icon size="400" src={Icons.Check} style={{ color: color.Success.Main }} />
+        </Box>
+      )}
     </Box>
   );
 }

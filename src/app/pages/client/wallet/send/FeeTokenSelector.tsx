@@ -167,7 +167,15 @@ export function FeeTokenSelector({ value, onChange, chainId }: FeeTokenSelectorP
                       )}
 
                       {!isLoading && convertedTokens.length > 0 && (
-                        <TokensListUi tokensList={convertedTokens} onSelect={handleTokenSelect} />
+                        <TokensListUi
+                          tokensList={convertedTokens}
+                          onSelect={handleTokenSelect}
+                          selectedToken={
+                            value
+                              ? convertedTokens.find((t) => t.tokenAddr === value.token_hash)
+                              : null
+                          }
+                        />
                       )}
                     </Box>
                   </Scroll>

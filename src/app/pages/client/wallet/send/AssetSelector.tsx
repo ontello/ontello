@@ -141,7 +141,11 @@ export function AssetSelector({ value, onChange }: AssetSelectorProps) {
                       }}
                       direction="Column"
                     >
-                      <TokensListUi tokensList={filteredTokens} onSelect={handleTokenSelect} />
+                      <TokensListUi
+                        tokensList={filteredTokens}
+                        onSelect={handleTokenSelect}
+                        selectedToken={value}
+                      />
                     </Box>
                   </Scroll>
                 </Box>
