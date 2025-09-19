@@ -93,6 +93,12 @@ export interface ChainConfig {
      * @memberof ChainConfig
      */
     bundlerUrl: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ChainConfig
+     */
+    supportPassKeySign: boolean;
 }
 
 /**
@@ -110,6 +116,7 @@ export function instanceOfChainConfig(value: object): value is ChainConfig {
     if (!('paymasterAddr' in value) || value['paymasterAddr'] === undefined) return false;
     if (!('isMain' in value) || value['isMain'] === undefined) return false;
     if (!('bundlerUrl' in value) || value['bundlerUrl'] === undefined) return false;
+    if (!('supportPassKeySign' in value) || value['supportPassKeySign'] === undefined) return false;
     return true;
 }
 
@@ -134,6 +141,7 @@ export function ChainConfigFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'paymasterAddr': json['paymasterAddr'],
         'isMain': json['isMain'],
         'bundlerUrl': json['bundlerUrl'],
+        'supportPassKeySign': json['supportPassKeySign'],
     };
 }
 
@@ -159,6 +167,7 @@ export function ChainConfigToJSONTyped(value?: ChainConfig | null, ignoreDiscrim
         'paymasterAddr': value['paymasterAddr'],
         'isMain': value['isMain'],
         'bundlerUrl': value['bundlerUrl'],
+        'supportPassKeySign': value['supportPassKeySign'],
     };
 }
 

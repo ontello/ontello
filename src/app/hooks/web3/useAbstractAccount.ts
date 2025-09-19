@@ -12,11 +12,34 @@ import { mnemonicToAccount } from 'viem/accounts';
 import { EntryPointAbi, Erc20Abi, AccountAbi, AccountFactoryAbi } from '@src/app/static/abis';
 import { fromBase64Url, registerWithPasskey, signMessageWithPasskey } from '../../utils/passkey';
 import { useWeb3PublicClient } from './useWeb3Client';
-import { AccountCallType, BuildUserOperationParams, BuildUserOperationResult } from './types';
+import {
+  AccountCallType,
+  BuildUserOperationParams,
+  BuildUserOperationResult,
+  UserOperation,
+} from './types';
 import { calculateGasFees, calculateUserOpHash } from '../../utils/web3';
 import cons from '../../../client/state/cons';
 import { useBundler } from './useBundler';
 import { usePaymaster } from './usePaymaster';
+
+function formatUserOpStruct(struct: UserOperation) {
+  const output = `{
+            sender: ${struct.sender},
+            nonce : ${struct.nonce},
+            initCode : hex"${struct.initCode.slice(2)}",
+            callData : hex"${struct.callData.slice(2)}",
+            callGasLimit : ${struct.callGasLimit},
+            verificationGasLimit : ${struct.verificationGasLimit},
+            preVerificationGas : ${struct.preVerificationGas},
+            maxFeePerGas : ${struct.maxFeePerGas},
+            maxPriorityFeePerGas : ${struct.maxPriorityFeePerGas},
+            paymasterAndData : hex"${struct.paymasterAndData.slice(2)}",
+            signature : hex"${struct.signature.slice(2)}"
+        }`;
+
+  console.log(output);
+}
 
 // TODO
 const MAIN_NETWORK_GAS_ADDRESS = '0xd878dfE2b33A07E7FB290c1578A0b3cbc8aDadEA';
@@ -60,7 +83,7 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
     const encodedData = encodeFunctionData({
       abi: AccountFactoryAbi,
       functionName: 'createAccount',
-      args: [[xyHex], BigInt(1)],
+      args: [[xyHex], BigInt(0)],
     });
 
     return `${chainConfig.accountFactoryAddr as Address}${encodedData.slice(2)}` as Hex;
@@ -171,7 +194,7 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
         nonce,
         initCode,
         callData,
-        callGasLimit: BigInt(21000),
+        callGasLimit: BigInt(50000),
         verificationGasLimit: BigInt(500_000),
         preVerificationGas: BigInt(200_000),
         maxFeePerGas: feeData.maxFeePerGas,
@@ -186,7 +209,9 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
 
       const estimatedGas = await estimateUserOperationGas(userOp);
       userOp.preVerificationGas = BigInt(estimatedGas.preVerificationGas);
-      userOp.verificationGasLimit = BigInt(estimatedGas.verificationGasLimit);
+      userOp.verificationGasLimit = chainConfig.supportPassKeySign
+        ? BigInt(estimatedGas.verificationGasLimit)
+        : BigInt(estimatedGas.verificationGasLimit) * BigInt(10);
       userOp.callGasLimit = BigInt(estimatedGas.callGasLimit);
 
       const paymasterAndData2 = await getPaymasterSign(userOp, gasAddress);
@@ -270,6 +295,7 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
       // console.log('signAddress', signAddress);
 
       // console.log('userOp', userOp);
+      formatUserOpStruct(userOp);
       // console.log('userOpHash', userOpHash);
 
       const validateUserOp = await ethClient.readContract({
@@ -387,7 +413,12 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
     }
 
     const callData = await buildCallData(operations, gasAddress);
-    const { userOp, userOpHash } = await buildUserOperation(callData, keyIndex);
+    const { userOp, userOpHash } = await buildUserOperation(
+      callData,
+      keyIndex,
+      undefined,
+      gasAddress
+    );
 
     await sendUserOperation(userOp);
     const receipt = await getUserOperationReceipt(userOpHash);
@@ -458,7 +489,9 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
 
       const estimatedGas = await estimateUserOperationGas(userOp);
       const actualCallGasLimit = BigInt(estimatedGas.callGasLimit);
-      const actualVerificationGasLimit = BigInt(estimatedGas.verificationGasLimit);
+      const actualVerificationGasLimit = chainConfig.supportPassKeySign
+        ? BigInt(estimatedGas.verificationGasLimit)
+        : BigInt(estimatedGas.verificationGasLimit) * BigInt(10);
       const actualPreVerificationGas = BigInt(estimatedGas.preVerificationGas);
 
       const totalGasLimit =

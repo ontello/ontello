@@ -238,19 +238,20 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
             >
               {usdValue} USD
             </Text>
-            {amount && selectedToken &&
-             parseFloat(amount) > parseFloat(selectedToken.balance || '0') && (
-              <Text
-                size="T300"
-                priority="400"
-                style={{
-                  color: color.Critical.Main,
-                  marginTop: toRem(8),
-                }}
-              >
-                Insufficient balance
-              </Text>
-            )}
+            {amount &&
+              selectedToken &&
+              parseFloat(amount) > parseFloat(selectedToken.balance || '0') && (
+                <Text
+                  size="T300"
+                  priority="400"
+                  style={{
+                    color: color.Critical.Main,
+                    marginTop: toRem(8),
+                  }}
+                >
+                  Insufficient balance
+                </Text>
+              )}
           </Box>
 
           {/* Selection Areas */}

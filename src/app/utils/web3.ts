@@ -107,7 +107,7 @@ export const calculateGasFees = async (
 }> => {
   const [block, estimatedPriorityFee] = await Promise.all([
     ethClient.getBlock(),
-    ethClient.estimateMaxPriorityFeePerGas().catch(() => fallbackPriorityFee),
+    ethClient.getGasPrice(),
   ]);
   const baseFee = block.baseFeePerGas ?? BigInt(0);
   const priorityFee = estimatedPriorityFee ?? fallbackPriorityFee;
