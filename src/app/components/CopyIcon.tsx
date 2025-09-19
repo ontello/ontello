@@ -1,5 +1,5 @@
-import React from 'react';
-import { Text, Icon } from 'folds';
+import React, { useState } from 'react';
+import { Text, Icon, Icons } from 'folds';
 import Copy from '../static/icons/Copy';
 import { copyToClipboard } from '../../util/common';
 
@@ -16,9 +16,16 @@ export function CopyIcon({
   size?: string;
   display?: string;
 }) {
+  const [copied, setCopied] = useState(false);
+
   const handleCopy = () => {
     copyToClipboard(text);
+    setCopied(true);
     onCopySuccess();
+
+    setTimeout(() => {
+      setCopied(false);
+    }, 1000);
   };
 
   return (
@@ -32,7 +39,7 @@ export function CopyIcon({
       }}
       onClick={handleCopy}
     >
-      <Icon size="Inherit" src={Copy} />
+      <Icon size="Inherit" src={copied ? Icons.Check : Copy} />
     </Text>
   );
 }
