@@ -127,10 +127,10 @@ export function ActivityDetail({
           <Box direction="Row" gap="100" alignItems="Center">
             <img
               src={activity.chain?.iconUrls?.[0]}
-              alt={activity.chain?.chainName}
+              alt={activity.chain?.chainNameView}
               style={{ height: '18px' }}
             />
-            <Text size="T300">{activity.chain?.chainName}</Text>
+            <Text size="T300">{activity.chain?.chainNameView}</Text>
           </Box>
         </LabelBox>
 

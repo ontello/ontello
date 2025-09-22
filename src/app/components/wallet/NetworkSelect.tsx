@@ -32,13 +32,13 @@ const NetworkSelector = as<
             {network.iconUrls[0] && (
               <img
                 src={network.iconUrls[0]}
-                alt={network.chainName}
+                alt={network.chainNameView}
                 style={{ width: '18px', height: '18px', borderRadius: '50%', overflow: 'hidden' }}
               />
             )}
             <Box direction="Column" gap="100" alignItems="Start">
               <Text size="T300" align="Left" style={{ lineHeight: '14px', height: '14px' }}>
-                {network.chainName}
+                {network.chainNameView}
               </Text>
               {network.totalCurrency && (
                 <Text size="T200" align="Left" style={{ lineHeight: '12px', height: '12px' }}>
@@ -125,12 +125,12 @@ export function NetworkSelect({
           {selected?.iconUrls[0] && (
             <img
               src={selected.iconUrls[0]}
-              alt={selected.chainName}
+              alt={selected.chainNameView}
               style={{ width: '18px', height: '18px', borderRadius: '50%', overflow: 'hidden' }}
             />
           )}
           <Text size="B400" align="Center">
-            {selected?.chainName}
+            {selected?.chainNameView}
           </Text>
         </Box>
       </Chip>

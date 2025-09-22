@@ -43,7 +43,9 @@ export function WalletHomepage({
 
           <Box gap="0">
             <img src={OntIdIconSvg} alt="ONTID" />
-            <Text size="T300">{formatAddress(ontId || '', 16, 6)}</Text>
+            <Text size="T300" style={{ marginLeft: '2px' }}>
+              {formatAddress(ontId || '', 16, 6)}
+            </Text>
             <CopyIcon text={ontId || ''} />
           </Box>
 

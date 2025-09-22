@@ -257,11 +257,11 @@ export function ReviewTransferContent({
                         <img
                           className={css.NetworkIconImg}
                           src={chainConfig.iconUrls[0]}
-                          alt={chainConfig.chainName}
+                          alt={chainConfig.chainNameView}
                         />
                       </Box>
                     )}
-                    <Text size="B400">{chainConfig.chainName}</Text>
+                    <Text size="B400">{chainConfig.chainNameView}</Text>
                   </Box>
                 </Box>
 
