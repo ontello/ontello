@@ -38,7 +38,7 @@ export function TransferResult({
   }, [type]);
 
   return (
-    <OntelloDialog onClose={onClose} title={type}>
+    <OntelloDialog onClose={onClose}>
       <Box
         direction="Column"
         alignItems="Center"

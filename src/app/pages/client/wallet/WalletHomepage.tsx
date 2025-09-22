@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Box, Icon, Text, config } from 'folds';
+import { Box, Icon, Text } from 'folds';
 import { mxidToOntid } from '@src/app/utils/ontid';
 import { useMatrixClient } from '@src/app/hooks/useMatrixClient';
 import { useFetchPasskeyList } from '@src/app/hooks/useFetchPasskeyList';
@@ -15,6 +15,7 @@ import { TokensAndActivities } from './tokensAndActivities';
 import { Receive } from './receive/Receive';
 import { useTokensContext } from '../../../hooks/wallet/useTokens';
 import { CopyIcon } from '../../../components/CopyIcon';
+import { actionButton } from './WalletHomepage.css';
 
 export function WalletHomepage({
   setWalletNavMode,
@@ -40,13 +41,14 @@ export function WalletHomepage({
             </Text>
           </Box>
 
-          <Box gap="100">
+          <Box gap="0">
             <img src={OntIdIconSvg} alt="ONTID" />
-            <Text size="T300">{ontId}</Text>
+            <Text size="T300">{formatAddress(ontId || '', 16, 6)}</Text>
+            <CopyIcon text={ontId || ''} />
           </Box>
 
           <Box>
-            <Text size="T300">{formatAddress(passkeyData?.walletAddress || '', 15, 6)}</Text>
+            <Text size="T300">{formatAddress(passkeyData?.walletAddress || '', 8, 6)}</Text>
             <CopyIcon text={passkeyData?.walletAddress || ''} />
           </Box>
 
@@ -58,8 +60,7 @@ export function WalletHomepage({
               gap="200"
               alignItems="Center"
               justifyContent="Center"
-              className={ContainerColor({ variant: 'SurfaceVariant' })}
-              style={{ height: '52px', borderRadius: config.radii.R400, cursor: 'pointer' }}
+              className={`${ContainerColor({ variant: 'SurfaceVariant' })} ${actionButton}`}
               onClick={() => setShowReceive(true)}
             >
               <Icon src={TopUp} size="Inherit" style={{ fontSize: '12px' }} />
@@ -72,8 +73,7 @@ export function WalletHomepage({
               gap="200"
               alignItems="Center"
               justifyContent="Center"
-              className={ContainerColor({ variant: 'SurfaceVariant' })}
-              style={{ height: '52px', borderRadius: config.radii.R400, cursor: 'pointer' }}
+              className={`${ContainerColor({ variant: 'SurfaceVariant' })} ${actionButton}`}
               onClick={() => setWalletNavMode(WalletNavMode.Send)}
             >
               <Icon src={Send} size="Inherit" style={{ fontSize: '12px' }} />

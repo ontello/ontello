@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Text, Icon, Icons } from 'folds';
 import Copy from '../static/icons/Copy';
 import { copyToClipboard } from '../../util/common';
+import { copyIcon } from './CopyIcon.css';
 
 export function CopyIcon({
   text,
@@ -31,11 +32,10 @@ export function CopyIcon({
   return (
     <Text
       as="span"
+      className={copyIcon}
       style={{
-        cursor: 'pointer',
         display,
         fontSize: size,
-        marginLeft: '4px',
       }}
       onClick={handleCopy}
     >
