@@ -4,9 +4,7 @@ import { DefaultReset, color, config } from 'folds';
 export const amountInput = style([
   DefaultReset,
   {
-    minWidth: '80px',
-    maxWidth: '200px',
-    width: 'fit-content',
+    maxWidth: '120px',
     border: 'none',
     outline: 'none',
     background: 'transparent',

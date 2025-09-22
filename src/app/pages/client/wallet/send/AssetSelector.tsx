@@ -60,7 +60,7 @@ export function AssetSelector({ value, onChange }: AssetSelectorProps) {
           className={ContainerColor({ variant: 'SurfaceVariant' })}
           style={{
             borderRadius: config.radii.R300,
-            padding: config.space.S300,
+            padding: config.space.S200,
             cursor: 'pointer',
             transition: 'all 0.2s ease',
           }}
@@ -68,7 +68,7 @@ export function AssetSelector({ value, onChange }: AssetSelectorProps) {
           direction="Column"
           gap="200"
         >
-          <Text size="T300" priority="300" style={{ marginLeft: config.space.S100 }}>
+          <Text size="B500" priority="300" style={{ marginLeft: config.space.S100 }}>
             Send
           </Text>
           <Box

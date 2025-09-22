@@ -99,7 +99,7 @@ export function FeeTokenSelector({ value, onChange, chainId }: FeeTokenSelectorP
         justifyContent="SpaceBetween"
         gap="300"
       >
-        <Text size="T300" priority="300">
+        <Text size="B500" priority="300">
           Network fee
         </Text>
         <Box grow="Yes" alignItems="Center" gap="100" justifyContent="End">

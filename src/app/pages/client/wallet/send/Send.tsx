@@ -44,6 +44,7 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
 
   useEffect(() => {
     if (selectedToken) {
+      setAmount('');
       setFeeToken(null);
       setIsMaxAmount(false);
     }
@@ -194,7 +195,7 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
 
           {/* Amount Input Section */}
           <Box direction="Column" gap="200">
-            <Box direction="Row" alignItems="Center" gap="200">
+            <Box direction="Row" alignItems="Center" gap="200" style={{ marginTop: toRem(30) }}>
               <Box style={{ flex: 1 }} direction="Row" alignItems="Center" gap="200">
                 <AmountInput
                   value={amount}

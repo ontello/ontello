@@ -126,7 +126,7 @@ export function RecipientSelector({ value, onChange }: RecipientSelectorProps) {
         justifyContent="SpaceBetween"
       >
         <Box direction="Column" gap="100">
-          <Text size="T300" priority="300">
+          <Text size="B500" priority="300">
             To
           </Text>
         </Box>

@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useEffect, useRef } from 'react';
 import { amountInput } from './AmountInput.css';
 
 interface AmountInputProps {
@@ -10,6 +10,19 @@ interface AmountInputProps {
 
 export const AmountInput = forwardRef<HTMLInputElement, AmountInputProps>(
   ({ value, onChange, placeholder = '0', disabled = false }, ref) => {
+    const inputRef = useRef<HTMLInputElement>(null);
+    const measureRef = useRef<HTMLSpanElement>(null);
+
+    useEffect(() => {
+      if (measureRef.current && inputRef.current) {
+        // Measure the text width
+        measureRef.current.textContent = value || placeholder || '0';
+        const width = measureRef.current.offsetWidth;
+
+        // Set the input width with some padding
+        inputRef.current.style.width = `${Math.min(Math.max(width + 10, 30), 300)}px`;
+      }
+    }, [value, placeholder]);
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (
         e.key === 'Backspace' ||
@@ -80,8 +93,27 @@ export const AmountInput = forwardRef<HTMLInputElement, AmountInputProps>(
     };
 
     return (
-      <input
-        ref={ref}
+      <>
+        <span
+          ref={measureRef}
+          style={{
+            position: 'absolute',
+            visibility: 'hidden',
+            fontSize: '22px',
+            fontWeight: '500',
+            fontFamily: "'Inter', sans-serif",
+            whiteSpace: 'pre',
+          }}
+        />
+        <input
+          ref={(el) => {
+            inputRef.current = el;
+            if (typeof ref === 'function') {
+              ref(el);
+            } else if (ref && 'current' in ref) {
+              (ref as React.MutableRefObject<HTMLInputElement | null>).current = el;
+            }
+          }}
         type="text"
         inputMode="decimal"
         className={amountInput}
@@ -92,7 +124,8 @@ export const AmountInput = forwardRef<HTMLInputElement, AmountInputProps>(
         disabled={disabled}
         name="amount"
         autoComplete="off"
-      />
+        />
+      </>
     );
   }
 );
