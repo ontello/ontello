@@ -17,7 +17,7 @@ export function mxidToOntid(mxid: string): string | null {
   if (!match || !match[1] || !match[2]) return null;
   const [, username, serverName] = match;
 
-  return `${username}.${serverName}`;
+  return `${username}.${'ont.im'}`;
 }
 
 /**

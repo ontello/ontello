@@ -137,7 +137,7 @@ export function ActivityDetail({
         <LabelBox label="Network fee">
           <Box direction="Column" gap="100" alignItems="End">
             <Text size="T300">
-              -${formatDollarNumber(activity.networkData?.networkFeeCurrency || 0)}
+              -{formatDollarNumber(activity.networkData?.networkFeeCurrency || 0)}
             </Text>
             <Text size="T300" priority="300">
               {activity.networkData?.networkFee} {activity.networkData?.networkFeeToken}
