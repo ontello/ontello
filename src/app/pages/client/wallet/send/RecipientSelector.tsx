@@ -50,6 +50,7 @@ export function RecipientSelector({ value, onChange }: RecipientSelectorProps) {
     try {
       setIsSearching(true);
       setError(null);
+      setSearchResults([]);
 
       const response = await walletApi.walletdataEnsGet({
         query: searchQuery.trim(),
