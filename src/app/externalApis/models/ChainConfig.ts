@@ -99,6 +99,12 @@ export interface ChainConfig {
      * @memberof ChainConfig
      */
     supportPassKeySign: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof ChainConfig
+     */
+    chainNameView: string;
 }
 
 /**
@@ -117,6 +123,7 @@ export function instanceOfChainConfig(value: object): value is ChainConfig {
     if (!('isMain' in value) || value['isMain'] === undefined) return false;
     if (!('bundlerUrl' in value) || value['bundlerUrl'] === undefined) return false;
     if (!('supportPassKeySign' in value) || value['supportPassKeySign'] === undefined) return false;
+    if (!('chainNameView' in value) || value['chainNameView'] === undefined) return false;
     return true;
 }
 
@@ -142,6 +149,7 @@ export function ChainConfigFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'isMain': json['isMain'],
         'bundlerUrl': json['bundlerUrl'],
         'supportPassKeySign': json['supportPassKeySign'],
+        'chainNameView': json['chainNameView'],
     };
 }
 
@@ -168,6 +176,7 @@ export function ChainConfigToJSONTyped(value?: ChainConfig | null, ignoreDiscrim
         'isMain': value['isMain'],
         'bundlerUrl': value['bundlerUrl'],
         'supportPassKeySign': value['supportPassKeySign'],
+        'chainNameView': value['chainNameView'],
     };
 }
 
