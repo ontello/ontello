@@ -18,7 +18,7 @@ export function AuthFooter() {
       >
         v{cons.version}
       </Text>
-      <Text as="a" size="T300" href="https://twitter.com/ontello" target="_blank" rel="noreferrer">
+      <Text as="a" size="T300" href="https://x.com/ont_did" target="_blank" rel="noreferrer">
         Twitter
       </Text>
       <Text as="a" size="T300" href="https://matrix.org" target="_blank" rel="noreferrer">
