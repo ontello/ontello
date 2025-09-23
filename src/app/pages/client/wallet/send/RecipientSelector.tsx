@@ -151,7 +151,7 @@ export function RecipientSelector({ value, onChange }: RecipientSelectorProps) {
               </Text>
             )}
           </Box>
-          <Icon src={Icons.ArrowDropRight} size="100" />
+          <Icon src={Icons.ChevronRight} size="100" />
         </Box>
       </Box>
 

@@ -108,7 +108,7 @@ export function FeeTokenSelector({ value, onChange, chainId }: FeeTokenSelectorP
               {value.token_name}
             </Text>
           )}
-          <Icon src={Icons.ArrowDropRight} size="100" />
+          <Icon src={Icons.ChevronRight} size="100" />
         </Box>
       </Box>
 

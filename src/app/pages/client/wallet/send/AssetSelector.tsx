@@ -78,11 +78,11 @@ export function AssetSelector({ value, onChange }: AssetSelectorProps) {
               width: '100%',
             }}
           />
-          <Box direction="Row" alignItems="Center" gap="200">
+          <Box direction="Row" alignItems="Center">
             <Box grow="Yes">
               <TokenItem token={value} onSelect={null} showHoverBg={false} />
             </Box>
-            <Icon src={Icons.ArrowDropRight} size="100" />
+            <Icon src={Icons.ChevronRight} size="100" />
           </Box>
         </Box>
       )}
