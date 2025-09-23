@@ -282,30 +282,18 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
 
       userOp.signature = signatureWrapper;
 
-      // const valid = await verifyMessage({
-      //   address: '0xf8c3Abaa5dd97A7Edb5D827938AF1bb15DFB2EA1',
-      //   message: { raw: userOpHash },
-      //   signature,
-      // });
-      // console.log('valid', valid);
-      // const signAddress = await recoverMessageAddress({
-      //   message: { raw: userOpHash },
-      //   signature,
-      // });
-      // console.log('signAddress', signAddress);
-
       // console.log('userOp', userOp);
-      formatUserOpStruct(userOp);
+      // formatUserOpStruct(userOp);
       // console.log('userOpHash', userOpHash);
 
-      const validateUserOp = await ethClient.readContract({
-        address: aaAddress,
-        abi: AccountAbi,
-        functionName: 'validateUserOp' as any,
-        args: [userOp, userOpHash, BigInt(0)] as any,
-        account: chainConfig.entrypointAddr as Address,
-      });
-      console.log('validateUserOp:', validateUserOp);
+      // const validateUserOp = await ethClient.readContract({
+      //   address: aaAddress,
+      //   abi: AccountAbi,
+      //   functionName: 'validateUserOp' as any,
+      //   args: [userOp, userOpHash, BigInt(0)] as any,
+      //   account: chainConfig.entrypointAddr as Address,
+      // });
+      // console.log('validateUserOp:', validateUserOp);
 
       return {
         userOp,
