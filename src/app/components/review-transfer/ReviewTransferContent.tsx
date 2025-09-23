@@ -244,7 +244,8 @@ export function ReviewTransferContent({
                 </Box>
 
                 {/* Recipient Section */}
-                <Box className={css.Section}>
+                <Box className={css.Section} direction="Column">
+                  <Text size="L400">Send to</Text>
                   <AvatarAndEnsData ensData={transferData.recipient} />
                 </Box>
 
