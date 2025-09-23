@@ -71,6 +71,7 @@ export function NetworkSelect({
             {
               chainId: AllChainId,
               chainName: 'All Networks',
+              chainNameView: 'All Networks',
               iconUrls: [],
               blockExplorerUrls: [],
             } as unknown as ChainConfigWithTotalCurrency,
