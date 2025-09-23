@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import {
   Box,
   Header,
@@ -22,6 +22,7 @@ import { walletApi } from '../../../../externalApis';
 import { EnsData } from '../../../../externalApis/models/EnsData';
 import { stopPropagation } from '../../../../utils/keyboard';
 import { AvatarAndEnsData } from '../../../../components/wallet/AvatarAndEnsData';
+import { useDebounce } from '../../../../hooks/useDebounce';
 
 export interface RecipientInfo {
   address: string;
@@ -35,6 +36,9 @@ interface RecipientSelectorProps {
 }
 
 export function RecipientSelector({ value, onChange }: RecipientSelectorProps) {
+  // Request ID tracking to prevent race conditions
+  const latestRequestRef = useRef(0);
+
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [searchResults, setSearchResults] = useState<EnsData[]>([]);
@@ -42,46 +46,52 @@ export function RecipientSelector({ value, onChange }: RecipientSelectorProps) {
   const [error, setError] = useState<string | null>(null);
 
   const searchRecipients = useCallback(async (searchQuery: string) => {
+    // Generate unique request ID to prevent race conditions
+    latestRequestRef.current += 1;
+    const requestId = latestRequestRef.current;
+    setSearchResults([]);
     if (!searchQuery.trim()) {
-      setSearchResults([]);
       return;
     }
 
     try {
       setIsSearching(true);
       setError(null);
-      setSearchResults([]);
-
       const response = await walletApi.walletdataEnsGet({
         query: searchQuery.trim(),
       });
+
+      // Check if this is still the latest request before applying results
+      if (requestId !== latestRequestRef.current) {
+        return;
+      }
 
       if (response.error.code === '0' && response.result) {
         setSearchResults(response.result);
       } else {
         setError('Search failed');
-        setSearchResults([]);
       }
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error('Search error:', err);
-      setError('Search failed');
-      setSearchResults([]);
+      // Only handle error if this is still the latest request
+      if (requestId === latestRequestRef.current) {
+        // eslint-disable-next-line no-console
+        console.error('Search error:', err);
+        setError('Search failed');
+      }
     } finally {
-      setIsSearching(false);
+      // Only update searching state if this is still the latest request
+      if (requestId === latestRequestRef.current) {
+        setIsSearching(false);
+      }
     }
   }, []);
 
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      searchRecipients(query);
-    }, 300);
-
-    return () => clearTimeout(timeoutId);
-  }, [query, searchRecipients]);
+  const debouncedSearchRecipients = useDebounce(searchRecipients, { wait: 500 });
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setQuery(event.target.value);
+    const newQuery = event.target.value;
+    setQuery(newQuery);
+    debouncedSearchRecipients(newQuery);
   };
 
   const handleClearInput = () => {

@@ -480,7 +480,7 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
       const actualCallGasLimit = BigInt(estimatedGas.callGasLimit);
       const actualVerificationGasLimit = chainConfig.supportPassKeySign
         ? BigInt(estimatedGas.verificationGasLimit)
-        : BigInt(estimatedGas.verificationGasLimit) * BigInt(10);
+        : BigInt(3000000);
       const actualPreVerificationGas = BigInt(estimatedGas.preVerificationGas);
 
       const totalGasLimit =
