@@ -211,7 +211,8 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
       userOp.preVerificationGas = BigInt(estimatedGas.preVerificationGas);
       userOp.verificationGasLimit = chainConfig.supportPassKeySign
         ? BigInt(estimatedGas.verificationGasLimit)
-        : BigInt(estimatedGas.verificationGasLimit) * BigInt(10);
+        : // : BigInt(estimatedGas.verificationGasLimit) * BigInt(10);
+          BigInt(3000000); // maxVerificationGas of 3000000
       userOp.callGasLimit = BigInt(estimatedGas.callGasLimit);
 
       const paymasterAndData2 = await getPaymasterSign(userOp, gasAddress);
