@@ -43,7 +43,7 @@ export function ReviewTransferContent({
   const [feeTokenBalance, setFeeTokenBalance] = useState<string>('0');
 
   const [feeEstimate, setFeeEstimate] = useState<{
-    estimatedEthFee: bigint;
+    // estimatedEthFee: bigint;
     maxEthFee: bigint;
   } | null>(null);
 
@@ -160,7 +160,7 @@ export function ReviewTransferContent({
     if (feeEstimate) {
       const feeInEth = Number(formatEther(feeEstimate.maxEthFee));
       const exchangeRate = Number(transferData.fee.exchangeRate);
-      const feeInToken = (feeInEth * exchangeRate).toFixed(2); // 保留6位小数
+      const feeInToken = (feeInEth * exchangeRate).toFixed(2);
       return `${feeInToken} ${transferData.fee.name}`;
     }
     return 'Calculating...';

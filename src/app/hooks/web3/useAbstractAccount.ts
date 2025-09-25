@@ -284,7 +284,7 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
       userOp.signature = signatureWrapper;
 
       // console.log('userOp', userOp);
-      // formatUserOpStruct(userOp);
+      formatUserOpStruct(userOp);
       // console.log('userOpHash', userOpHash);
 
       // const validateUserOp = await ethClient.readContract({
@@ -477,26 +477,21 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
       userOp.paymasterAndData = paymasterAndData;
 
       const estimatedGas = await estimateUserOperationGas(userOp);
-      const actualCallGasLimit = BigInt(estimatedGas.callGasLimit);
+
       const actualVerificationGasLimit = chainConfig.supportPassKeySign
         ? BigInt(estimatedGas.verificationGasLimit)
         : BigInt(3000000);
-      const actualPreVerificationGas = BigInt(estimatedGas.preVerificationGas);
 
-      const totalGasLimit =
-        actualCallGasLimit + actualVerificationGasLimit + actualPreVerificationGas;
-
-      const block = await ethClient.getBlock();
-      const baseFee = block.baseFeePerGas ?? BigInt(0);
-      const effectiveGasPrice = baseFee + feeData.maxPriorityFeePerGas;
-      const estimatedEthFee =
-        totalGasLimit *
-        (effectiveGasPrice < feeData.maxFeePerGas ? effectiveGasPrice : feeData.maxFeePerGas);
-
-      const maxEthFee = totalGasLimit * feeData.maxFeePerGas;
+      const maxEthFee =
+        (BigInt(estimatedGas.callGasLimit) +
+          actualVerificationGasLimit +
+          BigInt(estimatedGas.preVerificationGas) +
+          BigInt(50000)) *
+        userOp.maxFeePerGas;
+      console.log('maxEthFee', maxEthFee);
 
       return {
-        estimatedEthFee,
+        // estimatedEthFee,
         maxEthFee,
       };
     } catch (error) {
