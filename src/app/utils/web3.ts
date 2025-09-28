@@ -63,38 +63,6 @@ export const serializerToHex = (key: string, value: any) => {
   return value;
 };
 
-// export const calculateCallGasLimit = async (
-//   ethClient: PublicClient,
-//   entryPoint: Address,
-//   address: Address,
-//   data: Hex
-// ): Promise<bigint> => {
-//   const baseEstimate = await ethClient.estimateGas({
-//     account: entryPoint,
-//     to: address,
-//     data,
-//     value: BigInt(0),
-//   });
-
-//   return (baseEstimate * BigInt(120)) / BigInt(100);
-// };
-
-// export const calculatePreVerificationGas = (callData: Hex): bigint => {
-//   const baseCost = BigInt(21000);
-
-//   const calldataLength = BigInt((callData.length - 2) / 2); // 去掉 '0x'
-//   const calldataZeros = BigInt(callData.split('00').length - 1);
-//   const calldataNonZeros = calldataLength - calldataZeros;
-
-//   const calldataGas = calldataZeros * BigInt(4) + calldataNonZeros * BigInt(16);
-
-//   const bundlerGas = BigInt(50000);
-
-//   const total = baseCost + calldataGas + bundlerGas;
-
-//   return (total * BigInt(120)) / BigInt(100);
-// };
-
 export const calculateGasFees = async (
   ethClient: PublicClient,
   {

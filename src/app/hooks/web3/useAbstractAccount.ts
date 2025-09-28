@@ -44,6 +44,9 @@ function formatUserOpStruct(struct: UserOperation) {
 // TODO
 const MAIN_NETWORK_GAS_ADDRESS = '0xd878dfE2b33A07E7FB290c1578A0b3cbc8aDadEA';
 
+const INIT_SIGNATURE =
+  '0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000260000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000000001200000000000000000000000000000000000000000000000000000000000000017000000000000000000000000000000000000000000000000000000000000000168bd76d24faae41e9b10fa547c74f6d82ef3baf9ecfb18f828abb0fc13888b5bff4aa483155037396e6ca63771f0cba4585cb91a08d6492325d7f61518508eaf000000000000000000000000000000000000000000000000000000000000002549960de5880e8c687434170f6476605b8fe4aeb9a28632c7995cf3ba831d97631d0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f37b2274797065223a22176562617574686e2e676574222c226368616c6c656e6765223a224b33624e59524e524f767432776b4f5449376f6d7153384a56794e5431536d544c56646d68586d6d357851222c226f726967696e223a22687474703a2f2f6c6f63616c686f73743a38303830222c2263726f73734f726967696e223a66616c73652c226f746865725f6b6579735f63616e5f62655f61646465645f68657265223a22646f206e6f7420636f6d7061726520636c69656e74446174614a534f4e20616761696e737420612074656d706c6174652e205365652068747470733a2f2f676f6f2e666c2f796162506577227d00000000000000000000000000' as Hex;
+
 export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
   const { publicClient: ethClient, chainConfig } = useWeb3PublicClient(chainId);
   const { estimateUserOperationGas, sendUserOperation, getUserOperationReceipt } = useBundler(
@@ -177,12 +180,7 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
     gasAddress: Address = MAIN_NETWORK_GAS_ADDRESS
   ): Promise<BuildUserOperationResult> => {
     try {
-      let nonce = BigInt(0);
-      try {
-        nonce = await passKeyAccountContract.read.getNonce();
-      } catch (error) {
-        // console.error('getNonce failed, use 0 as nonce:', error);
-      }
+      const nonce = await passKeyAccountContract.read.getNonce().catch(() => BigInt(0));
       console.log('nonce', nonce);
 
       const initCode = await buildInitCode();
@@ -200,8 +198,7 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
         maxFeePerGas: feeData.maxFeePerGas,
         maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
         paymasterAndData: '0x' as Hex,
-        signature:
-          '0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000260000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000000001200000000000000000000000000000000000000000000000000000000000000017000000000000000000000000000000000000000000000000000000000000000168bd76d24faae41e9b10fa547c74f6d82ef3baf9ecfb18f828abb0fc13888b5bff4aa483155037396e6ca63771f0cba4585cb91a08d6492325d7f61518508eaf000000000000000000000000000000000000000000000000000000000000002549960de5880e8c687434170f6476605b8fe4aeb9a28632c7995cf3ba831d97631d0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f37b2274797065223a22176562617574686e2e676574222c226368616c6c656e6765223a224b33624e59524e524f767432776b4f5449376f6d7153384a56794e5431536d544c56646d68586d6d357851222c226f726967696e223a22687474703a2f2f6c6f63616c686f73743a38303830222c2263726f73734f726967696e223a66616c73652c226f746865725f6b6579735f63616e5f62655f61646465645f68657265223a22646f206e6f7420636f6d7061726520636c69656e74446174614a534f4e20616761696e737420612074656d706c6174652e205365652068747470733a2f2f676f6f2e666c2f796162506577227d00000000000000000000000000' as Hex, // init
+        signature: INIT_SIGNATURE,
       };
 
       const paymasterAndData = await getPaymasterSign(userOp, gasAddress);
@@ -211,8 +208,7 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
       userOp.preVerificationGas = BigInt(estimatedGas.preVerificationGas);
       userOp.verificationGasLimit = chainConfig.supportPassKeySign
         ? BigInt(estimatedGas.verificationGasLimit)
-        : // : BigInt(estimatedGas.verificationGasLimit) * BigInt(10);
-          BigInt(3000000); // maxVerificationGas of 3000000
+        : BigInt(3000000); // maxVerificationGas of 3000000
       userOp.callGasLimit = BigInt(estimatedGas.callGasLimit);
 
       const paymasterAndData2 = await getPaymasterSign(userOp, gasAddress);
@@ -304,6 +300,40 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
       console.error('build UserOperation failed:', error);
       throw error;
     }
+  };
+  const estimateGas = async (callData: Hex, gasAddress?: Address) => {
+    const nonce = await passKeyAccountContract.read.getNonce().catch(() => BigInt(0));
+    const feeData = await calculateGasFees(ethClient);
+    const initCode = await buildInitCode();
+    const userOp = {
+      sender: aaAddress,
+      nonce,
+      initCode,
+      callData,
+      callGasLimit: BigInt(50000),
+      verificationGasLimit: BigInt(500_000),
+      preVerificationGas: BigInt(200_000),
+      maxFeePerGas: feeData.maxFeePerGas,
+      maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
+      paymasterAndData: '0x' as Hex,
+      signature: INIT_SIGNATURE,
+    };
+    if (gasAddress) {
+      userOp.paymasterAndData = await getPaymasterSign(userOp, gasAddress);
+    }
+    const estimatedGas = await estimateUserOperationGas(userOp);
+    const actualVerificationGasLimit = chainConfig.supportPassKeySign
+      ? BigInt(estimatedGas.verificationGasLimit)
+      : BigInt(3000000);
+    const maxEthFee =
+      (BigInt(estimatedGas.callGasLimit) +
+        actualVerificationGasLimit +
+        BigInt(estimatedGas.preVerificationGas) +
+        BigInt(50000)) *
+      userOp.maxFeePerGas;
+    return {
+      maxEthFee,
+    };
   };
 
   const addOwnerByAddress = async (ownerAddress: Address) => {
@@ -413,6 +443,7 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
     const receipt = await getUserOperationReceipt(userOpHash);
     return receipt;
   };
+
   const estimateTransfer = async (
     to: Address,
     amount: bigint,
@@ -446,52 +477,8 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
       }
 
       const callData = await buildCallData(operations, gasAddress);
-      const feeData = await calculateGasFees(ethClient);
-
-      // const nonce = (await passKeyAccountContract.read.getNonce()) as bigint;
-      let nonce = BigInt(0);
-      try {
-        nonce = await passKeyAccountContract.read.getNonce();
-      } catch (error) {
-        //
-      }
-
-      const initCode = await buildInitCode();
-
-      const userOp = {
-        sender: aaAddress,
-        nonce,
-        initCode,
-        callData,
-        callGasLimit: BigInt(21000),
-        verificationGasLimit: BigInt(500_000),
-        preVerificationGas: BigInt(200_000),
-        maxFeePerGas: feeData.maxFeePerGas,
-        maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
-        paymasterAndData: '0x' as Hex,
-        signature:
-          '0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000260000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000000001200000000000000000000000000000000000000000000000000000000000000017000000000000000000000000000000000000000000000000000000000000000168bd76d24faae41e9b10fa547c74f6d82ef3baf9ecfb18f828abb0fc13888b5bff4aa483155037396e6ca63771f0cba4585cb91a08d6492325d7f61518508eaf000000000000000000000000000000000000000000000000000000000000002549960de5880e8c687434170f6476605b8fe4aeb9a28632c7995cf3ba831d97631d0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f37b2274797065223a22176562617574686e2e676574222c226368616c6c656e6765223a224b33624e59524e524f767432776b4f5449376f6d7153384a56794e5431536d544c56646d68586d6d357851222c226f726967696e223a22687474703a2f2f6c6f63616c686f73743a38303830222c2263726f73734f726967696e223a66616c73652c226f746865725f6b6579735f63616e5f62655f61646465645f68657265223a22646f206e6f7420636f6d7061726520636c69656e74446174614a534f4e20616761696e737420612074656d706c6174652e205365652068747470733a2f2f676f6f2e666c2f796162506577227d00000000000000000000000000' as Hex,
-      };
-
-      const paymasterAndData = await getPaymasterSign(userOp, gasAddress);
-      userOp.paymasterAndData = paymasterAndData;
-
-      const estimatedGas = await estimateUserOperationGas(userOp);
-
-      const actualVerificationGasLimit = chainConfig.supportPassKeySign
-        ? BigInt(estimatedGas.verificationGasLimit)
-        : BigInt(3000000);
-
-      const maxEthFee =
-        (BigInt(estimatedGas.callGasLimit) +
-          actualVerificationGasLimit +
-          BigInt(estimatedGas.preVerificationGas) +
-          BigInt(50000)) *
-        userOp.maxFeePerGas;
-      console.log('maxEthFee', maxEthFee);
-
+      const { maxEthFee } = await estimateGas(callData, gasAddress);
       return {
-        // estimatedEthFee,
         maxEthFee,
       };
     } catch (error) {
@@ -501,16 +488,19 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
   };
 
   return {
+    isAccountDeployed,
     buildCallData,
     buildUserOperation,
+    estimateGas,
     getKeyIndexThroughAddress,
     getKeyIndexThroughXy,
     getCurrentKeyIndex,
+
+    // TODO abandon or move
     recoveryAccount,
     removeOwner,
     addOwnerByAddress,
     transfer,
     estimateTransfer,
-    isAccountDeployed,
   };
 };
