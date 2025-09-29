@@ -18,7 +18,7 @@ import {
   BuildUserOperationResult,
   UserOperation,
 } from './types';
-import { calculateGasFees, calculateUserOpHash } from '../../utils/web3';
+import { calculateGasFees, calculateUserOpHash, getUserOpSignature } from '../../utils/web3';
 import cons from '../../../client/state/cons';
 import { useBundler } from './useBundler';
 import { usePaymaster } from './usePaymaster';
@@ -57,6 +57,11 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
   const passKeyAccountContract = getContract({
     address: aaAddress,
     abi: AccountAbi,
+    client: ethClient,
+  });
+  const entryPointContract = getContract({
+    address: chainConfig.entrypointAddr as Address,
+    abi: EntryPointAbi,
     client: ethClient,
   });
   const isAccountDeployed = async (): Promise<boolean> => {
@@ -180,7 +185,7 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
     gasAddress: Address = MAIN_NETWORK_GAS_ADDRESS
   ): Promise<BuildUserOperationResult> => {
     try {
-      const nonce = await passKeyAccountContract.read.getNonce().catch(() => BigInt(0));
+      const nonce = await entryPointContract.read.getNonce([aaAddress, BigInt(0)]);
       console.log('nonce', nonce);
 
       const initCode = await buildInitCode();
@@ -220,64 +225,7 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
         chainConfig.entrypointAddr as Address
       );
 
-      // const validatePaymasterAndData = await ethClient.readContract({
-      //   address: chainConfig.paymasterAddr as Address,
-      //   abi: PaymasterAbi,
-      //   functionName: 'validatePaymasterUserOp' as any,
-      //   args: [userOp, userOpHash, BigInt(0)] as any,
-      //   account: chainConfig.entrypointAddr as Address,
-      // });
-      // console.log('validatePaymasterAndData:', validatePaymasterAndData);
-
-      let signature;
-      if (signMessageFunc) {
-        signature = await signMessageFunc(userOpHash);
-      } else {
-        const passkeySignature = await signMessageWithPasskey(userOpHash);
-        signature = encodeAbiParameters(
-          [
-            {
-              components: [
-                { type: 'bytes', name: 'authenticatorData' },
-                { type: 'bytes', name: 'clientDataJSON' },
-                { type: 'uint256', name: 'challengeIndex' },
-                { type: 'uint256', name: 'typeIndex' },
-                { type: 'uint256', name: 'r' },
-                { type: 'uint256', name: 's' },
-              ],
-              type: 'tuple',
-            },
-          ],
-          [
-            {
-              authenticatorData: toHex(new Uint8Array(passkeySignature.authenticatorData)),
-              clientDataJSON: toHex(new Uint8Array(passkeySignature.clientDataJSON)),
-              challengeIndex: BigInt(passkeySignature.challengeIndex),
-              typeIndex: BigInt(passkeySignature.typeIndex),
-              r: bytesToBigInt(passkeySignature.r),
-              s: bytesToBigInt(passkeySignature.s),
-            },
-          ]
-        ) as Hex;
-      }
-
-      console.log('signature:', signature);
-      console.log('keyIndex', keyIndex);
-
-      const signatureWrapper = encodeAbiParameters(
-        [
-          {
-            components: [
-              { type: 'uint256', name: 'keyIndex' },
-              { type: 'bytes', name: 'signature' },
-            ],
-            type: 'tuple',
-          },
-        ],
-        [{ keyIndex, signature }]
-      );
-
-      userOp.signature = signatureWrapper;
+      userOp.signature = await getUserOpSignature(userOpHash, keyIndex, signMessageFunc);
 
       // console.log('userOp', userOp);
       formatUserOpStruct(userOp);
@@ -302,7 +250,7 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
     }
   };
   const estimateGas = async (callData: Hex, gasAddress?: Address) => {
-    const nonce = await passKeyAccountContract.read.getNonce().catch(() => BigInt(0));
+    const nonce = await entryPointContract.read.getNonce([aaAddress, BigInt(0)]);
     const feeData = await calculateGasFees(ethClient);
     const initCode = await buildInitCode();
     const userOp = {
@@ -502,5 +450,61 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
     addOwnerByAddress,
     transfer,
     estimateTransfer,
+  };
+};
+
+export const useOwnerManage = (aaAddress: Address, chainId?: number) => {
+  const { getCurrentKeyIndex } = useAbstractAccount(aaAddress, chainId);
+  const { publicClient: ethClient, chainConfig } = useWeb3PublicClient(chainId);
+  const entryPointContract = getContract({
+    address: chainConfig.entrypointAddr as Address,
+    abi: EntryPointAbi,
+    client: ethClient,
+  });
+  const AccountContract = getContract({
+    address: aaAddress,
+    abi: AccountAbi,
+    client: ethClient,
+  });
+  //
+
+  type Operation = 'addOwnerAddress' | 'removeOwner';
+  const buildOwnerManageUserOperation = async (
+    functionName: Operation,
+    ownerAddress: Address,
+    signMessageFunc?: (message: Hex) => Promise<Hex>
+  ) => {
+    // eslint-disable-next-line no-bitwise
+    const nonce = await entryPointContract.read.getNonce([aaAddress, BigInt(5851 << 64)]);
+    const call = encodeFunctionData({
+      abi: AccountAbi,
+      functionName,
+      args: [ownerAddress],
+    });
+    const callData = encodeFunctionData({
+      abi: AccountAbi,
+      functionName: 'executeWithoutChainIdValidation',
+      args: [[call]],
+    });
+    const userOp: UserOperation = {
+      sender: aaAddress,
+      nonce,
+      initCode: '0x' as Hex,
+      callData,
+      callGasLimit: BigInt(500_000), // TODO
+      verificationGasLimit: BigInt(2_000_000),
+      preVerificationGas: BigInt(0),
+      maxFeePerGas: BigInt(0),
+      maxPriorityFeePerGas: BigInt(0),
+      paymasterAndData: '0x' as Hex,
+      signature: '0x' as Hex,
+    };
+    const userOpHash = await AccountContract.read.getUserOpHashWithoutChainId([userOp]);
+    const keyIndex = await getCurrentKeyIndex();
+    userOp.signature = await getUserOpSignature(userOpHash, keyIndex, signMessageFunc);
+    return { userOp, userOpHash };
+  };
+  return {
+    buildOwnerManageUserOperation,
   };
 };

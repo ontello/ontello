@@ -7,9 +7,11 @@ import {
   PublicClient,
   toHex,
   getContract,
+  bytesToBigInt,
 } from 'viem';
 import { UserOperation } from '../hooks/web3/types';
 import { EntryPointAbi } from '../static/abis';
+import { signMessageWithPasskey } from './passkey';
 
 export const calculateUserOpHash = async (
   ethClient: PublicClient,
@@ -48,6 +50,58 @@ export const calculateUserOpHash = async (
   const hash = await entryPointContract.read.getUserOpHash([userop]);
 
   return hash;
+};
+
+export const getUserOpSignature = async (
+  userOpHash: Hex,
+  keyIndex: bigint,
+  signMessageFunc?: (message: Hex) => Promise<Hex>
+): Promise<Hex> => {
+  let signature;
+  if (signMessageFunc) {
+    signature = await signMessageFunc(userOpHash);
+  } else {
+    const passkeySignature = await signMessageWithPasskey(userOpHash);
+    signature = encodeAbiParameters(
+      [
+        {
+          components: [
+            { type: 'bytes', name: 'authenticatorData' },
+            { type: 'bytes', name: 'clientDataJSON' },
+            { type: 'uint256', name: 'challengeIndex' },
+            { type: 'uint256', name: 'typeIndex' },
+            { type: 'uint256', name: 'r' },
+            { type: 'uint256', name: 's' },
+          ],
+          type: 'tuple',
+        },
+      ],
+      [
+        {
+          authenticatorData: toHex(new Uint8Array(passkeySignature.authenticatorData)),
+          clientDataJSON: toHex(new Uint8Array(passkeySignature.clientDataJSON)),
+          challengeIndex: BigInt(passkeySignature.challengeIndex),
+          typeIndex: BigInt(passkeySignature.typeIndex),
+          r: bytesToBigInt(passkeySignature.r),
+          s: bytesToBigInt(passkeySignature.s),
+        },
+      ]
+    ) as Hex;
+  }
+
+  const signatureWrapper = encodeAbiParameters(
+    [
+      {
+        components: [
+          { type: 'uint256', name: 'keyIndex' },
+          { type: 'bytes', name: 'signature' },
+        ],
+        type: 'tuple',
+      },
+    ],
+    [{ keyIndex, signature }]
+  );
+  return signatureWrapper;
 };
 
 export const bigIntSerializer = (key: string, value: any) => {
