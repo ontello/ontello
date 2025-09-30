@@ -9,7 +9,13 @@ import {
   bytesToBigInt,
 } from 'viem';
 import { mnemonicToAccount } from 'viem/accounts';
-import { EntryPointAbi, Erc20Abi, AccountAbi, AccountFactoryAbi } from '@src/app/static/abis';
+import {
+  EntryPointAbi,
+  Erc20Abi,
+  AccountAbi,
+  AccountFactoryAbi,
+  CrossChainRelayerAbi,
+} from '@src/app/static/abis';
 import { fromBase64Url, registerWithPasskey, signMessageWithPasskey } from '../../utils/passkey';
 import { useWeb3PublicClient } from './useWeb3Client';
 import {
@@ -454,8 +460,12 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
 };
 
 export const useOwnerManage = (aaAddress: Address, chainId?: number) => {
-  const { getCurrentKeyIndex } = useAbstractAccount(aaAddress, chainId);
+  const { getCurrentKeyIndex, buildCallData, buildUserOperation } = useAbstractAccount(
+    aaAddress,
+    chainId
+  );
   const { publicClient: ethClient, chainConfig } = useWeb3PublicClient(chainId);
+  const { sendUserOperation, getUserOperationReceipt } = useBundler(chainConfig.chainId);
   const entryPointContract = getContract({
     address: chainConfig.entrypointAddr as Address,
     abi: EntryPointAbi,
@@ -504,7 +514,36 @@ export const useOwnerManage = (aaAddress: Address, chainId?: number) => {
     userOp.signature = await getUserOpSignature(userOpHash, keyIndex, signMessageFunc);
     return { userOp, userOpHash };
   };
+
+  const payFee = async (session: Hex, token: Address, amount: bigint) => {
+    const keyIndex = await getCurrentKeyIndex();
+    const operations: BuildUserOperationParams = [
+      {
+        type: AccountCallType.Execute,
+        target: '0x73E077CaE1446A39F9e1E5d89E0A05d855411f8a', // TODO
+        data: encodeFunctionData({
+          abi: CrossChainRelayerAbi,
+          functionName: 'payFee',
+          args: [session, token, amount],
+        }),
+      },
+    ];
+    const callData = await buildCallData(operations, MAIN_NETWORK_GAS_ADDRESS);
+    const { userOp, userOpHash } = await buildUserOperation(
+      callData,
+      keyIndex,
+      undefined,
+      MAIN_NETWORK_GAS_ADDRESS
+    );
+    await sendUserOperation(userOp);
+    return {
+      userOp,
+      userOpHash,
+    };
+  };
+
   return {
     buildOwnerManageUserOperation,
+    payFee,
   };
 };
