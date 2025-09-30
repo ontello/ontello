@@ -134,25 +134,27 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
   //
   const buildCallData = async (
     operations: BuildUserOperationParams,
-    gasAddress: Address = MAIN_NETWORK_GAS_ADDRESS
+    gasAddress?: Address
   ): Promise<Hex> => {
-    const allowance = await ethClient.readContract({
-      address: gasAddress,
-      abi: Erc20Abi,
-      functionName: 'allowance',
-      args: [aaAddress, chainConfig.paymasterAddr as Address],
-    });
-
-    if (allowance === BigInt(0)) {
-      operations.unshift({
-        type: AccountCallType.Execute,
-        target: gasAddress,
-        data: encodeFunctionData({
-          abi: Erc20Abi,
-          functionName: 'approve',
-          args: [chainConfig.paymasterAddr as Address, maxUint256],
-        }),
+    if (gasAddress) {
+      const allowance = await ethClient.readContract({
+        address: gasAddress,
+        abi: Erc20Abi,
+        functionName: 'allowance',
+        args: [aaAddress, chainConfig.paymasterAddr as Address],
       });
+
+      if (allowance === BigInt(0)) {
+        operations.unshift({
+          type: AccountCallType.Execute,
+          target: gasAddress,
+          data: encodeFunctionData({
+            abi: Erc20Abi,
+            functionName: 'approve',
+            args: [chainConfig.paymasterAddr as Address, maxUint256],
+          }),
+        });
+      }
     }
 
     const calls = operations.map((arg) => {
@@ -188,7 +190,7 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
     callData: Hex,
     keyIndex: bigint,
     signMessageFunc?: (message: Hex) => Promise<Hex>,
-    gasAddress: Address = MAIN_NETWORK_GAS_ADDRESS
+    gasAddress?: Address //
   ): Promise<BuildUserOperationResult> => {
     try {
       const nonce = await entryPointContract.read.getNonce([aaAddress, BigInt(0)]);
@@ -211,9 +213,10 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
         paymasterAndData: '0x' as Hex,
         signature: INIT_SIGNATURE,
       };
-
-      const paymasterAndData = await getPaymasterSign(userOp, gasAddress);
-      userOp.paymasterAndData = paymasterAndData;
+      if (gasAddress) {
+        const paymasterAndData = await getPaymasterSign(userOp, gasAddress);
+        userOp.paymasterAndData = paymasterAndData;
+      }
 
       const estimatedGas = await estimateUserOperationGas(userOp);
       userOp.preVerificationGas = BigInt(estimatedGas.preVerificationGas);
@@ -222,8 +225,11 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
         : BigInt(3000000); // maxVerificationGas of 3000000
       userOp.callGasLimit = BigInt(estimatedGas.callGasLimit);
 
-      const paymasterAndData2 = await getPaymasterSign(userOp, gasAddress);
-      userOp.paymasterAndData = paymasterAndData2;
+      if (gasAddress) {
+        // again
+        const paymasterAndData2 = await getPaymasterSign(userOp, gasAddress);
+        userOp.paymasterAndData = paymasterAndData2;
+      }
 
       const userOpHash = await calculateUserOpHash(
         ethClient,
@@ -355,7 +361,7 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
   const transfer = async (
     to: Address,
     amount: bigint,
-    gasAddress: Address,
+    gasAddress?: Address,
     tokenAddress?: Address
   ) => {
     const keyIndex = await getCurrentKeyIndex();
@@ -401,7 +407,7 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
   const estimateTransfer = async (
     to: Address,
     amount: bigint,
-    gasAddress: Address,
+    gasAddress?: Address,
     tokenAddress?: Address
   ) => {
     try {
@@ -528,13 +534,8 @@ export const useOwnerManage = (aaAddress: Address, chainId?: number) => {
         }),
       },
     ];
-    const callData = await buildCallData(operations, MAIN_NETWORK_GAS_ADDRESS);
-    const { userOp, userOpHash } = await buildUserOperation(
-      callData,
-      keyIndex,
-      undefined,
-      MAIN_NETWORK_GAS_ADDRESS
-    );
+    const callData = await buildCallData(operations);
+    const { userOp, userOpHash } = await buildUserOperation(callData, keyIndex, undefined);
     await sendUserOperation(userOp);
     return {
       userOp,
