@@ -1,6 +1,8 @@
 import { useAtom } from 'jotai';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { walletApi } from '@src/app/externalApis';
+import type { ChainConfig } from '@src/app/externalApis';
+import type { ChainConfigResponse } from '../../state/web3/chainConfig';
 import {
   chainConfigAtom,
   isLoadingChainConfigAtom,
@@ -10,11 +12,28 @@ import {
 
 const CACHE_DURATION = 60 * 60 * 1000;
 
-export const useChainConfig = () => {
+type UseChainConfigReturn = {
+  chainConfig: ChainConfigResponse | null;
+  availableChains: ChainConfig[];
+  mainChainConfig: ChainConfig | undefined;
+  isLoading: boolean;
+  error: string | null;
+  loadChainConfig: (forceRefresh?: boolean) => Promise<void>;
+  isChainSupported: (chainId: number) => boolean;
+  getChainConfig: (chainId: number) => ChainConfig;
+  refreshConfig: () => Promise<void>;
+};
+
+export const useChainConfig = (): UseChainConfigReturn => {
   const [chainConfig, setChainConfig] = useAtom(chainConfigAtom);
   const [isLoading, setIsLoading] = useAtom(isLoadingChainConfigAtom);
   const [error, setError] = useAtom(chainConfigErrorAtom);
   const [availableChains] = useAtom(availableChainsAtom);
+
+  const mainChainConfig = useMemo(
+    () => availableChains.find((chain) => chain.isMain),
+    [availableChains]
+  );
 
   const loadingRef = useRef(false);
 
@@ -90,6 +109,7 @@ export const useChainConfig = () => {
   return {
     chainConfig,
     availableChains,
+    mainChainConfig,
     isLoading,
     error,
 
