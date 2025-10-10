@@ -15,7 +15,7 @@ const CACHE_DURATION = 60 * 60 * 1000;
 type UseChainConfigReturn = {
   chainConfig: ChainConfigResponse | null;
   availableChains: ChainConfig[];
-  mainChainConfig: ChainConfig | undefined;
+  mainChainConfig: ChainConfig;
   isLoading: boolean;
   error: string | null;
   loadChainConfig: (forceRefresh?: boolean) => Promise<void>;
@@ -31,7 +31,7 @@ export const useChainConfig = (): UseChainConfigReturn => {
   const [availableChains] = useAtom(availableChainsAtom);
 
   const mainChainConfig = useMemo(
-    () => availableChains.find((chain) => chain.isMain),
+    () => availableChains.find((chain) => chain.isMain)!,
     [availableChains]
   );
 

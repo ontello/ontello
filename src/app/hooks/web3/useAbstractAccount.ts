@@ -28,6 +28,7 @@ import { calculateGasFees, calculateUserOpHash, getUserOpSignature } from '../..
 import cons from '../../../client/state/cons';
 import { useBundler } from './useBundler';
 import { usePaymaster } from './usePaymaster';
+import { useChainConfig } from './useChainConfig';
 
 function formatUserOpStruct(struct: UserOperation) {
   const output = `{
@@ -471,6 +472,7 @@ export const useOwnerManage = (aaAddress: Address, chainId?: number) => {
     chainId
   );
   const { publicClient: ethClient, chainConfig } = useWeb3PublicClient(chainId);
+  const { mainChainConfig } = useChainConfig();
   const { sendUserOperation, getUserOperationReceipt } = useBundler(chainConfig.chainId);
   const entryPointContract = getContract({
     address: chainConfig.entrypointAddr as Address,
@@ -523,10 +525,11 @@ export const useOwnerManage = (aaAddress: Address, chainId?: number) => {
 
   const payFee = async (session: Hex, token: Address, amount: bigint) => {
     const keyIndex = await getCurrentKeyIndex();
+
     const operations: BuildUserOperationParams = [
       {
         type: AccountCallType.Execute,
-        target: '0x73E077CaE1446A39F9e1E5d89E0A05d855411f8a', // TODO
+        target: mainChainConfig.crossChainRelayer as Address,
         data: encodeFunctionData({
           abi: CrossChainRelayerAbi,
           functionName: 'payFee',
