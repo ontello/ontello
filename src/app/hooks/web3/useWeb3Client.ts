@@ -58,3 +58,29 @@ export const useWeb3PublicClient = (chainId?: number): Web3PublicClientResult =>
 
   return result;
 };
+// TODO
+export const useWeb3PublicClients = () => {
+  const { availableChains } = useChainConfig();
+  const createWeb3Client = (chainIds: number[]): Web3PublicClientResult[] =>
+    chainIds.map((chainId) => {
+      const backendConfig = availableChains.find((chain) => chain.chainId === chainId);
+
+      if (!backendConfig || !backendConfig.rpcUrls?.[0]) {
+        throw new Error(`Chain ${chainId} not supported or missing RPC configuration`);
+      }
+
+      const chain = createViemChain(backendConfig);
+      const publicClient = createPublicClient({
+        chain,
+        transport: http(backendConfig.rpcUrls[0]),
+      });
+
+      return {
+        publicClient,
+        chainConfig: backendConfig,
+      };
+    });
+  return {
+    createWeb3Client,
+  };
+};

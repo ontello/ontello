@@ -17,7 +17,7 @@ import {
   CrossChainRelayerAbi,
 } from '@src/app/static/abis';
 import { fromBase64Url, registerWithPasskey, signMessageWithPasskey } from '../../utils/passkey';
-import { useWeb3PublicClient } from './useWeb3Client';
+import { useWeb3PublicClient, useWeb3PublicClients } from './useWeb3Client';
 import {
   AccountCallType,
   BuildUserOperationParams,
@@ -466,14 +466,14 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
   };
 };
 
-export const useOwnerManage = (aaAddress: Address, chainId?: number) => {
-  const { getCurrentKeyIndex, buildCallData, buildUserOperation } = useAbstractAccount(
-    aaAddress,
-    chainId
-  );
-  const { publicClient: ethClient, chainConfig } = useWeb3PublicClient(chainId);
-  const { mainChainConfig } = useChainConfig();
-  const { sendUserOperation, getUserOperationReceipt } = useBundler(chainConfig.chainId);
+export const useOwnerManage = (aaAddress: Address) => {
+  // eslint-disable-next-line no-bitwise
+  const INITIAL_NONCE = BigInt(5851 << 64);
+  const { getCurrentKeyIndex, buildCallData, buildUserOperation } = useAbstractAccount(aaAddress);
+  const { publicClient: ethClient, chainConfig } = useWeb3PublicClient();
+  const { createWeb3Client } = useWeb3PublicClients();
+  const { mainChainConfig, availableChains } = useChainConfig();
+  const { sendUserOperation, getUserOperationReceipt } = useBundler();
   const entryPointContract = getContract({
     address: chainConfig.entrypointAddr as Address,
     abi: EntryPointAbi,
@@ -484,7 +484,10 @@ export const useOwnerManage = (aaAddress: Address, chainId?: number) => {
     abi: AccountAbi,
     client: ethClient,
   });
-  //
+  // const getMainNonce = async () => {
+  //   const nonce = await entryPointContract.read.getNonce([aaAddress, INITIAL_NONCE]);
+  //   return nonce;
+  // };
 
   type Operation = 'addOwnerAddress' | 'removeOwner';
   const buildOwnerManageUserOperation = async (
@@ -493,7 +496,7 @@ export const useOwnerManage = (aaAddress: Address, chainId?: number) => {
     signMessageFunc?: (message: Hex) => Promise<Hex>
   ) => {
     // eslint-disable-next-line no-bitwise
-    const nonce = await entryPointContract.read.getNonce([aaAddress, BigInt(5851 << 64)]);
+    const nonce = await entryPointContract.read.getNonce([aaAddress, INITIAL_NONCE]);
     const call = encodeFunctionData({
       abi: AccountAbi,
       functionName,
@@ -546,8 +549,43 @@ export const useOwnerManage = (aaAddress: Address, chainId?: number) => {
     };
   };
 
+  const getSyncStatus = async (targetChainIds: number[]) => {
+    const mainChainNonce = await entryPointContract.read.getNonce([aaAddress, INITIAL_NONCE]);
+
+    const web3Clients = createWeb3Client(targetChainIds);
+
+    const nonceResults = await Promise.all(
+      web3Clients.map(async (clientResult) => {
+        const { publicClient, chainConfig: currentChainConfig } = clientResult;
+
+        try {
+          const chainEntryPointContract = getContract({
+            address: currentChainConfig.entrypointAddr as Address,
+            abi: EntryPointAbi,
+            client: publicClient,
+          });
+          const nonce = await chainEntryPointContract.read.getNonce([aaAddress, INITIAL_NONCE]);
+
+          return { chainId: currentChainConfig.chainId, nonce };
+        } catch (error) {
+          console.error(`Error getting nonce for chain ${currentChainConfig.chainId}:`, error);
+          return { chainId: currentChainConfig.chainId, nonce: undefined };
+        }
+      })
+    );
+
+    const syncStatus: Record<number, boolean> = {};
+
+    nonceResults.forEach((result) => {
+      syncStatus[result.chainId] = result.nonce !== undefined && result.nonce === mainChainNonce;
+    });
+
+    return syncStatus;
+  };
+
   return {
     buildOwnerManageUserOperation,
     payFee,
+    getSyncStatus,
   };
 };
