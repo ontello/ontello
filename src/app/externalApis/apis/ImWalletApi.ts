@@ -17,9 +17,13 @@ import * as runtime from '../runtime';
 import type {
   WalletdataActivityGet200Response,
   WalletdataChainConfigGet200Response,
+  WalletdataChangeOwnerPost200Response,
+  WalletdataChangeOwnerPostRequest,
   WalletdataEnsGet200Response,
   WalletdataExchangeRateGet200Response,
+  WalletdataFeeTokensGet200Response,
   WalletdataGasTokenGet200Response,
+  WalletdataRelayChainPostRequest,
   WalletdataTokensGet200Response,
   WalletdataTransferBalanceGet200Response,
 } from '../models/index';
@@ -28,12 +32,20 @@ import {
     WalletdataActivityGet200ResponseToJSON,
     WalletdataChainConfigGet200ResponseFromJSON,
     WalletdataChainConfigGet200ResponseToJSON,
+    WalletdataChangeOwnerPost200ResponseFromJSON,
+    WalletdataChangeOwnerPost200ResponseToJSON,
+    WalletdataChangeOwnerPostRequestFromJSON,
+    WalletdataChangeOwnerPostRequestToJSON,
     WalletdataEnsGet200ResponseFromJSON,
     WalletdataEnsGet200ResponseToJSON,
     WalletdataExchangeRateGet200ResponseFromJSON,
     WalletdataExchangeRateGet200ResponseToJSON,
+    WalletdataFeeTokensGet200ResponseFromJSON,
+    WalletdataFeeTokensGet200ResponseToJSON,
     WalletdataGasTokenGet200ResponseFromJSON,
     WalletdataGasTokenGet200ResponseToJSON,
+    WalletdataRelayChainPostRequestFromJSON,
+    WalletdataRelayChainPostRequestToJSON,
     WalletdataTokensGet200ResponseFromJSON,
     WalletdataTokensGet200ResponseToJSON,
     WalletdataTransferBalanceGet200ResponseFromJSON,
@@ -52,6 +64,11 @@ export interface WalletdataChainConfigGetRequest {
     Authorization?: string;
 }
 
+export interface WalletdataChangeOwnerPostOperationRequest {
+    Authorization?: string;
+    WalletdataChangeOwnerPostRequest?: WalletdataChangeOwnerPostRequest;
+}
+
 export interface WalletdataEnsGetRequest {
     query: string;
     Authorization?: string;
@@ -64,10 +81,19 @@ export interface WalletdataExchangeRateGetRequest {
     Authorization?: string;
 }
 
+export interface WalletdataFeeTokensGetRequest {
+    Authorization?: string;
+}
+
 export interface WalletdataGasTokenGetRequest {
     chain_id: number;
     currency_name?: string;
     Authorization?: string;
+}
+
+export interface WalletdataRelayChainPostOperationRequest {
+    Authorization?: string;
+    WalletdataRelayChainPostRequest?: WalletdataRelayChainPostRequest;
 }
 
 export interface WalletdataTokensGetRequest {
@@ -177,6 +203,41 @@ export class ImWalletApi extends runtime.BaseAPI {
 
     /**
      * 
+     * change_owner
+     */
+    async walletdataChangeOwnerPostRaw(requestParameters: WalletdataChangeOwnerPostOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<WalletdataChangeOwnerPost200Response>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['Authorization'] != null) {
+            headerParameters['Authorization'] = String(requestParameters['Authorization']);
+        }
+
+        const response = await this.request({
+            path: `/walletdata/change_owner`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: WalletdataChangeOwnerPostRequestToJSON(requestParameters['WalletdataChangeOwnerPostRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => WalletdataChangeOwnerPost200ResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * 
+     * change_owner
+     */
+    async walletdataChangeOwnerPost(requestParameters: WalletdataChangeOwnerPostOperationRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<WalletdataChangeOwnerPost200Response> {
+        const response = await this.walletdataChangeOwnerPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * 
      * ens
      */
     async walletdataEnsGetRaw(requestParameters: WalletdataEnsGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<WalletdataEnsGet200Response>> {
@@ -271,6 +332,38 @@ export class ImWalletApi extends runtime.BaseAPI {
 
     /**
      * 
+     * fee_tokens
+     */
+    async walletdataFeeTokensGetRaw(requestParameters: WalletdataFeeTokensGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<WalletdataFeeTokensGet200Response>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['Authorization'] != null) {
+            headerParameters['Authorization'] = String(requestParameters['Authorization']);
+        }
+
+        const response = await this.request({
+            path: `/walletdata/fee_tokens`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => WalletdataFeeTokensGet200ResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * 
+     * fee_tokens
+     */
+    async walletdataFeeTokensGet(requestParameters: WalletdataFeeTokensGetRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<WalletdataFeeTokensGet200Response> {
+        const response = await this.walletdataFeeTokensGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * 
      * 支持的gas列表
      */
     async walletdataGasTokenGetRaw(requestParameters: WalletdataGasTokenGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<WalletdataGasTokenGet200Response>> {
@@ -313,6 +406,41 @@ export class ImWalletApi extends runtime.BaseAPI {
      */
     async walletdataGasTokenGet(requestParameters: WalletdataGasTokenGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<WalletdataGasTokenGet200Response> {
         const response = await this.walletdataGasTokenGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * 
+     * relay_chain
+     */
+    async walletdataRelayChainPostRaw(requestParameters: WalletdataRelayChainPostOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<WalletdataChangeOwnerPost200Response>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['Authorization'] != null) {
+            headerParameters['Authorization'] = String(requestParameters['Authorization']);
+        }
+
+        const response = await this.request({
+            path: `/walletdata/relay_chain`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: WalletdataRelayChainPostRequestToJSON(requestParameters['WalletdataRelayChainPostRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => WalletdataChangeOwnerPost200ResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * 
+     * relay_chain
+     */
+    async walletdataRelayChainPost(requestParameters: WalletdataRelayChainPostOperationRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<WalletdataChangeOwnerPost200Response> {
+        const response = await this.walletdataRelayChainPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

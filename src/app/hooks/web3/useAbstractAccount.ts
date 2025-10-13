@@ -484,10 +484,6 @@ export const useOwnerManage = (aaAddress: Address) => {
     abi: AccountAbi,
     client: ethClient,
   });
-  // const getMainNonce = async () => {
-  //   const nonce = await entryPointContract.read.getNonce([aaAddress, INITIAL_NONCE]);
-  //   return nonce;
-  // };
 
   type Operation = 'addOwnerAddress' | 'removeOwner';
   const buildOwnerManageUserOperation = async (
