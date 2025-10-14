@@ -20,7 +20,7 @@ import {
   UIAFlow,
   createClient,
 } from 'matrix-js-sdk';
-import { useWeb3PublicClient } from '@src/app/hooks/web3/useWeb3Client';
+import { useWeb3Client } from '@src/app/hooks/web3/useWeb3Client';
 import { AccountFactoryAbi } from '@src/app/static/abis';
 import { toHex } from 'viem';
 import { PasswordInput } from '../../../components/password-input';
@@ -217,7 +217,8 @@ export function PasswordRegisterForm({
     registerState.status === AsyncStatus.Error ? registerState.error : undefined;
 
   useRegisterComplete(customRegisterResp);
-  const { publicClient } = useWeb3PublicClient();
+  const { getWeb3PublicClient } = useWeb3Client();
+  const { publicClient } = getWeb3PublicClient();
   const handleSubmit: ChangeEventHandler<HTMLFormElement> = async (evt) => {
     evt.preventDefault();
     const {

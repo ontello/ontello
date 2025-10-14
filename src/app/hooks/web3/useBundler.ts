@@ -2,10 +2,11 @@ import { Hex } from 'viem';
 import { serializerToHex } from '@src/app/utils/web3';
 import { polling } from '@src/app/utils/common';
 import { UserOperation, UserOperationReceipt } from './types';
-import { useWeb3PublicClient } from './useWeb3Client';
+import { useWeb3Client } from './useWeb3Client';
 
 export const useBundler = (chainId?: number) => {
-  const { chainConfig } = useWeb3PublicClient(chainId);
+  const { getWeb3PublicClient } = useWeb3Client();
+  const { chainConfig } = getWeb3PublicClient(chainId);
   const estimateUserOperationGas = async (
     userOp: UserOperation
   ): Promise<{

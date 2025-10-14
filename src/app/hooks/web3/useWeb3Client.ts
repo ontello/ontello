@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback } from 'react';
 import { createPublicClient, http, defineChain, type PublicClient } from 'viem';
 import { useChainConfig } from './useChainConfig';
 import type { ChainConfig } from '../../externalApis';
@@ -6,6 +6,11 @@ import type { ChainConfig } from '../../externalApis';
 export interface Web3PublicClientResult {
   publicClient: PublicClient;
   chainConfig: ChainConfig;
+}
+
+export interface UseWeb3ClientResult {
+  getWeb3PublicClient: (chainId?: number) => Web3PublicClientResult;
+  createWeb3Clients: (chainIds: number[]) => Web3PublicClientResult[];
 }
 
 const createViemChain = (config: ChainConfig) =>
@@ -29,58 +34,47 @@ const createViemChain = (config: ChainConfig) =>
     },
   });
 
-export const useWeb3PublicClient = (chainId?: number): Web3PublicClientResult => {
-  const { availableChains } = useChainConfig();
+const buildClient = (backendConfig: ChainConfig): Web3PublicClientResult => {
+  const chain = createViemChain(backendConfig);
+  const publicClient = createPublicClient({
+    chain,
+    transport: http(backendConfig.rpcUrls[0]),
+  });
 
-  const result = useMemo(() => {
-    const backendConfig = chainId
-      ? availableChains.find((chain) => chain.chainId === chainId)
-      : availableChains.find((chain) => chain.isMain) || availableChains[0];
-
-    if (!backendConfig || !backendConfig.rpcUrls?.[0]) {
-      const errorMsg = chainId
-        ? `Chain ${chainId} not supported or missing RPC configuration`
-        : 'No main chain found or missing RPC configuration';
-      throw new Error(errorMsg);
-    }
-
-    const chain = createViemChain(backendConfig);
-    const publicClient = createPublicClient({
-      chain,
-      transport: http(backendConfig.rpcUrls[0]),
-    });
-
-    return {
-      publicClient,
-      chainConfig: backendConfig,
-    };
-  }, [chainId, availableChains]);
-
-  return result;
+  return {
+    publicClient,
+    chainConfig: backendConfig,
+  };
 };
-// TODO
-export const useWeb3PublicClients = () => {
+
+export const useWeb3Client = (): UseWeb3ClientResult => {
   const { availableChains } = useChainConfig();
-  const createWeb3Client = (chainIds: number[]): Web3PublicClientResult[] =>
-    chainIds.map((chainId) => {
-      const backendConfig = availableChains.find((chain) => chain.chainId === chainId);
+
+  const getWeb3PublicClient = useCallback(
+    (chainId?: number) => {
+      const backendConfig = chainId
+        ? availableChains.find((chain) => chain.chainId === chainId)
+        : availableChains.find((chain) => chain.isMain) || availableChains[0];
 
       if (!backendConfig || !backendConfig.rpcUrls?.[0]) {
-        throw new Error(`Chain ${chainId} not supported or missing RPC configuration`);
+        const errorMsg = chainId
+          ? `Chain ${chainId} not supported or missing RPC configuration`
+          : 'No main chain found or missing RPC configuration';
+        throw new Error(errorMsg);
       }
 
-      const chain = createViemChain(backendConfig);
-      const publicClient = createPublicClient({
-        chain,
-        transport: http(backendConfig.rpcUrls[0]),
-      });
+      return buildClient(backendConfig);
+    },
+    [availableChains]
+  );
 
-      return {
-        publicClient,
-        chainConfig: backendConfig,
-      };
-    });
+  const createWeb3Clients = useCallback(
+    (chainIds: number[]) => chainIds.map((chainId) => getWeb3PublicClient(chainId)),
+    [getWeb3PublicClient]
+  );
+
   return {
-    createWeb3Client,
+    getWeb3PublicClient,
+    createWeb3Clients,
   };
 };

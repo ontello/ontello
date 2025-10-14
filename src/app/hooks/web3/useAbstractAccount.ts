@@ -17,7 +17,7 @@ import {
   CrossChainRelayerAbi,
 } from '@src/app/static/abis';
 import { fromBase64Url, registerWithPasskey, signMessageWithPasskey } from '../../utils/passkey';
-import { useWeb3PublicClient, useWeb3PublicClients } from './useWeb3Client';
+import { useWeb3Client } from './useWeb3Client';
 import {
   AccountCallType,
   BuildUserOperationParams,
@@ -55,7 +55,8 @@ const INIT_SIGNATURE =
   '0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000260000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000000001200000000000000000000000000000000000000000000000000000000000000017000000000000000000000000000000000000000000000000000000000000000168bd76d24faae41e9b10fa547c74f6d82ef3baf9ecfb18f828abb0fc13888b5bff4aa483155037396e6ca63771f0cba4585cb91a08d6492325d7f61518508eaf000000000000000000000000000000000000000000000000000000000000002549960de5880e8c687434170f6476605b8fe4aeb9a28632c7995cf3ba831d97631d0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f37b2274797065223a22176562617574686e2e676574222c226368616c6c656e6765223a224b33624e59524e524f767432776b4f5449376f6d7153384a56794e5431536d544c56646d68586d6d357851222c226f726967696e223a22687474703a2f2f6c6f63616c686f73743a38303830222c2263726f73734f726967696e223a66616c73652c226f746865725f6b6579735f63616e5f62655f61646465645f68657265223a22646f206e6f7420636f6d7061726520636c69656e74446174614a534f4e20616761696e737420612074656d706c6174652e205365652068747470733a2f2f676f6f2e666c2f796162506577227d00000000000000000000000000' as Hex;
 
 export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
-  const { publicClient: ethClient, chainConfig } = useWeb3PublicClient(chainId);
+  const { getWeb3PublicClient } = useWeb3Client();
+  const { publicClient: ethClient, chainConfig } = getWeb3PublicClient(chainId);
   const { estimateUserOperationGas, sendUserOperation, getUserOperationReceipt } = useBundler(
     chainConfig.chainId
   );
@@ -470,8 +471,8 @@ export const useOwnerManage = (aaAddress: Address) => {
   // eslint-disable-next-line no-bitwise
   const INITIAL_NONCE = BigInt(5851 << 64);
   const { getCurrentKeyIndex, buildCallData, buildUserOperation } = useAbstractAccount(aaAddress);
-  const { publicClient: ethClient, chainConfig } = useWeb3PublicClient();
-  const { createWeb3Client } = useWeb3PublicClients();
+  const { getWeb3PublicClient, createWeb3Clients } = useWeb3Client();
+  const { publicClient: ethClient, chainConfig } = getWeb3PublicClient();
   const { mainChainConfig, availableChains } = useChainConfig();
   const { sendUserOperation, getUserOperationReceipt } = useBundler();
   const entryPointContract = getContract({
@@ -548,7 +549,7 @@ export const useOwnerManage = (aaAddress: Address) => {
   const getSyncStatus = async (targetChainIds: number[]) => {
     const mainChainNonce = await entryPointContract.read.getNonce([aaAddress, INITIAL_NONCE]);
 
-    const web3Clients = createWeb3Client(targetChainIds);
+    const web3Clients = createWeb3Clients(targetChainIds);
 
     const nonceResults = await Promise.all(
       web3Clients.map(async (clientResult) => {
