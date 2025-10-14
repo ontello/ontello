@@ -4,8 +4,8 @@ import { ChainConfig, Token, walletApi } from '@src/app/externalApis';
 import { ContainerColor } from '@src/app/styles/ContainerColor.css';
 import { useFetchPasskeyList } from '@src/app/hooks/useFetchPasskeyList';
 import { useMatrixClient } from '@src/app/hooks/useMatrixClient';
-import { mxidToOntid } from '@src/app/utils/ontid';
 import { OntelloDialog } from '../../ontello/OntelloDialog';
+import { useChainConfig } from '../../../hooks/web3/useChainConfig';
 
 export enum SyncStatus {
   Init = 'init',
@@ -31,7 +31,6 @@ export function SyncDialog({
   successText = 'Successful',
   failText = 'Failed',
   isSponsoredNetworkFee,
-  networkFeeChainConfig,
   networkFeeData,
 }: {
   title: string;
@@ -50,13 +49,13 @@ export function SyncDialog({
   successText?: string;
   failText?: string;
   isSponsoredNetworkFee: boolean;
-  networkFeeChainConfig?: ChainConfig;
   networkFeeData?: Token;
 }) {
   const mx = useMatrixClient();
   const userId = mx.getUserId();
   const [passkeyData] = useFetchPasskeyList(userId!);
   const chainsCanSelect = useMemo(() => chains.length > 1, [chains]);
+  const { availableChains } = useChainConfig();
 
   const [selectedChainIds, setSelectedChainIds] = useState<number[]>([]);
   const toggleSelect = (chainId: number) => {
@@ -91,6 +90,11 @@ export function SyncDialog({
       }
     };
   }, [fetchYourNetworkFeeTokenData]);
+
+  const netWorkFeeChainConfig = useMemo(() => {
+    if (!networkFeeData) return undefined;
+    return availableChains.find((chain) => chain.chainId === networkFeeData.chainId);
+  }, [networkFeeData, availableChains]);
 
   const selectedChains = useMemo(() => {
     if (chainsCanSelect) {
@@ -223,6 +227,15 @@ export function SyncDialog({
           </Box>
         )}
       </Box>
+
+      {yourNetworkFeeTokenData && networkFeeData && (
+        <Box direction="Column" gap="200">
+          <Text size="T300" style={{ color: '#FF0000' }}>
+            You need more than {networkFeeData.balance} {networkFeeData.symbol} in{' '}
+            {netWorkFeeChainConfig?.chainNameView} due to gas fees.
+          </Text>
+        </Box>
+      )}
     </Box>
   );
 
