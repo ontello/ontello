@@ -35,6 +35,7 @@ import { useMatrixClient } from '../../../hooks/useMatrixClient';
 import { useAbstractAccount } from '../../../hooks/web3/useAbstractAccount';
 import { useAsyncCallback, AsyncStatus } from '../../../hooks/useAsyncCallback';
 import { OwnerItem } from './OwnerItem';
+import { RecoveryPhrase } from '../../../components/wallet/multi-chain/RecoveryPhrase';
 
 type Props = {
   requestClose: () => void;
@@ -62,14 +63,15 @@ export function Wallet({ requestClose }: Props) {
     const mnemonic = generateMnemonic(english);
     const mnemonicAccount = mnemonicToAccount(mnemonic);
     setIsRecoveryDialogOpen(true);
-    try {
-      const receipt = await startAddOwnerByAddress(mnemonicAccount.address);
-      setRecoveryKey(mnemonic);
-    } catch (error) {
-      console.error(error);
-      return;
-    }
-    await refetch();
+    setRecoveryKey(mnemonic);
+    // try {
+    //   const receipt = await startAddOwnerByAddress(mnemonicAccount.address);
+    //   setRecoveryKey(mnemonic);
+    // } catch (error) {
+    //   console.error(error);
+    //   return;
+    // }
+    // await refetch();
   };
 
   return (
@@ -162,7 +164,11 @@ export function Wallet({ requestClose }: Props) {
         </Scroll>
       </Box>
 
-      <Overlay open={isRecoveryDialogOpen} backdrop={<OverlayBackdrop />}>
+      {isRecoveryDialogOpen && (
+        <RecoveryPhrase phrase={recoveryKey} onClose={() => setIsRecoveryDialogOpen(false)} />
+      )}
+
+      {/* <Overlay open={isRecoveryDialogOpen} backdrop={<OverlayBackdrop />}>
         <OverlayCenter>
           <FocusTrap
             focusTrapOptions={{
@@ -249,7 +255,6 @@ export function Wallet({ requestClose }: Props) {
                 </Box>
               )}
 
-              {/* 空元素 */}
               <button
                 type="button"
                 tabIndex={0}
@@ -259,7 +264,7 @@ export function Wallet({ requestClose }: Props) {
             </Dialog>
           </FocusTrap>
         </OverlayCenter>
-      </Overlay>
+      </Overlay> */}
     </Page>
   );
 }
