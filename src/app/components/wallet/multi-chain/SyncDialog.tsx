@@ -32,6 +32,8 @@ export function SyncDialog({
   failText = 'Failed',
   isSponsoredNetworkFee,
   networkFeeData,
+  selectedChainIds,
+  setSelectedChainIds,
 }: {
   title: string;
   description?: string;
@@ -50,6 +52,8 @@ export function SyncDialog({
   failText?: string;
   isSponsoredNetworkFee: boolean;
   networkFeeData?: Token;
+  selectedChainIds?: number[];
+  setSelectedChainIds?: (chainIds: number[]) => void;
 }) {
   const mx = useMatrixClient();
   const userId = mx.getUserId();
@@ -57,8 +61,8 @@ export function SyncDialog({
   const chainsCanSelect = useMemo(() => chains.length > 1, [chains]);
   const { availableChains } = useChainConfig();
 
-  const [selectedChainIds, setSelectedChainIds] = useState<number[]>([]);
   const toggleSelect = (chainId: number) => {
+    if (!selectedChainIds || !setSelectedChainIds) return;
     if (selectedChainIds.includes(chainId)) {
       setSelectedChainIds(selectedChainIds.filter((id) => id !== chainId));
     } else {
@@ -97,7 +101,7 @@ export function SyncDialog({
   }, [networkFeeData, availableChains]);
 
   const selectedChains = useMemo(() => {
-    if (chainsCanSelect) {
+    if (chainsCanSelect && selectedChainIds) {
       return chains.filter((chain) => selectedChainIds.includes(chain.chainId));
     }
     return chains;

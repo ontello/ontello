@@ -22,6 +22,7 @@ export * from './WalletdataActivityGet200ResponseResult';
 export * from './WalletdataChainConfigGet200Response';
 export * from './WalletdataChangeOwnerPost200Response';
 export * from './WalletdataChangeOwnerPostRequest';
+export * from './WalletdataConfirmPaymentGet200Response';
 export * from './WalletdataEnsGet200Response';
 export * from './WalletdataExchangeRateGet200Response';
 export * from './WalletdataFeeTokensGet200Response';

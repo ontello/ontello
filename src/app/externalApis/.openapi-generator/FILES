@@ -23,6 +23,7 @@ models/WalletdataActivityGet200ResponseResult.ts
 models/WalletdataChainConfigGet200Response.ts
 models/WalletdataChangeOwnerPost200Response.ts
 models/WalletdataChangeOwnerPostRequest.ts
+models/WalletdataConfirmPaymentGet200Response.ts
 models/WalletdataEnsGet200Response.ts
 models/WalletdataExchangeRateGet200Response.ts
 models/WalletdataFeeTokensGet200Response.ts

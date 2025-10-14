@@ -13,6 +13,14 @@
  */
 
 import { mapValues } from '../runtime';
+import type { Token } from './Token';
+import {
+    TokenFromJSON,
+    TokenFromJSONTyped,
+    TokenToJSON,
+    TokenToJSONTyped,
+} from './Token';
+
 /**
  * 
  * @export
@@ -21,16 +29,22 @@ import { mapValues } from '../runtime';
 export interface FeeSessionResp {
     /**
      * 
-     * @type {string}
+     * @type {Token}
      * @memberof FeeSessionResp
      */
-    fee: string;
+    fee: Token;
     /**
      * 
      * @type {string}
      * @memberof FeeSessionResp
      */
     session: string;
+    /**
+     * 0：否，1：是
+     * @type {boolean}
+     * @memberof FeeSessionResp
+     */
+    isPaymaster: boolean;
 }
 
 /**
@@ -39,6 +53,7 @@ export interface FeeSessionResp {
 export function instanceOfFeeSessionResp(value: object): value is FeeSessionResp {
     if (!('fee' in value) || value['fee'] === undefined) return false;
     if (!('session' in value) || value['session'] === undefined) return false;
+    if (!('isPaymaster' in value) || value['isPaymaster'] === undefined) return false;
     return true;
 }
 
@@ -52,8 +67,9 @@ export function FeeSessionRespFromJSONTyped(json: any, ignoreDiscriminator: bool
     }
     return {
         
-        'fee': json['fee'],
+        'fee': TokenFromJSON(json['fee']),
         'session': json['session'],
+        'isPaymaster': json['isPaymaster'],
     };
 }
 
@@ -68,8 +84,9 @@ export function FeeSessionRespToJSONTyped(value?: FeeSessionResp | null, ignoreD
 
     return {
         
-        'fee': value['fee'],
+        'fee': TokenToJSON(value['fee']),
         'session': value['session'],
+        'isPaymaster': value['isPaymaster'],
     };
 }
 
