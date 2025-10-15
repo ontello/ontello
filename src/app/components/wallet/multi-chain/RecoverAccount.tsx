@@ -43,6 +43,8 @@ export function RecoverAccount({
       fee: {
         balance: '100',
         symbol: 'USDT',
+        chainId: 97,
+        tokenAddr: '0xd878dfE2b33A07E7FB290c1578A0b3cbc8aDadEA',
       },
       session: '123',
       isPaymaster: false,

@@ -43,6 +43,8 @@ export function RecoveryPhrase({ phrase, onClose }: { phrase: string; onClose: (
     const feeData = {
       balance: '100',
       symbol: 'USDT',
+      chainId: 97,
+      tokenAddr: '0xd878dfE2b33A07E7FB290c1578A0b3cbc8aDadEA',
     } as Token;
 
     return feeData;
@@ -123,7 +125,7 @@ export function RecoveryPhrase({ phrase, onClose }: { phrase: string; onClose: (
       onConfirm={onConfirm}
       onDone={onDone}
       onFail={onFail}
-      isSponsoredNetworkFee
+      isSponsoredNetworkFee={false}
     />
   );
 }
