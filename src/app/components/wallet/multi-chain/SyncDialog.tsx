@@ -2,10 +2,9 @@ import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import { Box, Button, Text, Checkbox, config, Spinner } from 'folds';
 import { ChainConfig, Token, walletApi } from '@src/app/externalApis';
 import { ContainerColor } from '@src/app/styles/ContainerColor.css';
-import { useFetchPasskeyList } from '@src/app/hooks/useFetchPasskeyList';
-import { useMatrixClient } from '@src/app/hooks/useMatrixClient';
 import { OntelloDialog } from '../../ontello/OntelloDialog';
 import { useChainConfig } from '../../../hooks/web3/useChainConfig';
+import { ReceiveUi, ReceiveChainInfo } from '../ReceiveUi';
 
 export enum SyncStatus {
   Init = 'init',
@@ -21,18 +20,21 @@ export function SyncDialog({
   customBody,
   status,
   chains,
+  chainsNotAllowedToSelect = [],
   onClose,
   onConfirm,
   onDone,
   onFail,
   confirmButtonText = 'Confirm',
   doneButtonText = 'Done',
-  failButtonText = 'Fail',
+  failButtonText = 'Try again',
   successText = 'Successful',
   failText = 'Failed',
+  failTextDescription = '',
+  aaAddress,
   isSponsoredNetworkFee,
   networkFeeData,
-  selectedChainIds,
+  selectedChainIds = [],
   setSelectedChainIds,
 }: {
   title: string;
@@ -41,6 +43,7 @@ export function SyncDialog({
   customBody?: React.ReactNode;
   status: SyncStatus;
   chains: ChainConfig[];
+  chainsNotAllowedToSelect?: ChainConfig[];
   onClose: () => void;
   onConfirm: (chains: ChainConfig[]) => void;
   onDone: () => void;
@@ -50,14 +53,14 @@ export function SyncDialog({
   failButtonText?: string;
   successText?: string;
   failText?: string;
+  failTextDescription?: string;
+  aaAddress: string;
   isSponsoredNetworkFee: boolean;
   networkFeeData?: Token;
   selectedChainIds?: number[];
   setSelectedChainIds?: (chainIds: number[]) => void;
 }) {
-  const mx = useMatrixClient();
-  const userId = mx.getUserId();
-  const [passkeyData] = useFetchPasskeyList(userId!);
+  const [showReceiveUi, setShowReceiveUi] = useState(false);
   const chainsCanSelect = useMemo(() => chains.length > 1, [chains]);
   const { availableChains } = useChainConfig();
 
@@ -73,17 +76,17 @@ export function SyncDialog({
   const [yourNetworkFeeTokenData, setYourNetworkFeeTokenData] = useState<Token | undefined>();
 
   const fetchYourNetworkFeeTokenData = useCallback(async () => {
-    if (!passkeyData?.walletAddress) return;
+    if (!aaAddress) return;
     if (!networkFeeData) return;
     if (yourNetworkFeeTokenData && yourNetworkFeeTokenData.balance >= networkFeeData.balance)
       return;
     const res = await walletApi.walletdataTransferBalanceGet({
-      addr: passkeyData?.walletAddress || '',
+      addr: aaAddress || '',
       chain_id: networkFeeData?.chainId || 0,
       token_addr: networkFeeData?.tokenAddr || '',
     });
     setYourNetworkFeeTokenData(res.result);
-  }, [passkeyData?.walletAddress, networkFeeData, yourNetworkFeeTokenData]);
+  }, [aaAddress, networkFeeData, yourNetworkFeeTokenData]);
 
   const timeout = useRef<number | null>(null);
   useEffect(() => {
@@ -99,6 +102,15 @@ export function SyncDialog({
     if (!networkFeeData) return undefined;
     return availableChains.find((chain) => chain.chainId === networkFeeData.chainId);
   }, [networkFeeData, availableChains]);
+
+  const receiveChainInfo: ReceiveChainInfo | undefined = useMemo(() => {
+    if (!netWorkFeeChainConfig) return undefined;
+    return {
+      ...netWorkFeeChainConfig,
+      address: aaAddress,
+      supportedAssets: networkFeeData ? [networkFeeData] : [],
+    };
+  }, [netWorkFeeChainConfig, aaAddress, networkFeeData]);
 
   const selectedChains = useMemo(() => {
     if (chainsCanSelect && selectedChainIds) {
@@ -138,7 +150,9 @@ export function SyncDialog({
   }, [showNeedTopUpFeeToken, status, confirmButtonText, doneButtonText, failButtonText]);
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  const onTopUpFeeToken = () => {};
+  const onTopUpFeeToken = () => {
+    setShowReceiveUi(true);
+  };
 
   const buttonClick = useMemo(() => {
     if (showNeedTopUpFeeToken) return () => onTopUpFeeToken();
@@ -162,6 +176,7 @@ export function SyncDialog({
     <Box direction="Column" alignItems="Center" gap="300">
       <Text size="T300">❌</Text>
       <Text size="T300">{failText}</Text>
+      {failTextDescription && <Text size="T200">{failTextDescription}</Text>}
     </Box>
   );
 
@@ -185,7 +200,9 @@ export function SyncDialog({
               <Box key={chain.chainId} direction="Row" gap="400" alignItems="Center">
                 {chainsCanSelect && (
                   <Checkbox
+                    disabled={chainsNotAllowedToSelect.some((c) => c.chainId === chain.chainId)}
                     checked={selectedChainIds.includes(chain.chainId)}
+                    // @ts-expect-error - folds Checkbox component uses different prop names
                     onChange={() => toggleSelect(chain.chainId)}
                     size="50"
                   />
@@ -204,44 +221,65 @@ export function SyncDialog({
         </Box>
       </Box>
 
-      <Box
-        direction="Column"
-        gap="200"
-        style={{
-          padding: `${config.space.S600} ${config.space.S400} ${config.space.S700}`,
-          width: '100%',
-        }}
-      >
-        <Box direction="Row" gap="200" alignItems="Center" justifyContent="SpaceBetween">
-          <Text size="H6">Network Fee (est.)</Text>
-          {networkFeeData ? (
-            <Text
-              size="T300"
-              style={{ textDecoration: isSponsoredNetworkFee ? 'line-through' : 'none' }}
-            >
-              {networkFeeData?.balance} {networkFeeData?.symbol}
-            </Text>
-          ) : (
-            <Spinner size="200" />
+      <Box direction="Column" gap="200">
+        <Box
+          direction="Column"
+          gap="200"
+          className={ContainerColor({ variant: 'SurfaceVariant' })}
+          style={{
+            padding: `${config.space.S600} ${config.space.S400} ${config.space.S700}`,
+            width: '100%',
+          }}
+        >
+          <Box direction="Row" gap="200" alignItems="Center" justifyContent="SpaceBetween">
+            <Text size="H6">Network Fee (est.)</Text>
+            {networkFeeData ? (
+              <Text
+                size="T300"
+                style={{ textDecoration: isSponsoredNetworkFee ? 'line-through' : 'none' }}
+              >
+                {networkFeeData?.balance} {networkFeeData?.symbol}
+              </Text>
+            ) : (
+              <Spinner size="200" />
+            )}
+          </Box>
+          {isSponsoredNetworkFee && (
+            <Box direction="Row" gap="200" justifyContent="End" alignItems="Center">
+              <Text size="T300">Sponsored by Ontology</Text>
+            </Box>
           )}
         </Box>
-        {isSponsoredNetworkFee && (
-          <Box direction="Row" gap="200" justifyContent="End" alignItems="Center">
-            <Text size="T300">Sponsored by Ontology</Text>
+
+        {networkFeeData && !yourNetworkFeeTokenData && (
+          <Box gap="200">
+            <Spinner size="200" />{' '}
+            <Text size="T200">Checking your {networkFeeData.symbol} balance</Text>
+          </Box>
+        )}
+
+        {yourNetworkFeeTokenData && networkFeeData && (
+          <Box direction="Column" gap="200">
+            <Text size="T200" style={{ color: '#FF0000' }}>
+              You need more than {networkFeeData.balance} {networkFeeData.symbol} in{' '}
+              {netWorkFeeChainConfig?.chainNameView} due to gas fees.
+            </Text>
           </Box>
         )}
       </Box>
-
-      {yourNetworkFeeTokenData && networkFeeData && (
-        <Box direction="Column" gap="200">
-          <Text size="T300" style={{ color: '#FF0000' }}>
-            You need more than {networkFeeData.balance} {networkFeeData.symbol} in{' '}
-            {netWorkFeeChainConfig?.chainNameView} due to gas fees.
-          </Text>
-        </Box>
-      )}
     </Box>
   );
+
+  const receiveUiEl = (
+    <ReceiveUi
+      onClose={() => setShowReceiveUi(false)}
+      chainsWithOtherInfo={receiveChainInfo ? [receiveChainInfo] : []}
+    />
+  );
+
+  if (showReceiveUi) {
+    return receiveUiEl;
+  }
 
   return (
     <OntelloDialog onClose={onClose} title={title}>

@@ -32,7 +32,6 @@ export function OntelloDialog({
         <FocusTrap
           focusTrapOptions={{
             initialFocus: false,
-            onDeactivate: onClose,
             clickOutsideDeactivates: true,
             escapeDeactivates: stopPropagation,
           }}

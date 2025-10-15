@@ -50,6 +50,7 @@ export function RecoveryPhraseStep1({ phrase, onNext }: { phrase: string; onNext
       </Box>
 
       <Box direction="Row" gap="400" alignItems="Center">
+        {/* @ts-expect-error - folds Checkbox component uses different prop names */}
         <Checkbox checked={checked} onChange={() => setChecked(!checked)} size="50" />
         <Text size="T300">I&apos;ve saved this phrase in a safe place.</Text>
       </Box>

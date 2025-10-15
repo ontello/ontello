@@ -6,12 +6,14 @@ import { useAbstractAccount } from '@src/app/hooks/web3/useAbstractAccount';
 import { Address } from 'viem';
 import { createClient } from 'matrix-js-sdk';
 import { useAutoDiscoveryInfo } from '@src/app/hooks/useAutoDiscoveryInfo';
+import { RecoverAccount } from '@src/app/components/wallet/multi-chain/RecoverAccount';
 import { useNavigate } from 'react-router-dom';
 import { getLoginPath } from '../../pathUtils';
 import { FieldError } from '../FiledError';
 
 export function RecoveryKeyForm() {
   const [form, setForm] = useState({ username: '', recoveryKey: '' });
+  const [showRecoverAccount, setShowRecoverAccount] = useState(false);
   const server = useAuthServer();
 
   const serverDiscovery = useAutoDiscoveryInfo();
@@ -36,7 +38,8 @@ export function RecoveryKeyForm() {
       const aaAddress = (await getPasskeyCredentials(mx, `@${form.username}:${server}`))
         .walletAddress;
       setAddress(aaAddress);
-      setShouldRecover(true);
+      // setShouldRecover(true);
+      setShowRecoverAccount(true);
     } catch (error) {
       setErrorData('Recovery failed, please check the username and mnemonic.');
     }
@@ -105,6 +108,15 @@ export function RecoveryKeyForm() {
           Recover
         </Text>
       </Button>
+      {showRecoverAccount && (
+        <RecoverAccount
+          username={form.username}
+          aaAddress={address}
+          recoveryPhrase={form.recoveryKey}
+          onSuccess={() => setShowRecoverAccount(false)}
+          onClose={() => setShowRecoverAccount(false)}
+        />
+      )}
     </Box>
   );
 }

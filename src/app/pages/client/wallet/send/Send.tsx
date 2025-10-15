@@ -15,6 +15,7 @@ import { AmountInput } from './AmountInput';
 import { useTokensContext } from '../../../../hooks/wallet/useTokens';
 import { useAbstractAccount } from '../../../../hooks/web3/useAbstractAccount';
 import { walletApi } from '../../../../externalApis';
+import { SyncOwnershipChange } from '../../../../components/wallet/multi-chain/SyncOwnershipChange';
 
 export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavMode) => void }) {
   const aaAddress = localStorage.getItem('cinny_aa_address') as Address;
@@ -26,6 +27,7 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
   const [feeToken, setFeeToken] = useState<GasToken | null>(null);
   const [isMaxAmount, setIsMaxAmount] = useState(false);
   const [isEstimatingFee, setIsEstimatingFee] = useState(false);
+  const [showSyncOwnershipChange, setShowSyncOwnershipChange] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -109,6 +111,9 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
   }, [amount, selectedToken, recipient, feeToken]);
 
   const handlePay = async () => {
+    // TODO Check if need to sync ownership change
+    setShowSyncOwnershipChange(true);
+
     if (!isFormValid || !selectedToken || !recipient || !feeToken || !aaAddress) return;
 
     let finalAmount = amount;
@@ -285,6 +290,12 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
           {isEstimatingFee ? 'Calculating...' : 'Pay'}
         </Button>
       </PageNavContent>
+      {showSyncOwnershipChange && selectedToken?.chainId && (
+        <SyncOwnershipChange
+          chainIds={[selectedToken?.chainId]}
+          onClose={() => setShowSyncOwnershipChange(false)}
+        />
+      )}
     </Box>
   );
 }
