@@ -76,3 +76,9 @@ export type GasToken = {
   icon: string;
   exchange_rate: string;
 };
+
+export enum ReplayOperation {
+  AddOwnerAddress = 'addOwnerAddress',
+  RemoveOwner = 'removeOwner',
+  AddOwnerPublicKey = 'addOwnerPublicKey',
+}

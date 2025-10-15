@@ -67,6 +67,24 @@ export interface UserOperation {
      * @memberof UserOperation
      */
     callData?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof UserOperation
+     */
+    maxPriorityFeePerGas?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserOperation
+     */
+    paymasterAndData?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserOperation
+     */
+    signature?: string;
 }
 
 /**
@@ -94,6 +112,9 @@ export function UserOperationFromJSONTyped(json: any, ignoreDiscriminator: boole
         'maxFeePerGas': json['maxFeePerGas'] == null ? undefined : json['maxFeePerGas'],
         'callGasLimit': json['callGasLimit'] == null ? undefined : json['callGasLimit'],
         'callData': json['callData'] == null ? undefined : json['callData'],
+        'maxPriorityFeePerGas': json['maxPriorityFeePerGas'] == null ? undefined : json['maxPriorityFeePerGas'],
+        'paymasterAndData': json['paymasterAndData'] == null ? undefined : json['paymasterAndData'],
+        'signature': json['signature'] == null ? undefined : json['signature'],
     };
 }
 
@@ -116,6 +137,9 @@ export function UserOperationToJSONTyped(value?: UserOperation | null, ignoreDis
         'maxFeePerGas': value['maxFeePerGas'],
         'callGasLimit': value['callGasLimit'],
         'callData': value['callData'],
+        'maxPriorityFeePerGas': value['maxPriorityFeePerGas'],
+        'paymasterAndData': value['paymasterAndData'],
+        'signature': value['signature'],
     };
 }
 

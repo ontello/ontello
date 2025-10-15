@@ -16,15 +16,22 @@ import {
   AccountFactoryAbi,
   CrossChainRelayerAbi,
 } from '@src/app/static/abis';
+import { FeeSessionResp, walletApi } from '@src/app/externalApis';
 import { fromBase64Url, registerWithPasskey, signMessageWithPasskey } from '../../utils/passkey';
 import { useWeb3Client } from './useWeb3Client';
 import {
   AccountCallType,
   BuildUserOperationParams,
   BuildUserOperationResult,
+  ReplayOperation,
   UserOperation,
 } from './types';
-import { calculateGasFees, calculateUserOpHash, getUserOpSignature } from '../../utils/web3';
+import {
+  calculateGasFees,
+  calculateUserOpHash,
+  getUserOpSignature,
+  serializeBigInt,
+} from '../../utils/web3';
 import cons from '../../../client/state/cons';
 import { useBundler } from './useBundler';
 import { usePaymaster } from './usePaymaster';
@@ -486,19 +493,13 @@ export const useOwnerManage = (aaAddress: Address) => {
     client: ethClient,
   });
 
-  type Operation = 'addOwnerAddress' | 'removeOwner';
   const buildOwnerManageUserOperation = async (
-    functionName: Operation,
-    ownerAddress: Address,
+    call: Hex,
     signMessageFunc?: (message: Hex) => Promise<Hex>
   ) => {
     // eslint-disable-next-line no-bitwise
     const nonce = await entryPointContract.read.getNonce([aaAddress, INITIAL_NONCE]);
-    const call = encodeFunctionData({
-      abi: AccountAbi,
-      functionName,
-      args: [ownerAddress],
-    });
+
     const callData = encodeFunctionData({
       abi: AccountAbi,
       functionName: 'executeWithoutChainIdValidation',
@@ -580,9 +581,67 @@ export const useOwnerManage = (aaAddress: Address) => {
     return syncStatus;
   };
 
+  const changeOwner = async (
+    operation: ReplayOperation,
+    args: any[],
+    signMessageFunc?: (message: Hex) => Promise<Hex>
+  ): Promise<FeeSessionResp> => {
+    const call = encodeFunctionData({
+      abi: AccountAbi,
+      functionName: operation,
+      args,
+    });
+    const { userOp } = await buildOwnerManageUserOperation(call, signMessageFunc);
+    const feeTokens = (await walletApi.walletdataFeeTokensGet()).result;
+
+    const res = await walletApi.walletdataChangeOwnerPost({
+      WalletdataChangeOwnerPostRequest: {
+        userOperation: serializeBigInt(userOp),
+        token: feeTokens[0].tokenAddr,
+      },
+    });
+    return res.result;
+  };
+  const addOwnerByAddress = async (ownerAddress: Address): Promise<FeeSessionResp> => {
+    const feeSession = await changeOwner(ReplayOperation.AddOwnerAddress, [ownerAddress]);
+    return feeSession;
+  };
+  const addOwnerByPublicKey = async (mnemonic: string, username: string) => {
+    const mnemonicAccount = mnemonicToAccount(mnemonic);
+    const { x, y } = await registerWithPasskey(username);
+    const feeSession = await changeOwner(
+      ReplayOperation.AddOwnerPublicKey,
+      [toHex(new Uint8Array(x)), toHex(new Uint8Array(y))],
+      (message) => mnemonicAccount.signMessage({ message: { raw: message } })
+    );
+    return feeSession;
+  };
+  const removeOwner = async (targetPublicKeyBase64: string) => {
+    const xy = fromBase64Url(targetPublicKeyBase64);
+    const xyHex = toHex(new Uint8Array(xy));
+
+    const feeSession = await changeOwner(ReplayOperation.RemoveOwner, [xyHex]);
+    return feeSession;
+  };
+  const syncOwner = async (chainIds: number[]) => {
+    const feeTokens = (await walletApi.walletdataFeeTokensGet()).result;
+    const feeSessionRes = await walletApi.walletdataRelayChainPost({
+      WalletdataRelayChainPostRequest: {
+        address: aaAddress,
+        token: feeTokens[0].tokenAddr,
+        chainId: chainIds,
+      },
+    });
+    return feeSessionRes.result;
+  };
+
   return {
     buildOwnerManageUserOperation,
     payFee,
     getSyncStatus,
+    addOwnerByAddress,
+    addOwnerByPublicKey,
+    removeOwner,
+    syncOwner,
   };
 };

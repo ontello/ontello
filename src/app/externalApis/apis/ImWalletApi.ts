@@ -68,7 +68,6 @@ export interface WalletdataChainConfigGetRequest {
 }
 
 export interface WalletdataChangeOwnerPostOperationRequest {
-    Authorization?: string;
     WalletdataChangeOwnerPostRequest?: WalletdataChangeOwnerPostRequest;
 }
 
@@ -100,7 +99,6 @@ export interface WalletdataGasTokenGetRequest {
 }
 
 export interface WalletdataRelayChainPostOperationRequest {
-    Authorization?: string;
     WalletdataRelayChainPostRequest?: WalletdataRelayChainPostRequest;
 }
 
@@ -158,6 +156,14 @@ export class ImWalletApi extends runtime.BaseAPI {
             headerParameters['Authorization'] = String(requestParameters['Authorization']);
         }
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
             path: `/walletdata/activity`,
             method: 'GET',
@@ -190,6 +196,14 @@ export class ImWalletApi extends runtime.BaseAPI {
             headerParameters['Authorization'] = String(requestParameters['Authorization']);
         }
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
             path: `/walletdata/chain_config`,
             method: 'GET',
@@ -220,10 +234,14 @@ export class ImWalletApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
-        if (requestParameters['Authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['Authorization']);
-        }
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer", []);
 
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
             path: `/walletdata/change_owner`,
             method: 'POST',
@@ -268,6 +286,14 @@ export class ImWalletApi extends runtime.BaseAPI {
             headerParameters['Authorization'] = String(requestParameters['Authorization']);
         }
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
             path: `/walletdata/confirm_payment`,
             method: 'GET',
@@ -311,6 +337,14 @@ export class ImWalletApi extends runtime.BaseAPI {
             headerParameters['Authorization'] = String(requestParameters['Authorization']);
         }
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
             path: `/walletdata/ens`,
             method: 'GET',
@@ -362,6 +396,14 @@ export class ImWalletApi extends runtime.BaseAPI {
             headerParameters['Authorization'] = String(requestParameters['Authorization']);
         }
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
             path: `/walletdata/exchange_rate`,
             method: 'GET',
@@ -394,6 +436,14 @@ export class ImWalletApi extends runtime.BaseAPI {
             headerParameters['Authorization'] = String(requestParameters['Authorization']);
         }
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
             path: `/walletdata/fee_tokens`,
             method: 'GET',
@@ -441,6 +491,14 @@ export class ImWalletApi extends runtime.BaseAPI {
             headerParameters['Authorization'] = String(requestParameters['Authorization']);
         }
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
             path: `/walletdata/gas_token`,
             method: 'GET',
@@ -471,10 +529,14 @@ export class ImWalletApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
-        if (requestParameters['Authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['Authorization']);
-        }
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer", []);
 
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
             path: `/walletdata/relay_chain`,
             method: 'POST',
@@ -530,6 +592,14 @@ export class ImWalletApi extends runtime.BaseAPI {
             headerParameters['Authorization'] = String(requestParameters['Authorization']);
         }
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
             path: `/walletdata/tokens`,
             method: 'GET',
@@ -595,6 +665,14 @@ export class ImWalletApi extends runtime.BaseAPI {
             headerParameters['Authorization'] = String(requestParameters['Authorization']);
         }
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
             path: `/walletdata/transfer_balance`,
             method: 'GET',
