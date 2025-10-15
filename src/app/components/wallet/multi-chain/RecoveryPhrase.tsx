@@ -2,6 +2,8 @@ import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { Box, Text } from 'folds';
 import { ContainerColor } from '@src/app/styles/ContainerColor.css';
 import { useAsyncCallback, AsyncStatus } from '@src/app/hooks/useAsyncCallback';
+import { useFetchPasskeyList } from '@src/app/hooks/useFetchPasskeyList';
+import { useMatrixClient } from '@src/app/hooks/useMatrixClient';
 import { SyncDialog, SyncStatus } from './SyncDialog';
 import { RecoveryPhraseStep1 } from './RecoveryPhraseStep1';
 import { useChainConfig } from '../../../hooks/web3/useChainConfig';
@@ -18,6 +20,10 @@ export function RecoveryPhrase({ phrase, onClose }: { phrase: string; onClose: (
   const [status, setStatus] = useState<SyncStatus>(SyncStatus.Init);
   const { availableChains } = useChainConfig();
   const chains = useMemo(() => availableChains.filter((chain) => chain.isMain), [availableChains]);
+
+  const mx = useMatrixClient();
+  const userId = mx.getUserId();
+  const [passkeyData] = useFetchPasskeyList(userId!);
 
   const customBody = useMemo(() => {
     if (step === Step.Step1) {
@@ -108,6 +114,7 @@ export function RecoveryPhrase({ phrase, onClose }: { phrase: string; onClose: (
       title="Recovery phrase"
       description="Add the recover phrase on chain to secure your account."
       customBody={customBody}
+      aaAddress={passkeyData?.walletAddress || ''}
       networkFeeData={feeData}
       prependElement={prependElement}
       status={status}

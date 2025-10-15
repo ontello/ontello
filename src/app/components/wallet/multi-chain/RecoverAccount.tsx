@@ -3,31 +3,32 @@ import { useChainConfig } from '@src/app/hooks/web3/useChainConfig';
 import { sleep } from '@src/app/utils/common';
 import { useAsyncCallback, AsyncStatus } from '@src/app/hooks/useAsyncCallback';
 import { FeeSessionResp } from '@src/app/externalApis';
-import { useFetchPasskeyList } from '@src/app/hooks/useFetchPasskeyList';
-import { useMatrixClient } from '@src/app/hooks/useMatrixClient';
 import { SyncDialog, SyncStatus } from './SyncDialog';
 
-export function SyncOwnershipChange({
-  chainIds,
+export function RecoverAccount({
+  username,
+  aaAddress,
+  recoveryPhrase,
+  onSuccess,
   onClose,
 }: {
-  chainIds: number[];
+  username: string;
+  aaAddress: string;
+  recoveryPhrase: string;
+  onSuccess: () => void;
   onClose: () => void;
 }) {
   const [status, setStatus] = useState<SyncStatus>(SyncStatus.Init);
 
-  const mx = useMatrixClient();
-  const userId = mx.getUserId();
-  const [passkeyData] = useFetchPasskeyList(userId!);
-
   const { availableChains } = useChainConfig();
-  const chains = useMemo(
-    () => availableChains.filter((chain) => chainIds.includes(chain.chainId)),
-    [availableChains, chainIds]
-  );
 
   const [selectedChainIds, setSelectedChainIds] = useState<number[]>(
-    chains.map((chain) => chain.chainId)
+    availableChains.map((chain) => chain.chainId)
+  );
+
+  const chainsNotAllowedToSelect = useMemo(
+    () => availableChains.filter((chain) => chain.isMain),
+    [availableChains]
   );
 
   // Define the asynchronous function to fetch fee data
@@ -64,10 +65,10 @@ export function SyncOwnershipChange({
 
   // Load fee data when chains change
   useEffect(() => {
-    if (chains.length > 0) {
+    if (availableChains.length > 0) {
       loadFeeData();
     }
-  }, [chains, loadFeeData]);
+  }, [availableChains, loadFeeData]);
 
   const onConfirm = async () => {
     setStatus(SyncStatus.Loading);
@@ -82,6 +83,7 @@ export function SyncOwnershipChange({
   };
 
   const onDone = () => {
+    onSuccess();
     onClose();
   };
 
@@ -89,20 +91,13 @@ export function SyncOwnershipChange({
     onClose();
   };
 
-  const description = useMemo(
-    () =>
-      `You've modified the ownership of Signers on your OVM wallet. You’ll need to sync these changes so they take effect on ${
-        chains.length > 1 ? 'other' : chains[0].chainNameView
-      } ${chains.length > 1 ? 'chains' : 'chain'}.`,
-    [chains]
-  );
-
   return (
     <SyncDialog
-      title="Sync Ownership Change"
-      description={description}
+      title="Recover account"
+      description="A network fee is required to recover your wallet"
       status={status}
-      chains={chains}
+      chains={availableChains}
+      chainsNotAllowedToSelect={chainsNotAllowedToSelect}
       onClose={onClose}
       onConfirm={onConfirm}
       onDone={onDone}
@@ -111,7 +106,7 @@ export function SyncOwnershipChange({
       networkFeeData={feeSessionData?.fee}
       selectedChainIds={selectedChainIds}
       setSelectedChainIds={setSelectedChainIds}
-      aaAddress={passkeyData?.walletAddress || ''}
+      aaAddress={aaAddress}
     />
   );
 }

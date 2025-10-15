@@ -2,8 +2,6 @@ import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import { Box, Button, Text, Checkbox, config, Spinner } from 'folds';
 import { ChainConfig, Token, walletApi } from '@src/app/externalApis';
 import { ContainerColor } from '@src/app/styles/ContainerColor.css';
-import { useFetchPasskeyList } from '@src/app/hooks/useFetchPasskeyList';
-import { useMatrixClient } from '@src/app/hooks/useMatrixClient';
 import { OntelloDialog } from '../../ontello/OntelloDialog';
 import { useChainConfig } from '../../../hooks/web3/useChainConfig';
 
@@ -21,6 +19,7 @@ export function SyncDialog({
   customBody,
   status,
   chains,
+  chainsNotAllowedToSelect = [],
   onClose,
   onConfirm,
   onDone,
@@ -30,9 +29,10 @@ export function SyncDialog({
   failButtonText = 'Fail',
   successText = 'Successful',
   failText = 'Failed',
+  aaAddress,
   isSponsoredNetworkFee,
   networkFeeData,
-  selectedChainIds,
+  selectedChainIds = [],
   setSelectedChainIds,
 }: {
   title: string;
@@ -41,6 +41,7 @@ export function SyncDialog({
   customBody?: React.ReactNode;
   status: SyncStatus;
   chains: ChainConfig[];
+  chainsNotAllowedToSelect?: ChainConfig[];
   onClose: () => void;
   onConfirm: (chains: ChainConfig[]) => void;
   onDone: () => void;
@@ -50,14 +51,12 @@ export function SyncDialog({
   failButtonText?: string;
   successText?: string;
   failText?: string;
+  aaAddress: string;
   isSponsoredNetworkFee: boolean;
   networkFeeData?: Token;
   selectedChainIds?: number[];
   setSelectedChainIds?: (chainIds: number[]) => void;
 }) {
-  const mx = useMatrixClient();
-  const userId = mx.getUserId();
-  const [passkeyData] = useFetchPasskeyList(userId!);
   const chainsCanSelect = useMemo(() => chains.length > 1, [chains]);
   const { availableChains } = useChainConfig();
 
@@ -73,17 +72,17 @@ export function SyncDialog({
   const [yourNetworkFeeTokenData, setYourNetworkFeeTokenData] = useState<Token | undefined>();
 
   const fetchYourNetworkFeeTokenData = useCallback(async () => {
-    if (!passkeyData?.walletAddress) return;
+    if (!aaAddress) return;
     if (!networkFeeData) return;
     if (yourNetworkFeeTokenData && yourNetworkFeeTokenData.balance >= networkFeeData.balance)
       return;
     const res = await walletApi.walletdataTransferBalanceGet({
-      addr: passkeyData?.walletAddress || '',
+      addr: aaAddress || '',
       chain_id: networkFeeData?.chainId || 0,
       token_addr: networkFeeData?.tokenAddr || '',
     });
     setYourNetworkFeeTokenData(res.result);
-  }, [passkeyData?.walletAddress, networkFeeData, yourNetworkFeeTokenData]);
+  }, [aaAddress, networkFeeData, yourNetworkFeeTokenData]);
 
   const timeout = useRef<number | null>(null);
   useEffect(() => {
@@ -185,7 +184,9 @@ export function SyncDialog({
               <Box key={chain.chainId} direction="Row" gap="400" alignItems="Center">
                 {chainsCanSelect && (
                   <Checkbox
+                    disabled={chainsNotAllowedToSelect.some((c) => c.chainId === chain.chainId)}
                     checked={selectedChainIds.includes(chain.chainId)}
+                    // @ts-expect-error - folds Checkbox component uses different prop names
                     onChange={() => toggleSelect(chain.chainId)}
                     size="50"
                   />
