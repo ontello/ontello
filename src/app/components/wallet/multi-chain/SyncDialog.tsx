@@ -2,6 +2,7 @@ import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import { Box, Button, Text, Checkbox, config, Spinner } from 'folds';
 import { ChainConfig, Token, walletApi } from '@src/app/externalApis';
 import { ContainerColor } from '@src/app/styles/ContainerColor.css';
+import { hexToBase58 } from '@src/app/utils/ontello/crypto';
 import { OntelloDialog } from '../../ontello/OntelloDialog';
 import { useChainConfig } from '../../../hooks/web3/useChainConfig';
 import { ReceiveUi, ReceiveChainInfo } from '../ReceiveUi';
@@ -111,6 +112,27 @@ export function SyncDialog({
       supportedAssets: networkFeeData ? [networkFeeData] : [],
     };
   }, [netWorkFeeChainConfig, aaAddress, networkFeeData]);
+
+  const receiveOntolagyNativeChainInfo: ReceiveChainInfo | undefined = useMemo(() => {
+    if (!receiveChainInfo || !networkFeeData) return undefined;
+    // the receiveChainInfo is ont evm mainnet or testnet
+    if (!(Number(receiveChainInfo.chainId) === 58 || Number(receiveChainInfo.chainId) === 5851))
+      return undefined;
+    // support token need ong
+    if (networkFeeData.symbol.toUpperCase() !== 'ONG') return undefined;
+    return {
+      ...receiveChainInfo,
+      chainName: 'Ontology Native',
+      chainNameView: 'Ontology Native',
+      address: hexToBase58(receiveChainInfo.address),
+      supportedAssets: [networkFeeData],
+    };
+  }, [receiveChainInfo, networkFeeData]);
+
+  const receiveChainInfoList = useMemo(
+    () => [receiveChainInfo, receiveOntolagyNativeChainInfo].filter((chain) => !!chain),
+    [receiveChainInfo, receiveOntolagyNativeChainInfo]
+  );
 
   const selectedChains = useMemo(() => {
     if (chainsCanSelect && selectedChainIds) {
@@ -271,10 +293,7 @@ export function SyncDialog({
   );
 
   const receiveUiEl = (
-    <ReceiveUi
-      onClose={() => setShowReceiveUi(false)}
-      chainsWithOtherInfo={receiveChainInfo ? [receiveChainInfo] : []}
-    />
+    <ReceiveUi onClose={() => setShowReceiveUi(false)} chainsWithOtherInfo={receiveChainInfoList} />
   );
 
   if (showReceiveUi) {
