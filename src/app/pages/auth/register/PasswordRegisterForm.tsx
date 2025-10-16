@@ -22,7 +22,8 @@ import {
 } from 'matrix-js-sdk';
 import { useWeb3Client } from '@src/app/hooks/web3/useWeb3Client';
 import { AccountFactoryAbi } from '@src/app/static/abis';
-import { toHex } from 'viem';
+import { Hex, toHex } from 'viem';
+import { useChainConfig } from '@src/app/hooks/web3/useChainConfig';
 import { PasswordInput } from '../../../components/password-input';
 import {
   getLoginTermUrl,
@@ -219,6 +220,7 @@ export function PasswordRegisterForm({
   useRegisterComplete(customRegisterResp);
   const { getWeb3PublicClient } = useWeb3Client();
   const { publicClient } = getWeb3PublicClient();
+  const { mainChainConfig } = useChainConfig();
   const handleSubmit: ChangeEventHandler<HTMLFormElement> = async (evt) => {
     evt.preventDefault();
     const {
@@ -239,8 +241,7 @@ export function PasswordRegisterForm({
     const { password, publicKeyBase64Url, xy } = await registerWithPasskey(username);
     setPublicKey(publicKeyBase64Url);
     const address = await publicClient.readContract({
-      // TODO
-      address: '0x9Ac10fc0948A05319a3358881741Da38e6dAd182',
+      address: mainChainConfig.accountFactoryAddr as Hex,
       abi: AccountFactoryAbi,
       functionName: 'computeAddress',
       args: [[toHex(new Uint8Array(xy))], BigInt(0)],
