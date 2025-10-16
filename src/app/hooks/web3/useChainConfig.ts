@@ -2,7 +2,7 @@ import { useAtom } from 'jotai';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { walletApi } from '@src/app/externalApis';
 import type { ChainConfig } from '@src/app/externalApis';
-import type { ChainConfigResponse } from '../../state/web3/chainConfig';
+// import type { ChainConfigResponse } from '../../state/web3/chainConfig';
 import {
   chainConfigAtom,
   isLoadingChainConfigAtom,
@@ -13,7 +13,7 @@ import {
 const CACHE_DURATION = 60 * 60 * 1000;
 
 type UseChainConfigReturn = {
-  chainConfig: ChainConfigResponse | null;
+  // chainConfigRes: ChainConfigResponse | null;
   availableChains: ChainConfig[];
   mainChainConfig: ChainConfig;
   isLoading: boolean;
@@ -25,7 +25,7 @@ type UseChainConfigReturn = {
 };
 
 export const useChainConfig = (): UseChainConfigReturn => {
-  const [chainConfig, setChainConfig] = useAtom(chainConfigAtom);
+  const [chainConfigRes, setChainConfigRes] = useAtom(chainConfigAtom);
   const [isLoading, setIsLoading] = useAtom(isLoadingChainConfigAtom);
   const [error, setError] = useAtom(chainConfigErrorAtom);
   const [availableChains] = useAtom(availableChainsAtom);
@@ -66,7 +66,7 @@ export const useChainConfig = (): UseChainConfigReturn => {
           throw new Error(`API Error: ${response.error.message}`);
         }
 
-        setChainConfig({
+        setChainConfigRes({
           chains: response.result,
           lastUpdated: now,
         });
@@ -80,7 +80,7 @@ export const useChainConfig = (): UseChainConfigReturn => {
         loadingRef.current = false;
       }
     },
-    [setChainConfig, setIsLoading, setError]
+    [setChainConfigRes, setIsLoading, setError]
   );
 
   const isChainSupported = useCallback(
@@ -100,14 +100,14 @@ export const useChainConfig = (): UseChainConfigReturn => {
   );
 
   useEffect(() => {
-    if (!chainConfig && !isLoading && !loadingRef.current) {
+    if (!chainConfigRes && !isLoading && !loadingRef.current) {
       loadChainConfig();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return {
-    chainConfig,
+    // chainConfigRes,
     availableChains,
     mainChainConfig,
     isLoading,
