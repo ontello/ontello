@@ -10,8 +10,9 @@ import { useChainConfig } from './useChainConfig';
 import { useBundler } from './useBundler';
 import { AccountCallType, BuildUserOperationParams, ReplayOperation, UserOperation } from './types';
 
+const NONCE_KEY = BigInt(5851);
 // eslint-disable-next-line no-bitwise
-const INITIAL_NONCE = BigInt(5851 << 64);
+const INITIAL_NONCE = NONCE_KEY << BigInt(64);
 
 export const useOwnerManage = (aaAddress: Address) => {
   const { getCurrentKeyIndex, buildCallData, buildUserOperation } = useAbstractAccount(aaAddress);
@@ -35,7 +36,7 @@ export const useOwnerManage = (aaAddress: Address) => {
     signMessageFunc?: (message: Hex) => Promise<Hex>
   ) => {
     // eslint-disable-next-line no-bitwise
-    const nonce = await entryPointContract.read.getNonce([aaAddress, INITIAL_NONCE]);
+    const nonce = await entryPointContract.read.getNonce([aaAddress, NONCE_KEY]);
 
     const callData = encodeFunctionData({
       abi: AccountAbi,
@@ -84,8 +85,13 @@ export const useOwnerManage = (aaAddress: Address) => {
     };
   };
 
+  const checkOwnerInitial = async (): Promise<boolean> => {
+    const nonce = await entryPointContract.read.getNonce([aaAddress, NONCE_KEY]);
+    return nonce === INITIAL_NONCE;
+  };
+
   const getSyncStatus = async (targetChainIds: number[]) => {
-    const mainChainNonce = await entryPointContract.read.getNonce([aaAddress, INITIAL_NONCE]);
+    const mainChainNonce = await entryPointContract.read.getNonce([aaAddress, NONCE_KEY]);
 
     const web3Clients = createWeb3Clients(targetChainIds);
 
@@ -99,7 +105,7 @@ export const useOwnerManage = (aaAddress: Address) => {
             abi: EntryPointAbi,
             client: publicClient,
           });
-          const nonce = await chainEntryPointContract.read.getNonce([aaAddress, INITIAL_NONCE]);
+          const nonce = await chainEntryPointContract.read.getNonce([aaAddress, NONCE_KEY]);
 
           return { chainId: currentChainConfig.chainId, nonce };
         } catch (error) {
@@ -175,6 +181,7 @@ export const useOwnerManage = (aaAddress: Address) => {
   return {
     buildOwnerManageUserOperation,
     payFee,
+    checkOwnerInitial,
     getSyncStatus,
     addOwnerByAddress,
     addOwnerByPublicKey,

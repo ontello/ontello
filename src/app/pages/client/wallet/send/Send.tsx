@@ -4,6 +4,7 @@ import { Address, parseUnits, formatUnits } from 'viem';
 import { openReviewTransfer } from '@src/client/action/navigation';
 import { GasToken } from '@src/app/hooks/web3/types';
 import { TransferData } from '@src/app/components/review-transfer';
+import { useOwnerManage } from '@src/app/hooks/web3/useOwnerManage';
 import { PageNavContent } from '../../../../components/page';
 import { WalletNavMode, TokenWithChain } from '../../../../../types/wallet/types';
 import { Back } from '../../../../components/ontello/Back';
@@ -28,6 +29,7 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
   const [isMaxAmount, setIsMaxAmount] = useState(false);
   const [isEstimatingFee, setIsEstimatingFee] = useState(false);
   const [showSyncOwnershipChange, setShowSyncOwnershipChange] = useState(false);
+  const { checkOwnerInitial, getSyncStatus } = useOwnerManage(aaAddress);
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -111,10 +113,17 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
   }, [amount, selectedToken, recipient, feeToken]);
 
   const handlePay = async () => {
-    // TODO Check if need to sync ownership change
-    setShowSyncOwnershipChange(true);
-
     if (!isFormValid || !selectedToken || !recipient || !feeToken || !aaAddress) return;
+
+    const [syncStatus, isOwnerInitial] = await Promise.all([
+      getSyncStatus([selectedToken.chainId]),
+      checkOwnerInitial(),
+    ]);
+
+    if (!syncStatus[selectedToken.chainId] && !isOwnerInitial) {
+      setShowSyncOwnershipChange(true);
+      return;
+    }
 
     let finalAmount = amount;
     let finalUsdValue = usdValue;
