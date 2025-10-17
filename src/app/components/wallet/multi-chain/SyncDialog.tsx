@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { Box, Button, Text, Checkbox, config, Spinner } from 'folds';
+import { parseUnits } from 'viem';
 import { ChainConfig, FeeSessionResp, Token, walletApi } from '@src/app/externalApis';
 import { ContainerColor } from '@src/app/styles/ContainerColor.css';
 import { hexToBase58 } from '@src/app/utils/ontello/crypto';
@@ -218,11 +219,17 @@ export function SyncDialog({
       if (!feeSessionData) {
         throw new Error('Fee data not found');
       }
-      await payFeeRef.current(
-        feeSessionData.session as `0x${string}`,
-        feeSessionData.fee.tokenAddr as `0x${string}`,
-        BigInt(feeSessionData.fee.balance)
-      );
+
+      if (!isSponsoredNetworkFee) {
+        await payFeeRef.current(
+          feeSessionData.session as `0x${string}`,
+          feeSessionData.fee.tokenAddr as `0x${string}`,
+          parseUnits(
+            feeSessionData.fee.balance, // 小数字符串，如 "0.001"
+            feeSessionData.fee.decimals // 小数位数，如 18
+          )
+        );
+      }
 
       await walletApi.walletdataConfirmPaymentPost({
         WalletdataConfirmPaymentPostRequest: {
@@ -235,7 +242,7 @@ export function SyncDialog({
       console.error(error);
       setStatus(SyncStatus.Failed);
     }
-  }, [feeSessionData, setStatus]);
+  }, [feeSessionData, setStatus, isSponsoredNetworkFee]);
 
   const buttonClick = useMemo(() => {
     if (showNeedTopUpFeeToken) return () => onTopUpFeeToken();
@@ -335,7 +342,7 @@ export function SyncDialog({
           )}
         </Box>
 
-        {networkFeeData && !yourNetworkFeeTokenData && (
+        {networkFeeData && !yourNetworkFeeTokenData && !isSponsoredNetworkFee && (
           <Box gap="200">
             <Spinner size="200" />{' '}
             <Text size="T200">Checking your {networkFeeData.symbol} balance</Text>
