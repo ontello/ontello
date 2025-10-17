@@ -114,6 +114,12 @@ export function SyncDialog({
     };
   }, [fetchYourNetworkFeeTokenData]);
 
+  useEffect(() => {
+    if (networkFeeData) {
+      fetchYourNetworkFeeTokenData();
+    }
+  }, [networkFeeData, fetchYourNetworkFeeTokenData]);
+
   const netWorkFeeChainConfig = useMemo(() => {
     if (!networkFeeData) return undefined;
     return availableChains.find((chain) => chain.chainId === networkFeeData.chainId);
