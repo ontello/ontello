@@ -297,24 +297,8 @@ export interface WebAuthnSignature {
 
 export const signMessageWithPasskey = async (message: Hex): Promise<WebAuthnSignature> => {
   try {
-    // const prefix = '\x19Ethereum Signed Message:\n';
-    // const messageBytes = toBytes(message);
-    // const prefixBytes = stringToBytes(prefix);
-    // const messageBytesLength = messageBytes.length.toString();
-    // const messageBytesLengthBytes = stringToBytes(messageBytesLength);
-    // const prefixedMessageBytes = new Uint8Array(
-    //   prefixBytes.length + messageBytesLengthBytes.length + messageBytes.length
-    // );
-    // prefixedMessageBytes.set(prefixBytes);
-    // prefixedMessageBytes.set(messageBytesLengthBytes, prefixBytes.length);
-    // prefixedMessageBytes.set(messageBytes, prefixBytes.length + messageBytesLengthBytes.length);
-
-    // const prefixedMessageHash = keccak256(prefixedMessageBytes);
     console.log('message', message);
-    const prefixedMessageHash = hashMessage({ raw: message });
-    console.log('prefixedMessageHash', prefixedMessageHash);
-
-    const challenge = hexToBytes(prefixedMessageHash);
+    const challenge = hexToBytes(message);
     // const challenge = hexToArrayBuffer(prefixedMessageHash);
     // const challenge = hexToUint8Array(prefixedMessageHash);
 

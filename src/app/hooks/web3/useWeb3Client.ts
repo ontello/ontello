@@ -54,7 +54,7 @@ export const useWeb3Client = (): UseWeb3ClientResult => {
     (chainId?: number) => {
       const backendConfig = chainId
         ? availableChains.find((chain) => chain.chainId === chainId)
-        : availableChains.find((chain) => chain.isMain) || availableChains[0];
+        : availableChains.find((chain) => chain.isMain);
 
       if (!backendConfig || !backendConfig.rpcUrls?.[0]) {
         const errorMsg = chainId

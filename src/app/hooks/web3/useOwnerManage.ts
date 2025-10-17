@@ -59,6 +59,16 @@ export const useOwnerManage = (aaAddress: Address) => {
     const userOpHash = await AccountContract.read.getUserOpHashWithoutChainId([userOp]);
     const keyIndex = await getCurrentKeyIndex();
     userOp.signature = await getUserOpSignature(userOpHash, keyIndex, signMessageFunc);
+
+    const validateUserOp = await ethClient.readContract({
+      address: aaAddress,
+      abi: AccountAbi,
+      functionName: 'validateUserOp' as any,
+      args: [userOp, userOpHash, BigInt(0)] as any,
+      account: chainConfig.entrypointAddr as Address,
+    });
+    console.log('validateUserOp', validateUserOp);
+
     return { userOp, userOpHash };
   };
 
@@ -136,7 +146,11 @@ export const useOwnerManage = (aaAddress: Address) => {
       args,
     });
     const { userOp } = await buildOwnerManageUserOperation([call], signMessageFunc);
-    const feeTokens = (await walletApi.walletdataFeeTokensGet()).result;
+    const aaa = await walletApi.walletdataFeeTokensGet();
+    console.log('aaa', aaa);
+    const feeTokens = aaa.result;
+    // const feeTokens = (await walletApi.walletdataFeeTokensGet()).result;
+    console.log('feeTokens', feeTokens);
 
     const res = await walletApi.walletdataChangeOwnerPost({
       WalletdataChangeOwnerPostRequest: {

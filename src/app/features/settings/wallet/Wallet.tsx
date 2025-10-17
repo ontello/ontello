@@ -24,6 +24,8 @@ import { Address } from 'viem';
 import { UserOperationReceipt } from '@src/app/hooks/web3/types';
 import { CredentialItem } from '@src/app/extendApis';
 import { copyToClipboard } from '@src/app/utils/dom';
+import { SyncOwnershipChange } from '@src/app/components/wallet/multi-chain/SyncOwnershipChange';
+import { useChainConfig } from '@src/app/hooks/web3/useChainConfig';
 import { Page, PageContent, PageHeader } from '../../../components/page';
 import { SequenceCard } from '../../../components/sequence-card';
 import { SequenceCardStyle } from '../styles.css';
@@ -43,7 +45,9 @@ type Props = {
 
 export function Wallet({ requestClose }: Props) {
   const [isRecoveryDialogOpen, setIsRecoveryDialogOpen] = useState(false);
+  const [isSetIsSyncDialogOpen, setIsSyncDialogOpen] = useState(false);
   const [recoveryKey, setRecoveryKey] = useState('');
+  const { availableChains } = useChainConfig();
   const { publicKey: currentPublicKey, aaAddress } = getSecret();
   const mx = useMatrixClient();
   const userId = mx.getUserId();
@@ -72,6 +76,9 @@ export function Wallet({ requestClose }: Props) {
     //   return;
     // }
     // await refetch();
+  };
+  const handleSync = async () => {
+    setIsSyncDialogOpen(true);
   };
 
   return (
@@ -115,7 +122,22 @@ export function Wallet({ requestClose }: Props) {
               </Box>
               <Box direction="Column" gap="100">
                 <Text size="L400">Manage wallet</Text>
-                <Text>You can manage account&apos;s passkeys below.</Text>
+                <SequenceCard
+                  className={SequenceCardStyle}
+                  variant="SurfaceVariant"
+                  direction="Column"
+                  gap="400"
+                >
+                  <SettingTile
+                    title="Sync ownership changes"
+                    description="You've modified the ownership of Signers on your OVM wallet. You’ll need to sync these changes so they take effect on other chains."
+                    after={
+                      <Button size="300" radii="300" onClick={handleSync}>
+                        <Text size="B300">Sync</Text>
+                      </Button>
+                    }
+                  />
+                </SequenceCard>
                 <SequenceCard
                   className={SequenceCardStyle}
                   variant="SurfaceVariant"
@@ -166,6 +188,13 @@ export function Wallet({ requestClose }: Props) {
 
       {isRecoveryDialogOpen && (
         <RecoveryPhrase phrase={recoveryKey} onClose={() => setIsRecoveryDialogOpen(false)} />
+      )}
+
+      {isSetIsSyncDialogOpen && (
+        <SyncOwnershipChange
+          onClose={() => setIsSyncDialogOpen(false)}
+          chainIds={availableChains.map((chain) => chain.chainId)}
+        />
       )}
 
       {/* <Overlay open={isRecoveryDialogOpen} backdrop={<OverlayBackdrop />}>
