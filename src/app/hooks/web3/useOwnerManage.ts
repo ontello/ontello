@@ -127,6 +127,7 @@ export const useOwnerManage = (aaAddress: Address) => {
   const changeOwner = async (
     operation: ReplayOperation,
     args: unknown[],
+    chainIds: number[],
     signMessageFunc?: (message: Hex) => Promise<Hex>
   ): Promise<FeeSessionResp> => {
     const call = encodeFunctionData({
@@ -141,29 +142,34 @@ export const useOwnerManage = (aaAddress: Address) => {
       WalletdataChangeOwnerPostRequest: {
         userOperation: serializeBigInt(userOp),
         token: feeTokens[0].tokenAddr,
+        chainId: chainIds,
       },
     });
     return res.result;
   };
-  const addOwnerByAddress = async (ownerAddress: Address): Promise<FeeSessionResp> => {
-    const feeSession = await changeOwner(ReplayOperation.AddOwnerAddress, [ownerAddress]);
+  const addOwnerByAddress = async (
+    ownerAddress: Address,
+    chainIds: number[]
+  ): Promise<FeeSessionResp> => {
+    const feeSession = await changeOwner(ReplayOperation.AddOwnerAddress, [ownerAddress], chainIds);
     return feeSession;
   };
-  const addOwnerByPublicKey = async (mnemonic: string, username: string) => {
+  const addOwnerByPublicKey = async (mnemonic: string, username: string, chainIds: number[]) => {
     const mnemonicAccount = mnemonicToAccount(mnemonic);
     const { x, y } = await registerWithPasskey(username);
     const feeSession = await changeOwner(
       ReplayOperation.AddOwnerPublicKey,
       [toHex(new Uint8Array(x)), toHex(new Uint8Array(y))],
+      chainIds,
       (message) => mnemonicAccount.signMessage({ message: { raw: message } })
     );
     return feeSession;
   };
-  const removeOwner = async (targetPublicKeyBase64: string) => {
+  const removeOwner = async (targetPublicKeyBase64: string, chainIds: number[]) => {
     const xy = fromBase64Url(targetPublicKeyBase64);
     const xyHex = toHex(new Uint8Array(xy));
 
-    const feeSession = await changeOwner(ReplayOperation.RemoveOwner, [xyHex]);
+    const feeSession = await changeOwner(ReplayOperation.RemoveOwner, [xyHex], chainIds);
     return feeSession;
   };
   const syncOwner = async (chainIds: number[]) => {
