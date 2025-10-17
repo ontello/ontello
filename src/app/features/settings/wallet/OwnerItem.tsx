@@ -25,6 +25,7 @@ import { Address } from 'viem';
 import { useAbstractAccount } from '@src/app/hooks/web3/useAbstractAccount';
 import FocusTrap from 'focus-trap-react';
 import { useMatrixClient } from '@src/app/hooks/useMatrixClient';
+import { RevokePasskey } from '@src/app/components/wallet/multi-chain/RevokePasskey';
 
 interface OwnerItemProps {
   credential: CredentialItem;
@@ -43,30 +44,35 @@ export function OwnerItem({
   const { removeOwner } = useAbstractAccount(aaAddress);
   const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false);
 
-  const deletePasskey = async () => {
-    try {
-      const receipt = await removeOwner(credential.publicKey);
-      await sleep(3000);
-      await deleteDevicesByPk(mx, credential.publicKey);
-      await deleteCallback();
-    } catch (error) {
-      console.log('Error deleting passkey:', error);
-      throw error;
-    }
-  };
+  // const deletePasskey = async () => {
+  //   try {
+  //     const receipt = await removeOwner(credential.publicKey);
+  //     await sleep(3000);
+  //     await deleteDevicesByPk(mx, credential.publicKey);
+  //     await deleteCallback();
+  //   } catch (error) {
+  //     console.log('Error deleting passkey:', error);
+  //     throw error;
+  //   }
+  // };
 
-  const [removeState, startRemoveOwner, resetRemoveState] = useAsyncCallback<
-    void,
-    Error,
-    Parameters<typeof deletePasskey>
-  >(useCallback(deletePasskey, [deletePasskey]));
+  // const [removeState, startRemoveOwner, resetRemoveState] = useAsyncCallback<
+  //   void,
+  //   Error,
+  //   Parameters<typeof deletePasskey>
+  // >(useCallback(deletePasskey, [deletePasskey]));
 
   const isCurrent = credential.publicKey === currentPublicKey;
-  const closeDialogHandler = () => {
-    setIsRemoveDialogOpen(false);
-    if (removeState.status === AsyncStatus.Error) {
-      resetRemoveState();
-    }
+  // const closeDialogHandler = () => {
+  //   setIsRemoveDialogOpen(false);
+  //   if (removeState.status === AsyncStatus.Error) {
+  //     resetRemoveState();
+  //   }
+  // };
+  const revokedHandle = async () => {
+    await sleep(3000);
+    await deleteDevicesByPk(mx, credential.publicKey);
+    await deleteCallback();
   };
 
   return (
@@ -101,14 +107,21 @@ export function OwnerItem({
               radii="300"
               variant="Critical"
               onClick={() => setIsRemoveDialogOpen(true)}
-              disabled={removeState.status === AsyncStatus.Loading}
+              // disabled={removeState.status === AsyncStatus.Loading}
             >
               <Text size="B300">Revoke</Text>
             </Button>
           )}
         </Box>
       </Box>
-      <Overlay open={isRemoveDialogOpen} backdrop={<OverlayBackdrop />}>
+      {isRemoveDialogOpen && (
+        <RevokePasskey
+          targetPublicKeyBase64={credential.publicKey}
+          onClose={() => setIsRemoveDialogOpen(true)}
+          onSuccess={revokedHandle}
+        />
+      )}
+      {/* <Overlay open={isRemoveDialogOpen} backdrop={<OverlayBackdrop />}>
         <OverlayCenter>
           <FocusTrap
             focusTrapOptions={{
@@ -158,17 +171,10 @@ export function OwnerItem({
                   </>
                 )}
               </Box>
-              {/* 空元素 */}
-              <button
-                type="button"
-                tabIndex={0}
-                style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}
-                aria-hidden="true"
-              />
             </Dialog>
           </FocusTrap>
         </OverlayCenter>
-      </Overlay>
+      </Overlay> */}
     </>
   );
 }
