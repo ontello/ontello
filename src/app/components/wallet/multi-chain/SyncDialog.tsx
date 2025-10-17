@@ -10,6 +10,7 @@ import { useOwnerManage } from '../../../hooks/web3/useOwnerManage';
 
 export enum SyncStatus {
   Init = 'init',
+  EstimatedFeeLoaded = 'estimatedFeeLoaded',
   Loading = 'loading',
   Success = 'success',
   Failed = 'failed',
@@ -22,6 +23,7 @@ export function SyncDialog({
   customBody,
   chains,
   chainsNotAllowedToSelect = [],
+  onEstimateFee,
   onClose,
   onDone,
   onFail,
@@ -44,6 +46,7 @@ export function SyncDialog({
   customBody?: React.ReactNode;
   chains: ChainConfig[];
   chainsNotAllowedToSelect?: ChainConfig[];
+  onEstimateFee: () => Promise<void>;
   onClose: () => void;
   onDone: () => void;
   onFail: () => void;
@@ -77,6 +80,8 @@ export function SyncDialog({
 
   const toggleSelect = (chainId: number) => {
     if (!selectedChainIds || !setSelectedChainIds) return;
+    if (status === SyncStatus.Loading) return;
+    setStatus(SyncStatus.Init);
     if (selectedChainIds.includes(chainId)) {
       setSelectedChainIds(selectedChainIds.filter((id) => id !== chainId));
     } else {
@@ -174,16 +179,17 @@ export function SyncDialog({
   }, [isSponsoredNetworkFee, feeInfoIsLoaded, yourNetworkFeeTokenData, networkFeeData]);
 
   const buttonDisabled = useMemo(() => {
-    if (!feeInfoIsLoaded) return true;
     if (!chains || chains.length === 0) return true;
     if (status === SyncStatus.Loading) return true;
     if (selectedChains.length === 0) return true;
+    if (status !== SyncStatus.Init && !feeInfoIsLoaded) return true;
     return false;
   }, [status, feeInfoIsLoaded, chains, selectedChains]);
 
   const buttonText = useMemo(() => {
     if (showNeedTopUpFeeToken) return 'Fund wallet';
-    if (status === SyncStatus.Init) return confirmButtonText;
+    if (status === SyncStatus.Init) return 'Estimate fee';
+    if (status === SyncStatus.EstimatedFeeLoaded) return confirmButtonText;
     if (status === SyncStatus.Loading) return 'Loading...';
     if (status === SyncStatus.Success) return doneButtonText;
     if (status === SyncStatus.Failed) return failButtonText;
@@ -222,14 +228,15 @@ export function SyncDialog({
 
   const buttonClick = useMemo(() => {
     if (showNeedTopUpFeeToken) return () => onTopUpFeeToken();
-    if (status === SyncStatus.Init) return () => confirmClick();
+    if (status === SyncStatus.Init) return () => onEstimateFee();
+    if (status === SyncStatus.EstimatedFeeLoaded) return () => confirmClick();
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     if (status === SyncStatus.Loading) return () => {};
     if (status === SyncStatus.Success) return () => onDone();
     if (status === SyncStatus.Failed) return () => onFail();
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     return () => {};
-  }, [showNeedTopUpFeeToken, status, confirmClick, onDone, onFail]);
+  }, [showNeedTopUpFeeToken, status, confirmClick, onDone, onFail, onEstimateFee]);
 
   const successEl = (
     <Box direction="Column" alignItems="Center" gap="300">
@@ -307,7 +314,7 @@ export function SyncDialog({
                 {networkFeeData?.balance} {networkFeeData?.symbol}
               </Text>
             ) : (
-              <Spinner size="200" />
+              <Text size="T300">-</Text>
             )}
           </Box>
           {isSponsoredNetworkFee && (

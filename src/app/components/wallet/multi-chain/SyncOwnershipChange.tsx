@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useChainConfig } from '@src/app/hooks/web3/useChainConfig';
 import { useAsyncCallback, AsyncStatus } from '@src/app/hooks/useAsyncCallback';
 import { FeeSessionResp } from '@src/app/externalApis';
@@ -20,6 +20,8 @@ export function SyncOwnershipChange({
 
   const { syncOwner } = useOwnerManage(passkeyData?.walletAddress as `0x${string}`);
 
+  const syncOwnerRef = useRef(syncOwner);
+
   const { availableChains } = useChainConfig();
   const chains = useMemo(
     () => availableChains.filter((chain) => chainIds.includes(chain.chainId)),
@@ -37,9 +39,9 @@ export function SyncOwnershipChange({
       return undefined;
     }
 
-    const feeSession = await syncOwner(selectedChainIds);
+    const feeSession = await syncOwnerRef.current(selectedChainIds);
     return feeSession;
-  }, [selectedChainIds, syncOwner]);
+  }, [selectedChainIds]);
 
   // Use useAsyncCallback to manage asynchronous state
   const [feeDataState, loadFeeData] = useAsyncCallback<FeeSessionResp | undefined, Error, []>(
@@ -53,12 +55,16 @@ export function SyncOwnershipChange({
     return feeDataState.data;
   }, [feeDataState]);
 
-  // Load fee data when chains change
-  useEffect(() => {
-    if (chains.length > 0) {
-      loadFeeData();
+  const onEstimateFee = async () => {
+    try {
+      setStatus(SyncStatus.Loading);
+      await loadFeeData();
+      setStatus(SyncStatus.EstimatedFeeLoaded);
+    } catch (error) {
+      console.error(error);
+      setStatus(SyncStatus.Init);
     }
-  }, [chains, loadFeeData]);
+  };
 
   const onDone = () => {
     onClose();
@@ -81,6 +87,7 @@ export function SyncOwnershipChange({
       title="Sync Ownership Change"
       description={description}
       chains={chains}
+      onEstimateFee={onEstimateFee}
       onClose={onClose}
       onDone={onDone}
       onFail={onFail}

@@ -28,7 +28,6 @@ export function RecoveryPhrase({ phrase, onClose }: { phrase: string; onClose: (
   const { addOwnerByAddress } = useOwnerManage(passkeyData?.walletAddress as `0x${string}`);
 
   const addOwnerByAddressRef = useRef(addOwnerByAddress);
-  addOwnerByAddressRef.current = addOwnerByAddress;
 
   const customBody = useMemo(() => {
     if (step === Step.Step1) {
@@ -63,12 +62,16 @@ export function RecoveryPhrase({ phrase, onClose }: { phrase: string; onClose: (
     return feeDataState.data;
   }, [feeDataState]);
 
-  // Load fee data when chains change
-  useEffect(() => {
-    if (chains.length > 0) {
-      loadFeeData();
+  const onEstimateFee = async () => {
+    try {
+      setStatus(SyncStatus.Loading);
+      await loadFeeData();
+      setStatus(SyncStatus.EstimatedFeeLoaded);
+    } catch (error) {
+      console.error(error);
+      setStatus(SyncStatus.Init);
     }
-  }, [chains, loadFeeData]);
+  };
 
   const onDone = () => {
     onClose();
@@ -111,6 +114,7 @@ export function RecoveryPhrase({ phrase, onClose }: { phrase: string; onClose: (
       feeSessionData={feeData}
       prependElement={prependElement}
       chains={chains}
+      onEstimateFee={onEstimateFee}
       onClose={onClose}
       onDone={onDone}
       onFail={onFail}

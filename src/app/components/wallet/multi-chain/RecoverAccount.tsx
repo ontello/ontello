@@ -22,7 +22,6 @@ export function RecoverAccount({
   const { availableChains } = useChainConfig();
   const { addOwnerByPublicKey } = useOwnerManage(aaAddress as `0x${string}`);
   const addOwnerByPublicKeyRef = useRef(addOwnerByPublicKey);
-  addOwnerByPublicKeyRef.current = addOwnerByPublicKey;
 
   const [selectedChainIds, setSelectedChainIds] = useState<number[]>(
     availableChains.map((chain) => chain.chainId)
@@ -60,11 +59,16 @@ export function RecoverAccount({
   }, [feeDataState]);
 
   // Load fee data when chains change
-  useEffect(() => {
-    if (selectedChainIds.length > 0) {
-      loadFeeData();
+  const onEstimateFee = async () => {
+    try {
+      setStatus(SyncStatus.Loading);
+      await loadFeeData();
+      setStatus(SyncStatus.EstimatedFeeLoaded);
+    } catch (error) {
+      console.error(error);
+      setStatus(SyncStatus.Init);
     }
-  }, [selectedChainIds, loadFeeData]);
+  };
 
   const onDone = () => {
     onSuccess();
@@ -81,6 +85,7 @@ export function RecoverAccount({
       description="A network fee is required to recover your wallet"
       chains={availableChains}
       chainsNotAllowedToSelect={chainsNotAllowedToSelect}
+      onEstimateFee={onEstimateFee}
       onClose={onClose}
       onDone={onDone}
       onFail={onFail}
