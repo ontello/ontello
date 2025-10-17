@@ -6,7 +6,7 @@ import { useAsyncCallback, AsyncStatus } from '@src/app/hooks/useAsyncCallback';
 import { useFetchPasskeyList } from '@src/app/hooks/useFetchPasskeyList';
 import { useMatrixClient } from '@src/app/hooks/useMatrixClient';
 import { useOwnerManage } from '@src/app/hooks/web3/useOwnerManage';
-import { SyncDialog } from './SyncDialog';
+import { SyncDialog, SyncStatus } from './SyncDialog';
 import { RecoveryPhraseStep1 } from './RecoveryPhraseStep1';
 import { useChainConfig } from '../../../hooks/web3/useChainConfig';
 import { FeeSessionResp } from '../../../externalApis';
@@ -20,12 +20,12 @@ export function RecoveryPhrase({ phrase, onClose }: { phrase: string; onClose: (
   const [step, setStep] = useState<Step>(Step.Step1);
   const { availableChains } = useChainConfig();
   const chains = useMemo(() => availableChains.filter((chain) => chain.isMain), [availableChains]);
-
+  const [status, setStatus] = useState<SyncStatus>(SyncStatus.Init);
   const mx = useMatrixClient();
   const userId = mx.getUserId();
   const [passkeyData] = useFetchPasskeyList(userId!);
 
-  const { addOwnerByAddress, payFee } = useOwnerManage(passkeyData?.walletAddress as `0x${string}`);
+  const { addOwnerByAddress } = useOwnerManage(passkeyData?.walletAddress as `0x${string}`);
 
   const customBody = useMemo(() => {
     if (step === Step.Step1) {
@@ -41,7 +41,10 @@ export function RecoveryPhrase({ phrase, onClose }: { phrase: string; onClose: (
     }
 
     const mnemonicAccount = mnemonicToAccount(phrase);
-    const feeSession = await addOwnerByAddress(mnemonicAccount.address);
+    const feeSession = await addOwnerByAddress(
+      mnemonicAccount.address,
+      chains.map((chain) => chain.chainId)
+    );
     return feeSession;
   }, [chains, addOwnerByAddress, phrase]);
 
@@ -108,6 +111,8 @@ export function RecoveryPhrase({ phrase, onClose }: { phrase: string; onClose: (
       onClose={onClose}
       onDone={onDone}
       onFail={onFail}
+      status={status}
+      setStatus={setStatus}
     />
   );
 }

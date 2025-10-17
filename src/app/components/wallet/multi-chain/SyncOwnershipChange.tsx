@@ -5,7 +5,7 @@ import { FeeSessionResp } from '@src/app/externalApis';
 import { useFetchPasskeyList } from '@src/app/hooks/useFetchPasskeyList';
 import { useMatrixClient } from '@src/app/hooks/useMatrixClient';
 import { useOwnerManage } from '@src/app/hooks/web3/useOwnerManage';
-import { SyncDialog } from './SyncDialog';
+import { SyncDialog, SyncStatus } from './SyncDialog';
 
 export function SyncOwnershipChange({
   chainIds,
@@ -30,6 +30,7 @@ export function SyncOwnershipChange({
     chains.map((chain) => chain.chainId)
   );
 
+  const [status, setStatus] = useState<SyncStatus>(SyncStatus.Init);
   // Define the asynchronous function to fetch fee data
   const fetchFeeData = useCallback(async () => {
     if (!selectedChainIds.length) {
@@ -64,7 +65,7 @@ export function SyncOwnershipChange({
   };
 
   const onFail = () => {
-    onClose();
+    setStatus(SyncStatus.Init);
   };
 
   const description = useMemo(
@@ -83,10 +84,15 @@ export function SyncOwnershipChange({
       onClose={onClose}
       onDone={onDone}
       onFail={onFail}
+      successText="Sync successful"
+      failText="Sync failed"
+      failButtonText="Try again"
       feeSessionData={feeSessionData}
       selectedChainIds={selectedChainIds}
       setSelectedChainIds={setSelectedChainIds}
       aaAddress={passkeyData?.walletAddress || ''}
+      status={status}
+      setStatus={setStatus}
     />
   );
 }

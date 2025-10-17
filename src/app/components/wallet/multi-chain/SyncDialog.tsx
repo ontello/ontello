@@ -27,14 +27,16 @@ export function SyncDialog({
   onFail,
   confirmButtonText = 'Confirm',
   doneButtonText = 'Done',
-  failButtonText = 'Try again',
+  failButtonText = 'Done',
   successText = 'Successful',
-  failText = 'Failed',
+  failText = 'Unsuccessful',
   failTextDescription = '',
   aaAddress,
   feeSessionData,
   selectedChainIds = [],
   setSelectedChainIds,
+  status,
+  setStatus,
 }: {
   title: string;
   description?: string;
@@ -55,8 +57,9 @@ export function SyncDialog({
   feeSessionData?: FeeSessionResp;
   selectedChainIds?: number[];
   setSelectedChainIds?: (chainIds: number[]) => void;
+  status: SyncStatus;
+  setStatus: (status: SyncStatus) => void;
 }) {
-  const [status, setStatus] = useState<SyncStatus>(SyncStatus.Init);
   const [showReceiveUi, setShowReceiveUi] = useState(false);
   const chainsCanSelect = useMemo(() => chains.length > 1, [chains]);
   const networkFeeData = useMemo(() => {
@@ -191,8 +194,8 @@ export function SyncDialog({
   };
 
   const confirmClick = useCallback(async () => {
-    setStatus(SyncStatus.Loading);
     try {
+      setStatus(SyncStatus.Loading);
       if (!feeSessionData) {
         throw new Error('Fee data not found');
       }
@@ -213,7 +216,7 @@ export function SyncDialog({
       console.error(error);
       setStatus(SyncStatus.Failed);
     }
-  }, [feeSessionData, payFee]);
+  }, [feeSessionData, payFee, setStatus]);
 
   const buttonClick = useMemo(() => {
     if (showNeedTopUpFeeToken) return () => onTopUpFeeToken();

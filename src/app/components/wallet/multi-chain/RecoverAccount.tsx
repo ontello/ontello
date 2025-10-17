@@ -3,7 +3,7 @@ import { useChainConfig } from '@src/app/hooks/web3/useChainConfig';
 import { useAsyncCallback, AsyncStatus } from '@src/app/hooks/useAsyncCallback';
 import { FeeSessionResp } from '@src/app/externalApis';
 import { useOwnerManage } from '@src/app/hooks/web3/useOwnerManage';
-import { SyncDialog } from './SyncDialog';
+import { SyncDialog, SyncStatus } from './SyncDialog';
 
 export function RecoverAccount({
   username,
@@ -18,6 +18,7 @@ export function RecoverAccount({
   onSuccess: () => void;
   onClose: () => void;
 }) {
+  const [status, setStatus] = useState<SyncStatus>(SyncStatus.Init);
   const { availableChains } = useChainConfig();
   const { addOwnerByPublicKey } = useOwnerManage(aaAddress as `0x${string}`);
 
@@ -36,8 +37,7 @@ export function RecoverAccount({
       return undefined;
     }
 
-    // TODO fetch fee data
-    const feeSession = await addOwnerByPublicKey(recoveryPhrase, username);
+    const feeSession = await addOwnerByPublicKey(recoveryPhrase, username, selectedChainIds);
     return feeSession;
   }, [selectedChainIds, addOwnerByPublicKey, recoveryPhrase, username]);
 
@@ -82,6 +82,11 @@ export function RecoverAccount({
       selectedChainIds={selectedChainIds}
       setSelectedChainIds={setSelectedChainIds}
       aaAddress={aaAddress}
+      status={status}
+      setStatus={setStatus}
+      successText="Activation successful"
+      failText="Activation failed"
+      failButtonText="Try again"
     />
   );
 }
