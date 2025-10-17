@@ -23,6 +23,7 @@ export function SyncDialog({
   customBody,
   chains,
   chainsNotAllowedToSelect = [],
+  chainsCannotSelectFlag = false,
   onEstimateFee,
   onClose,
   onDone,
@@ -30,8 +31,8 @@ export function SyncDialog({
   confirmButtonText = 'Confirm',
   doneButtonText = 'Done',
   failButtonText = 'Done',
-  successText = 'Successful',
-  failText = 'Unsuccessful',
+  successText = 'Submit successful',
+  failText = 'Submit failed',
   failTextDescription = '',
   aaAddress,
   feeSessionData,
@@ -46,6 +47,7 @@ export function SyncDialog({
   customBody?: React.ReactNode;
   chains: ChainConfig[];
   chainsNotAllowedToSelect?: ChainConfig[];
+  chainsCannotSelectFlag?: boolean;
   onEstimateFee: () => Promise<void>;
   onClose: () => void;
   onDone: () => void;
@@ -64,7 +66,10 @@ export function SyncDialog({
   setStatus: (status: SyncStatus) => void;
 }) {
   const [showReceiveUi, setShowReceiveUi] = useState(false);
-  const chainsCanSelect = useMemo(() => chains.length > 1, [chains]);
+  const chainsCanSelect = useMemo(() => {
+    if (chainsCannotSelectFlag) return false;
+    return chains.length > 1;
+  }, [chains, chainsCannotSelectFlag]);
   const networkFeeData = useMemo(() => {
     if (!feeSessionData) return undefined;
     return feeSessionData.fee;
@@ -93,20 +98,20 @@ export function SyncDialog({
 
   const fetchYourNetworkFeeTokenData = useCallback(async () => {
     if (!aaAddress) return;
+    if (!feeSessionData) return;
     if (!networkFeeData) return;
-    if (yourNetworkFeeTokenData && yourNetworkFeeTokenData.balance >= networkFeeData.balance)
-      return;
+    if (feeSessionData.isPaymaster) return;
     const res = await walletApi.walletdataTransferBalanceGet({
       addr: aaAddress || '',
       chain_id: networkFeeData?.chainId || 0,
       token_addr: networkFeeData?.tokenAddr || '',
     });
     setYourNetworkFeeTokenData(res.result);
-  }, [aaAddress, networkFeeData, yourNetworkFeeTokenData]);
+  }, [aaAddress, networkFeeData, feeSessionData]);
 
   const timeout = useRef<number | null>(null);
   useEffect(() => {
-    timeout.current = window.setTimeout(fetchYourNetworkFeeTokenData, 5000);
+    timeout.current = window.setInterval(fetchYourNetworkFeeTokenData, 5000);
     return () => {
       if (timeout.current) {
         clearTimeout(timeout.current);
@@ -337,7 +342,7 @@ export function SyncDialog({
           </Box>
         )}
 
-        {yourNetworkFeeTokenData && networkFeeData && (
+        {showNeedTopUpFeeToken && networkFeeData && (
           <Box direction="Column" gap="200">
             <Text size="T200" style={{ color: '#FF0000' }}>
               You need more than {networkFeeData.balance} {networkFeeData.symbol} in{' '}

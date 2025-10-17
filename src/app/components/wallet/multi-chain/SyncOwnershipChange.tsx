@@ -93,6 +93,7 @@ export function SyncOwnershipChange({
       onFail={onFail}
       successText="Sync successful"
       failText="Sync failed"
+      confirmButtonText="Sync"
       failButtonText="Try again"
       feeSessionData={feeSessionData}
       selectedChainIds={selectedChainIds}

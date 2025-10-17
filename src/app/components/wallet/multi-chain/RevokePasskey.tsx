@@ -1,50 +1,40 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useChainConfig } from '@src/app/hooks/web3/useChainConfig';
 import { useAsyncCallback, AsyncStatus } from '@src/app/hooks/useAsyncCallback';
 import { FeeSessionResp } from '@src/app/externalApis';
+import { useFetchPasskeyList } from '@src/app/hooks/useFetchPasskeyList';
+import { useMatrixClient } from '@src/app/hooks/useMatrixClient';
 import { useOwnerManage } from '@src/app/hooks/web3/useOwnerManage';
 import { SyncDialog, SyncStatus } from './SyncDialog';
 
-export function RecoverAccount({
-  username,
-  aaAddress,
-  recoveryPhrase,
-  onSuccess,
+export function RevokePasskey({
+  targetPublicKeyBase64,
   onClose,
+  onSuccess,
 }: {
-  username: string;
-  aaAddress: string;
-  recoveryPhrase: string;
-  onSuccess: () => void;
+  targetPublicKeyBase64: string;
   onClose: () => void;
+  onSuccess: () => void;
 }) {
-  const [status, setStatus] = useState<SyncStatus>(SyncStatus.Init);
+  const mx = useMatrixClient();
+  const userId = mx.getUserId();
+  const [passkeyData] = useFetchPasskeyList(userId!);
+
+  const { removeOwner } = useOwnerManage(passkeyData?.walletAddress as `0x${string}`);
+
+  const removeOwnerRef = useRef(removeOwner);
+
   const { availableChains } = useChainConfig();
-  const { addOwnerByPublicKey } = useOwnerManage(aaAddress as `0x${string}`);
-  const addOwnerByPublicKeyRef = useRef(addOwnerByPublicKey);
 
-  const [selectedChainIds, setSelectedChainIds] = useState<number[]>(
-    availableChains.map((chain) => chain.chainId)
-  );
-
-  const chainsNotAllowedToSelect = useMemo(
-    () => availableChains.filter((chain) => chain.isMain),
-    [availableChains]
-  );
-
+  const [status, setStatus] = useState<SyncStatus>(SyncStatus.Init);
   // Define the asynchronous function to fetch fee data
   const fetchFeeData = useCallback(async () => {
-    if (!selectedChainIds.length) {
-      return undefined;
-    }
-
-    const feeSession = await addOwnerByPublicKeyRef.current(
-      recoveryPhrase,
-      username,
-      selectedChainIds
+    const feeSession = await removeOwnerRef.current(
+      targetPublicKeyBase64,
+      availableChains.map((chain) => chain.chainId)
     );
     return feeSession;
-  }, [selectedChainIds, recoveryPhrase, username]);
+  }, [targetPublicKeyBase64, availableChains]);
 
   // Use useAsyncCallback to manage asynchronous state
   const [feeDataState, loadFeeData] = useAsyncCallback<FeeSessionResp | undefined, Error, []>(
@@ -58,7 +48,6 @@ export function RecoverAccount({
     return feeDataState.data;
   }, [feeDataState]);
 
-  // Load fee data when chains change
   const onEstimateFee = async () => {
     try {
       setStatus(SyncStatus.Loading);
@@ -76,28 +65,27 @@ export function RecoverAccount({
   };
 
   const onFail = () => {
-    onClose();
+    setStatus(SyncStatus.Init);
   };
 
   return (
     <SyncDialog
-      title="Recover account"
-      description="A network fee is required to recover your wallet"
+      title="Revoke the passkey"
+      description="Devices using this key for login will be automatically logged out and can't use this key for future access once it's revoked."
       chains={availableChains}
-      chainsNotAllowedToSelect={chainsNotAllowedToSelect}
+      chainsCannotSelectFlag
       onEstimateFee={onEstimateFee}
       onClose={onClose}
       onDone={onDone}
       onFail={onFail}
+      successText="Revoke successful"
+      failText="Revoke failed"
+      confirmButtonText="Revoke"
+      failButtonText="Try again"
       feeSessionData={feeSessionData}
-      selectedChainIds={selectedChainIds}
-      setSelectedChainIds={setSelectedChainIds}
-      aaAddress={aaAddress}
+      aaAddress={passkeyData?.walletAddress || ''}
       status={status}
       setStatus={setStatus}
-      successText="Submit successful"
-      failText="Submit failed"
-      failButtonText="Try again"
     />
   );
 }
