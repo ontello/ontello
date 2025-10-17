@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useChainConfig } from '@src/app/hooks/web3/useChainConfig';
 import { useAsyncCallback, AsyncStatus } from '@src/app/hooks/useAsyncCallback';
 import { FeeSessionResp } from '@src/app/externalApis';
@@ -21,6 +21,8 @@ export function RecoverAccount({
   const [status, setStatus] = useState<SyncStatus>(SyncStatus.Init);
   const { availableChains } = useChainConfig();
   const { addOwnerByPublicKey } = useOwnerManage(aaAddress as `0x${string}`);
+  const addOwnerByPublicKeyRef = useRef(addOwnerByPublicKey);
+  addOwnerByPublicKeyRef.current = addOwnerByPublicKey;
 
   const [selectedChainIds, setSelectedChainIds] = useState<number[]>(
     availableChains.map((chain) => chain.chainId)
@@ -37,9 +39,13 @@ export function RecoverAccount({
       return undefined;
     }
 
-    const feeSession = await addOwnerByPublicKey(recoveryPhrase, username, selectedChainIds);
+    const feeSession = await addOwnerByPublicKeyRef.current(
+      recoveryPhrase,
+      username,
+      selectedChainIds
+    );
     return feeSession;
-  }, [selectedChainIds, addOwnerByPublicKey, recoveryPhrase, username]);
+  }, [selectedChainIds, recoveryPhrase, username]);
 
   // Use useAsyncCallback to manage asynchronous state
   const [feeDataState, loadFeeData] = useAsyncCallback<FeeSessionResp | undefined, Error, []>(

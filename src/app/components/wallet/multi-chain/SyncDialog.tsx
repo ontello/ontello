@@ -72,6 +72,8 @@ export function SyncDialog({
   }, [feeSessionData]);
   const { availableChains } = useChainConfig();
   const { payFee } = useOwnerManage(aaAddress as `0x${string}`);
+  const payFeeRef = useRef(payFee);
+  payFeeRef.current = payFee;
 
   const toggleSelect = (chainId: number) => {
     if (!selectedChainIds || !setSelectedChainIds) return;
@@ -199,7 +201,7 @@ export function SyncDialog({
       if (!feeSessionData) {
         throw new Error('Fee data not found');
       }
-      await payFee(
+      await payFeeRef.current(
         feeSessionData.session as `0x${string}`,
         feeSessionData.fee.tokenAddr as `0x${string}`,
         BigInt(feeSessionData.fee.balance)
@@ -216,7 +218,7 @@ export function SyncDialog({
       console.error(error);
       setStatus(SyncStatus.Failed);
     }
-  }, [feeSessionData, payFee, setStatus]);
+  }, [feeSessionData, setStatus]);
 
   const buttonClick = useMemo(() => {
     if (showNeedTopUpFeeToken) return () => onTopUpFeeToken();

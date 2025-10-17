@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback, useEffect } from 'react';
+import React, { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import { mnemonicToAccount } from 'viem/accounts';
 import { Box, Text } from 'folds';
 import { ContainerColor } from '@src/app/styles/ContainerColor.css';
@@ -27,6 +27,9 @@ export function RecoveryPhrase({ phrase, onClose }: { phrase: string; onClose: (
 
   const { addOwnerByAddress } = useOwnerManage(passkeyData?.walletAddress as `0x${string}`);
 
+  const addOwnerByAddressRef = useRef(addOwnerByAddress);
+  addOwnerByAddressRef.current = addOwnerByAddress;
+
   const customBody = useMemo(() => {
     if (step === Step.Step1) {
       return <RecoveryPhraseStep1 phrase={phrase} onNext={() => setStep(Step.Step2)} />;
@@ -41,12 +44,12 @@ export function RecoveryPhrase({ phrase, onClose }: { phrase: string; onClose: (
     }
 
     const mnemonicAccount = mnemonicToAccount(phrase);
-    const feeSession = await addOwnerByAddress(
+    const feeSession = await addOwnerByAddressRef.current(
       mnemonicAccount.address,
       chains.map((chain) => chain.chainId)
     );
     return feeSession;
-  }, [chains, addOwnerByAddress, phrase]);
+  }, [chains, phrase]);
 
   // Use useAsyncCallback to manage asynchronous state
   const [feeDataState, loadFeeData] = useAsyncCallback<FeeSessionResp | undefined, Error, []>(
