@@ -1,14 +1,15 @@
 import React, { useMemo, useState, useCallback, useEffect } from 'react';
+import { mnemonicToAccount } from 'viem/accounts';
 import { Box, Text } from 'folds';
 import { ContainerColor } from '@src/app/styles/ContainerColor.css';
 import { useAsyncCallback, AsyncStatus } from '@src/app/hooks/useAsyncCallback';
 import { useFetchPasskeyList } from '@src/app/hooks/useFetchPasskeyList';
 import { useMatrixClient } from '@src/app/hooks/useMatrixClient';
-import { SyncDialog, SyncStatus } from './SyncDialog';
+import { useOwnerManage } from '@src/app/hooks/web3/useOwnerManage';
+import { SyncDialog } from './SyncDialog';
 import { RecoveryPhraseStep1 } from './RecoveryPhraseStep1';
 import { useChainConfig } from '../../../hooks/web3/useChainConfig';
-import { sleep } from '../../../utils/common';
-import { Token } from '../../../externalApis';
+import { FeeSessionResp } from '../../../externalApis';
 
 enum Step {
   Step1 = 'step1',
@@ -17,13 +18,14 @@ enum Step {
 
 export function RecoveryPhrase({ phrase, onClose }: { phrase: string; onClose: () => void }) {
   const [step, setStep] = useState<Step>(Step.Step1);
-  const [status, setStatus] = useState<SyncStatus>(SyncStatus.Init);
   const { availableChains } = useChainConfig();
   const chains = useMemo(() => availableChains.filter((chain) => chain.isMain), [availableChains]);
 
   const mx = useMatrixClient();
   const userId = mx.getUserId();
   const [passkeyData] = useFetchPasskeyList(userId!);
+
+  const { addOwnerByAddress, payFee } = useOwnerManage(passkeyData?.walletAddress as `0x${string}`);
 
   const customBody = useMemo(() => {
     if (step === Step.Step1) {
@@ -38,20 +40,15 @@ export function RecoveryPhrase({ phrase, onClose }: { phrase: string; onClose: (
       return undefined;
     }
 
-    // TODO fetch fee data
-    await sleep(1000);
-    const feeData = {
-      balance: '100',
-      symbol: 'USDT',
-      chainId: 97,
-      tokenAddr: '0xd878dfE2b33A07E7FB290c1578A0b3cbc8aDadEA',
-    } as Token;
-
-    return feeData;
-  }, [chains]);
+    const mnemonicAccount = mnemonicToAccount(phrase);
+    const feeSession = await addOwnerByAddress(mnemonicAccount.address);
+    return feeSession;
+  }, [chains, addOwnerByAddress, phrase]);
 
   // Use useAsyncCallback to manage asynchronous state
-  const [feeDataState, loadFeeData] = useAsyncCallback<Token | undefined, Error, []>(fetchFeeData);
+  const [feeDataState, loadFeeData] = useAsyncCallback<FeeSessionResp | undefined, Error, []>(
+    fetchFeeData
+  );
 
   const feeData = useMemo(() => {
     if (feeDataState.status !== AsyncStatus.Success) {
@@ -66,18 +63,6 @@ export function RecoveryPhrase({ phrase, onClose }: { phrase: string; onClose: (
       loadFeeData();
     }
   }, [chains, loadFeeData]);
-
-  const onConfirm = async () => {
-    setStatus(SyncStatus.Loading);
-    try {
-      // TODO, replace with actual recovery operation
-      await sleep(1000);
-      setStatus(SyncStatus.Success);
-    } catch (error) {
-      console.error(error);
-      setStatus(SyncStatus.Failed);
-    }
-  };
 
   const onDone = () => {
     onClose();
@@ -117,15 +102,12 @@ export function RecoveryPhrase({ phrase, onClose }: { phrase: string; onClose: (
       description="Add the recover phrase on chain to secure your account."
       customBody={customBody}
       aaAddress={passkeyData?.walletAddress || ''}
-      networkFeeData={feeData}
+      feeSessionData={feeData}
       prependElement={prependElement}
-      status={status}
       chains={chains}
       onClose={onClose}
-      onConfirm={onConfirm}
       onDone={onDone}
       onFail={onFail}
-      isSponsoredNetworkFee={false}
     />
   );
 }

@@ -38,7 +38,13 @@ export interface WalletdataChangeOwnerPostRequest {
      * @type {string}
      * @memberof WalletdataChangeOwnerPostRequest
      */
-    token?: string;
+    token: string;
+    /**
+     * 
+     * @type {Array<number>}
+     * @memberof WalletdataChangeOwnerPostRequest
+     */
+    chainId: Array<number>;
 }
 
 /**
@@ -46,6 +52,8 @@ export interface WalletdataChangeOwnerPostRequest {
  */
 export function instanceOfWalletdataChangeOwnerPostRequest(value: object): value is WalletdataChangeOwnerPostRequest {
     if (!('userOperation' in value) || value['userOperation'] === undefined) return false;
+    if (!('token' in value) || value['token'] === undefined) return false;
+    if (!('chainId' in value) || value['chainId'] === undefined) return false;
     return true;
 }
 
@@ -60,7 +68,8 @@ export function WalletdataChangeOwnerPostRequestFromJSONTyped(json: any, ignoreD
     return {
         
         'userOperation': UserOperationFromJSON(json['userOperation']),
-        'token': json['token'] == null ? undefined : json['token'],
+        'token': json['token'],
+        'chainId': json['chainId'],
     };
 }
 
@@ -77,6 +86,7 @@ export function WalletdataChangeOwnerPostRequestToJSONTyped(value?: WalletdataCh
         
         'userOperation': UserOperationToJSON(value['userOperation']),
         'token': value['token'],
+        'chainId': value['chainId'],
     };
 }
 

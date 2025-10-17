@@ -10,6 +10,7 @@ import { OntelloDialog } from '../ontello/OntelloDialog';
 export interface ReceiveChainInfo extends ChainConfig {
   address: string;
   supportedAssets: Token[];
+  description?: string;
 }
 
 export interface ReceiveUiState {
@@ -65,6 +66,12 @@ export function ReceiveUi({ onClose, chainsWithOtherInfo }: ReceiveUiProps) {
           </Text>
           <CopyIcon text={selectedChain?.address || ''} />
         </Box>
+
+        {selectedChain?.description && (
+          <Box>
+            <Text size="T300">{selectedChain.description}</Text>
+          </Box>
+        )}
 
         <Box direction="Row" gap="200" alignItems="Center" justifyContent="Start">
           <Box>

@@ -19,7 +19,8 @@ import type {
   WalletdataChainConfigGet200Response,
   WalletdataChangeOwnerPost200Response,
   WalletdataChangeOwnerPostRequest,
-  WalletdataConfirmPaymentGet200Response,
+  WalletdataConfirmPaymentPost200Response,
+  WalletdataConfirmPaymentPostRequest,
   WalletdataEnsGet200Response,
   WalletdataExchangeRateGet200Response,
   WalletdataFeeTokensGet200Response,
@@ -37,8 +38,10 @@ import {
     WalletdataChangeOwnerPost200ResponseToJSON,
     WalletdataChangeOwnerPostRequestFromJSON,
     WalletdataChangeOwnerPostRequestToJSON,
-    WalletdataConfirmPaymentGet200ResponseFromJSON,
-    WalletdataConfirmPaymentGet200ResponseToJSON,
+    WalletdataConfirmPaymentPost200ResponseFromJSON,
+    WalletdataConfirmPaymentPost200ResponseToJSON,
+    WalletdataConfirmPaymentPostRequestFromJSON,
+    WalletdataConfirmPaymentPostRequestToJSON,
     WalletdataEnsGet200ResponseFromJSON,
     WalletdataEnsGet200ResponseToJSON,
     WalletdataExchangeRateGet200ResponseFromJSON,
@@ -71,9 +74,9 @@ export interface WalletdataChangeOwnerPostOperationRequest {
     WalletdataChangeOwnerPostRequest?: WalletdataChangeOwnerPostRequest;
 }
 
-export interface WalletdataConfirmPaymentGetRequest {
-    session: string;
+export interface WalletdataConfirmPaymentPostOperationRequest {
     Authorization?: string;
+    WalletdataConfirmPaymentPostRequest?: WalletdataConfirmPaymentPostRequest;
 }
 
 export interface WalletdataEnsGetRequest {
@@ -266,21 +269,12 @@ export class ImWalletApi extends runtime.BaseAPI {
      * 
      * confirm_payment
      */
-    async walletdataConfirmPaymentGetRaw(requestParameters: WalletdataConfirmPaymentGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<WalletdataConfirmPaymentGet200Response>> {
-        if (requestParameters['session'] == null) {
-            throw new runtime.RequiredError(
-                'session',
-                'Required parameter "session" was null or undefined when calling walletdataConfirmPaymentGet().'
-            );
-        }
-
+    async walletdataConfirmPaymentPostRaw(requestParameters: WalletdataConfirmPaymentPostOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<WalletdataConfirmPaymentPost200Response>> {
         const queryParameters: any = {};
 
-        if (requestParameters['session'] != null) {
-            queryParameters['session'] = requestParameters['session'];
-        }
-
         const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
 
         if (requestParameters['Authorization'] != null) {
             headerParameters['Authorization'] = String(requestParameters['Authorization']);
@@ -296,20 +290,21 @@ export class ImWalletApi extends runtime.BaseAPI {
         }
         const response = await this.request({
             path: `/walletdata/confirm_payment`,
-            method: 'GET',
+            method: 'POST',
             headers: headerParameters,
             query: queryParameters,
+            body: WalletdataConfirmPaymentPostRequestToJSON(requestParameters['WalletdataConfirmPaymentPostRequest']),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => WalletdataConfirmPaymentGet200ResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => WalletdataConfirmPaymentPost200ResponseFromJSON(jsonValue));
     }
 
     /**
      * 
      * confirm_payment
      */
-    async walletdataConfirmPaymentGet(requestParameters: WalletdataConfirmPaymentGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<WalletdataConfirmPaymentGet200Response> {
-        const response = await this.walletdataConfirmPaymentGetRaw(requestParameters, initOverrides);
+    async walletdataConfirmPaymentPost(requestParameters: WalletdataConfirmPaymentPostOperationRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<WalletdataConfirmPaymentPost200Response> {
+        const response = await this.walletdataConfirmPaymentPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

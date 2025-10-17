@@ -1,11 +1,12 @@
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { Box, Button, Text, Checkbox, config, Spinner } from 'folds';
-import { ChainConfig, Token, walletApi } from '@src/app/externalApis';
+import { ChainConfig, FeeSessionResp, Token, walletApi } from '@src/app/externalApis';
 import { ContainerColor } from '@src/app/styles/ContainerColor.css';
 import { hexToBase58 } from '@src/app/utils/ontello/crypto';
 import { OntelloDialog } from '../../ontello/OntelloDialog';
 import { useChainConfig } from '../../../hooks/web3/useChainConfig';
 import { ReceiveUi, ReceiveChainInfo } from '../ReceiveUi';
+import { useOwnerManage } from '../../../hooks/web3/useOwnerManage';
 
 export enum SyncStatus {
   Init = 'init',
@@ -19,11 +20,9 @@ export function SyncDialog({
   description,
   prependElement,
   customBody,
-  status,
   chains,
   chainsNotAllowedToSelect = [],
   onClose,
-  onConfirm,
   onDone,
   onFail,
   confirmButtonText = 'Confirm',
@@ -33,8 +32,7 @@ export function SyncDialog({
   failText = 'Failed',
   failTextDescription = '',
   aaAddress,
-  isSponsoredNetworkFee,
-  networkFeeData,
+  feeSessionData,
   selectedChainIds = [],
   setSelectedChainIds,
 }: {
@@ -42,11 +40,9 @@ export function SyncDialog({
   description?: string;
   prependElement?: React.ReactNode;
   customBody?: React.ReactNode;
-  status: SyncStatus;
   chains: ChainConfig[];
   chainsNotAllowedToSelect?: ChainConfig[];
   onClose: () => void;
-  onConfirm: (chains: ChainConfig[]) => void;
   onDone: () => void;
   onFail: () => void;
   confirmButtonText?: string;
@@ -56,14 +52,23 @@ export function SyncDialog({
   failText?: string;
   failTextDescription?: string;
   aaAddress: string;
-  isSponsoredNetworkFee: boolean;
-  networkFeeData?: Token;
+  feeSessionData?: FeeSessionResp;
   selectedChainIds?: number[];
   setSelectedChainIds?: (chainIds: number[]) => void;
 }) {
+  const [status, setStatus] = useState<SyncStatus>(SyncStatus.Init);
   const [showReceiveUi, setShowReceiveUi] = useState(false);
   const chainsCanSelect = useMemo(() => chains.length > 1, [chains]);
+  const networkFeeData = useMemo(() => {
+    if (!feeSessionData) return undefined;
+    return feeSessionData.fee;
+  }, [feeSessionData]);
+  const isSponsoredNetworkFee = useMemo(() => {
+    if (!feeSessionData) return false;
+    return feeSessionData.isPaymaster;
+  }, [feeSessionData]);
   const { availableChains } = useChainConfig();
+  const { payFee } = useOwnerManage(aaAddress as `0x${string}`);
 
   const toggleSelect = (chainId: number) => {
     if (!selectedChainIds || !setSelectedChainIds) return;
@@ -124,15 +129,24 @@ export function SyncDialog({
       ...receiveChainInfo,
       chainName: 'Ontology Native',
       chainNameView: 'Ontology Native',
+      iconUrls: ['https://img.ontello.app/Ontologynative.png'],
       address: hexToBase58(receiveChainInfo.address),
       supportedAssets: [networkFeeData],
+      description: 'You can top up this address through an exchange or Ontology chain.',
     };
   }, [receiveChainInfo, networkFeeData]);
 
-  const receiveChainInfoList = useMemo(
-    () => [receiveChainInfo, receiveOntolagyNativeChainInfo].filter((chain) => !!chain),
-    [receiveChainInfo, receiveOntolagyNativeChainInfo]
-  );
+  const receiveChainInfoList = useMemo(() => {
+    const receiveChainInfoWithDesc: ReceiveChainInfo | undefined = receiveChainInfo
+      ? {
+          ...receiveChainInfo,
+          description: receiveOntolagyNativeChainInfo
+            ? 'You can top up this address through Ontology EVM.'
+            : undefined,
+        }
+      : undefined;
+    return [receiveChainInfoWithDesc, receiveOntolagyNativeChainInfo].filter((chain) => !!chain);
+  }, [receiveChainInfo, receiveOntolagyNativeChainInfo]);
 
   const selectedChains = useMemo(() => {
     if (chainsCanSelect && selectedChainIds) {
@@ -176,16 +190,41 @@ export function SyncDialog({
     setShowReceiveUi(true);
   };
 
+  const confirmClick = useCallback(async () => {
+    setStatus(SyncStatus.Loading);
+    try {
+      if (!feeSessionData) {
+        throw new Error('Fee data not found');
+      }
+      await payFee(
+        feeSessionData.session as `0x${string}`,
+        feeSessionData.fee.tokenAddr as `0x${string}`,
+        BigInt(feeSessionData.fee.balance)
+      );
+
+      await walletApi.walletdataConfirmPaymentPost({
+        WalletdataConfirmPaymentPostRequest: {
+          session: feeSessionData.session as `0x${string}`,
+        },
+      });
+
+      setStatus(SyncStatus.Success);
+    } catch (error) {
+      console.error(error);
+      setStatus(SyncStatus.Failed);
+    }
+  }, [feeSessionData, payFee]);
+
   const buttonClick = useMemo(() => {
     if (showNeedTopUpFeeToken) return () => onTopUpFeeToken();
-    if (status === SyncStatus.Init) return () => onConfirm(selectedChains);
+    if (status === SyncStatus.Init) return () => confirmClick();
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     if (status === SyncStatus.Loading) return () => {};
     if (status === SyncStatus.Success) return () => onDone();
     if (status === SyncStatus.Failed) return () => onFail();
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     return () => {};
-  }, [showNeedTopUpFeeToken, status, onConfirm, onDone, onFail, selectedChains]);
+  }, [showNeedTopUpFeeToken, status, confirmClick, onDone, onFail]);
 
   const successEl = (
     <Box direction="Column" alignItems="Center" gap="300">
