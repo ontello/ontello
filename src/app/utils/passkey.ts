@@ -298,7 +298,10 @@ export interface WebAuthnSignature {
 export const signMessageWithPasskey = async (message: Hex): Promise<WebAuthnSignature> => {
   try {
     console.log('message', message);
+    // const prefixedMessageHash = hashMessage({ raw: message });
+    // const challenge = hexToBytes(prefixedMessageHash);
     const challenge = hexToBytes(message);
+
     // const challenge = hexToArrayBuffer(prefixedMessageHash);
     // const challenge = hexToUint8Array(prefixedMessageHash);
 

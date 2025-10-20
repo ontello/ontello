@@ -146,11 +146,7 @@ export const useOwnerManage = (aaAddress: Address) => {
       args,
     });
     const { userOp } = await buildOwnerManageUserOperation([call], signMessageFunc);
-    const aaa = await walletApi.walletdataFeeTokensGet();
-    console.log('aaa', aaa);
-    const feeTokens = aaa.result;
-    // const feeTokens = (await walletApi.walletdataFeeTokensGet()).result;
-    console.log('feeTokens', feeTokens);
+    const feeTokens = (await walletApi.walletdataFeeTokensGet()).result;
 
     const res = await walletApi.walletdataChangeOwnerPost({
       WalletdataChangeOwnerPostRequest: {

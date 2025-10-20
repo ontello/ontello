@@ -117,7 +117,7 @@ export function OwnerItem({
       {isRemoveDialogOpen && (
         <RevokePasskey
           targetPublicKeyBase64={credential.publicKey}
-          onClose={() => setIsRemoveDialogOpen(true)}
+          onClose={() => setIsRemoveDialogOpen(false)}
           onSuccess={revokedHandle}
         />
       )}
