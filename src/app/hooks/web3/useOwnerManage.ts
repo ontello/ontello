@@ -15,7 +15,8 @@ const NONCE_KEY = BigInt(5851);
 const INITIAL_NONCE = NONCE_KEY << BigInt(64);
 
 export const useOwnerManage = (aaAddress: Address) => {
-  const { getCurrentKeyIndex, buildCallData, buildUserOperation } = useAbstractAccount(aaAddress);
+  const { getCurrentKeyIndex, buildCallData, buildUserOperation, getKeyIndexThroughAddress } =
+    useAbstractAccount(aaAddress);
   const { getWeb3PublicClient, createWeb3Clients } = useWeb3Client();
   const { publicClient: ethClient, chainConfig } = getWeb3PublicClient();
   const { mainChainConfig } = useChainConfig();
@@ -33,6 +34,7 @@ export const useOwnerManage = (aaAddress: Address) => {
 
   const buildOwnerManageUserOperation = async (
     calls: Hex[],
+    keyIndex: bigint,
     signMessageFunc?: (message: Hex) => Promise<Hex>
   ) => {
     // eslint-disable-next-line no-bitwise
@@ -57,7 +59,7 @@ export const useOwnerManage = (aaAddress: Address) => {
       signature: '0x' as Hex,
     };
     const userOpHash = await AccountContract.read.getUserOpHashWithoutChainId([userOp]);
-    const keyIndex = await getCurrentKeyIndex();
+    // const keyIndex = await getCurrentKeyIndex();
     userOp.signature = await getUserOpSignature(userOpHash, keyIndex, signMessageFunc);
 
     const validateUserOp = await ethClient.readContract({
@@ -138,6 +140,7 @@ export const useOwnerManage = (aaAddress: Address) => {
     operation: ReplayOperation,
     args: unknown[],
     chainIds: number[],
+    keyIndex?: bigint,
     signMessageFunc?: (message: Hex) => Promise<Hex>
   ): Promise<FeeSessionResp> => {
     const call = encodeFunctionData({
@@ -145,7 +148,8 @@ export const useOwnerManage = (aaAddress: Address) => {
       functionName: operation,
       args,
     });
-    const { userOp } = await buildOwnerManageUserOperation([call], signMessageFunc);
+    const keyIndexUsed = keyIndex ?? (await getCurrentKeyIndex());
+    const { userOp } = await buildOwnerManageUserOperation([call], keyIndexUsed, signMessageFunc);
     const feeTokens = (await walletApi.walletdataFeeTokensGet()).result;
 
     const res = await walletApi.walletdataChangeOwnerPost({
@@ -167,18 +171,20 @@ export const useOwnerManage = (aaAddress: Address) => {
   const addOwnerByPublicKey = async (mnemonic: string, username: string, chainIds: number[]) => {
     const mnemonicAccount = mnemonicToAccount(mnemonic);
     const { x, y } = await registerWithPasskey(username);
+    const keyIndex = await getKeyIndexThroughAddress(mnemonicAccount.address);
     const feeSession = await changeOwner(
       ReplayOperation.AddOwnerPublicKey,
       [toHex(new Uint8Array(x)), toHex(new Uint8Array(y))],
       chainIds,
-      (message) => mnemonicAccount.signMessage({ message: { raw: message } })
+      keyIndex,
+      // (message) => mnemonicAccount.signMessage({ message: { raw: message } }),
+      (message) => mnemonicAccount.sign({ hash: message })
     );
     return feeSession;
   };
   const removeOwner = async (targetPublicKeyBase64: string, chainIds: number[]) => {
     const xy = fromBase64Url(targetPublicKeyBase64);
     const xyHex = toHex(new Uint8Array(xy));
-
     const feeSession = await changeOwner(ReplayOperation.RemoveOwner, [xyHex], chainIds);
     return feeSession;
   };
