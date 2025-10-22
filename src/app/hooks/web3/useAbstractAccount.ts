@@ -338,7 +338,7 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
     ]);
 
     const { userOp, userOpHash } = await buildUserOperation(callData, keyIndex, (message) =>
-      mnemonicAccount.signMessage({ message: { raw: message } })
+      mnemonicAccount.sign({ hash: message })
     );
 
     await sendUserOperation(userOp);

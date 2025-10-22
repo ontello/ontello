@@ -1,6 +1,6 @@
 /* eslint-disable no-await-in-loop */
 import { type MatrixClient } from 'matrix-js-sdk';
-import { hashMessage, Hex, stringToBytes, toBytes, toHex, hexToBytes } from 'viem';
+import { Hex, toHex } from 'viem';
 import { v4 as uuidv4 } from 'uuid';
 import { getPasskeyCredentials } from '../extendApis';
 
@@ -11,6 +11,21 @@ export function toBase64Url(input: ArrayBuffer): string {
   base64 = base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
   return base64;
 }
+
+export function hexToUint8Array(hex: string) {
+  const normalized = hex.startsWith('0x') ? hex.slice(2) : hex;
+  if (normalized.length % 2 !== 0) {
+    throw new Error('Hex string must be even');
+  }
+
+  const bytes = new Uint8Array(normalized.length / 2);
+  for (let i = 0; i < bytes.length; i += 1) {
+    bytes[i] = parseInt(normalized.slice(i * 2, i * 2 + 2), 16);
+  }
+
+  return bytes;
+}
+
 export function fromBase64Url(base64url: string): ArrayBuffer {
   let base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
   while (base64.length % 4) {
@@ -161,7 +176,7 @@ export const createPasskey = async (name: string, challenge: ArrayBuffer) => {
   // const userIdArray = new TextEncoder().encode(name);
   const uuid = uuidv4();
   const uuidBytes = new TextEncoder().encode(uuid);
-  const publicKeyCredentialCreationOptions = {
+  const publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions = {
     challenge,
     rp: {
       name: 'ONT IM',
@@ -186,7 +201,7 @@ export const createPasskey = async (name: string, challenge: ArrayBuffer) => {
     timeout: 60000,
   };
   const credential = (await navigator.credentials.create({
-    publicKey: publicKeyCredentialCreationOptions as any,
+    publicKey: publicKeyCredentialCreationOptions,
   })) as PublicKeyCredential;
   return credential;
 };
@@ -300,13 +315,13 @@ export const signMessageWithPasskey = async (message: Hex): Promise<WebAuthnSign
     console.log('message', message);
     // const prefixedMessageHash = hashMessage({ raw: message });
     // const challenge = hexToBytes(prefixedMessageHash);
-    const challenge = hexToBytes(message);
+    const challenge = hexToUint8Array(message);
 
     // const challenge = hexToArrayBuffer(prefixedMessageHash);
     // const challenge = hexToUint8Array(prefixedMessageHash);
 
     console.log('challenge', challenge);
-    console.log('challengeBase64Url', toBase64Url(challenge));
+    console.log('challengeBase64Url', toBase64Url(challenge.buffer));
 
     const { response } = await signWithPasskey(challenge);
     const { signature, authenticatorData, clientDataJSON } =
