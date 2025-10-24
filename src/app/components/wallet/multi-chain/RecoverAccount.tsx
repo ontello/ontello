@@ -67,6 +67,7 @@ export function RecoverAccount({
     } catch (error) {
       console.error(error);
       setStatus(SyncStatus.Init);
+      throw error;
     }
   };
 

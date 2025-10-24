@@ -17,6 +17,12 @@ export enum SyncStatus {
   Failed = 'failed',
 }
 
+enum EstimateFeeStatus {
+  Init = 'init',
+  Success = 'success',
+  Failed = 'failed',
+}
+
 export function SyncDialog({
   title,
   description,
@@ -67,6 +73,10 @@ export function SyncDialog({
   setStatus: (status: SyncStatus) => void;
 }) {
   const [showReceiveUi, setShowReceiveUi] = useState(false);
+  const [estimateFeeStatus, setEstimateFeeStatus] = useState<EstimateFeeStatus>(
+    EstimateFeeStatus.Init
+  );
+
   const chainsCanSelect = useMemo(() => {
     if (chainsCannotSelectFlag) return false;
     return chains.length > 1;
@@ -244,9 +254,20 @@ export function SyncDialog({
     }
   }, [feeSessionData, setStatus, isSponsoredNetworkFee]);
 
+  const doEstimateFee = useCallback(async () => {
+    try {
+      setEstimateFeeStatus(EstimateFeeStatus.Init);
+      await onEstimateFee();
+      setEstimateFeeStatus(EstimateFeeStatus.Success);
+    } catch (error) {
+      console.error(error);
+      setEstimateFeeStatus(EstimateFeeStatus.Failed);
+    }
+  }, [onEstimateFee]);
+
   const buttonClick = useMemo(() => {
     if (showNeedTopUpFeeToken) return () => onTopUpFeeToken();
-    if (status === SyncStatus.Init) return () => onEstimateFee();
+    if (status === SyncStatus.Init) return () => doEstimateFee();
     if (status === SyncStatus.EstimatedFeeLoaded) return () => confirmClick();
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     if (status === SyncStatus.Loading) return () => {};
@@ -254,7 +275,7 @@ export function SyncDialog({
     if (status === SyncStatus.Failed) return () => onFail();
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     return () => {};
-  }, [showNeedTopUpFeeToken, status, confirmClick, onDone, onFail, onEstimateFee]);
+  }, [showNeedTopUpFeeToken, status, confirmClick, onDone, onFail, doEstimateFee]);
 
   const successEl = (
     <Box direction="Column" alignItems="Center" gap="300">
@@ -341,6 +362,14 @@ export function SyncDialog({
             </Box>
           )}
         </Box>
+
+        {estimateFeeStatus === EstimateFeeStatus.Failed && (
+          <Box direction="Column" gap="200">
+            <Text size="T200" style={{ color: '#FF0000' }}>
+              Fee estimation failed, please try again
+            </Text>
+          </Box>
+        )}
 
         {networkFeeData && !yourNetworkFeeTokenData && !isSponsoredNetworkFee && (
           <Box gap="200">

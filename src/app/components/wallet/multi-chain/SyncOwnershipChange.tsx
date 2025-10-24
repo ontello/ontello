@@ -63,6 +63,7 @@ export function SyncOwnershipChange({
     } catch (error) {
       console.error(error);
       setStatus(SyncStatus.Init);
+      throw error;
     }
   };
 

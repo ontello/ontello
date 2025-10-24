@@ -70,6 +70,7 @@ export function RecoveryPhrase({ phrase, onClose }: { phrase: string; onClose: (
     } catch (error) {
       console.error(error);
       setStatus(SyncStatus.Init);
+      throw error;
     }
   };
 
