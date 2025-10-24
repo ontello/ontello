@@ -56,7 +56,7 @@ export function SyncDialog({
   chainsNotAllowedToSelect?: ChainConfig[];
   chainsCannotSelectFlag?: boolean;
   onEstimateFee: () => Promise<void>;
-  onClose: () => void;
+  onClose: (status?: SyncStatus) => void;
   onDone: () => void;
   onFail: () => void;
   confirmButtonText?: string;
@@ -106,6 +106,10 @@ export function SyncDialog({
   };
 
   const [yourNetworkFeeTokenData, setYourNetworkFeeTokenData] = useState<Token | undefined>();
+
+  const onCloseWithStatus = useCallback(() => {
+    onClose(status);
+  }, [onClose, status]);
 
   const fetchYourNetworkFeeTokenData = useCallback(async () => {
     if (!aaAddress) return;
@@ -399,7 +403,7 @@ export function SyncDialog({
   }
 
   return (
-    <OntelloDialog onClose={onClose} title={title}>
+    <OntelloDialog onClose={onCloseWithStatus} title={title}>
       {customBody || (
         <Box
           direction="Column"
