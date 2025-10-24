@@ -8,6 +8,7 @@ import { createClient } from 'matrix-js-sdk';
 import { useAutoDiscoveryInfo } from '@src/app/hooks/useAutoDiscoveryInfo';
 import { RecoverAccount } from '@src/app/components/wallet/multi-chain/RecoverAccount';
 import { useNavigate } from 'react-router-dom';
+import { mnemonicToAccount } from 'viem/accounts';
 import { getLoginPath } from '../../pathUtils';
 import { FieldError } from '../FiledError';
 
@@ -21,8 +22,8 @@ export function RecoveryKeyForm() {
   const mx = useMemo(() => createClient({ baseUrl }), [baseUrl]);
 
   const [address, setAddress] = useState<Address>('0x');
-  const [shouldRecover, setShouldRecover] = useState(false); // 控制恢复操作
-  const { recoveryAccount } = useAbstractAccount(address);
+  // const [shouldRecover, setShouldRecover] = useState(false); // 控制恢复操作
+  // const { recoveryAccount } = useAbstractAccount(address);
   const navigate = useNavigate();
 
   const [errorData, setErrorData] = useState<string | null>(null);
@@ -38,26 +39,26 @@ export function RecoveryKeyForm() {
       const aaAddress = (await getPasskeyCredentials(mx, `@${form.username}:${server}`))
         .walletAddress;
       setAddress(aaAddress);
-      // setShouldRecover(true);
+      mnemonicToAccount(form.recoveryKey); // check
       setShowRecoverAccount(true);
     } catch (error) {
       setErrorData('Recovery failed, please check the username and mnemonic.');
     }
   };
-  useEffect(() => {
-    if (address && shouldRecover) {
-      recoveryAccount(form.recoveryKey, form.username)
-        .then((receipt) => {
-          const loginPath = getLoginPath(server);
-          navigate(loginPath);
-        })
-        .catch((error) => {
-          setErrorData('Recovery failed, please check the username and mnemonic.');
-          console.error('Recovery failed:', error);
-          setShouldRecover(false);
-        });
-    }
-  }, [address, shouldRecover, form.recoveryKey, form.username, recoveryAccount, navigate, server]);
+  // useEffect(() => {
+  //   if (address && shouldRecover) {
+  // recoveryAccount(form.recoveryKey, form.username)
+  //   .then((receipt) => {
+  //     const loginPath = getLoginPath(server);
+  //     navigate(loginPath);
+  //   })
+  //   .catch((error) => {
+  //     setErrorData('Recovery failed, please check the username and mnemonic.');
+  //     console.error('Recovery failed:', error);
+  //     setShouldRecover(false);
+  //   });
+  //   }
+  // }, [address, form.recoveryKey, shouldRecover]);
 
   return (
     <Box as="form" onSubmit={handleSubmit} direction="Inherit" gap="400">
@@ -100,10 +101,9 @@ export function RecoveryKeyForm() {
         type="submit"
         variant="Primary"
         size="500"
-        disabled={!form.username || !form.recoveryKey || shouldRecover}
+        disabled={!form.username || !form.recoveryKey}
       >
-        {shouldRecover && <Spinner />}
-        {/* <Spinner /> */}
+        {/* {shouldRecover && <Spinner />} */}
         <Text as="span" size="B500">
           Recover
         </Text>
