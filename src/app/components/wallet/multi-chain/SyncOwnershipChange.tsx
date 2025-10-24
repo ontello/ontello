@@ -10,9 +10,11 @@ import { SyncDialog, SyncStatus } from './SyncDialog';
 export function SyncOwnershipChange({
   chainIds,
   onClose,
+  onSuccess,
 }: {
   chainIds: number[];
   onClose: () => void;
+  onSuccess?: () => void;
 }) {
   const mx = useMatrixClient();
   const userId = mx.getUserId();
@@ -63,11 +65,19 @@ export function SyncOwnershipChange({
     } catch (error) {
       console.error(error);
       setStatus(SyncStatus.Init);
+      throw error;
     }
   };
 
-  const onDone = () => {
+  const onCloseWithStatus = (closeStatus?: SyncStatus) => {
+    if (closeStatus === SyncStatus.Success && onSuccess) {
+      onSuccess?.();
+    }
     onClose();
+  };
+
+  const onDone = () => {
+    onCloseWithStatus(SyncStatus.Success);
   };
 
   const onFail = () => {
@@ -88,7 +98,7 @@ export function SyncOwnershipChange({
       description={description}
       chains={chains}
       onEstimateFee={onEstimateFee}
-      onClose={onClose}
+      onClose={onCloseWithStatus}
       onDone={onDone}
       onFail={onFail}
       successText="Sync successful"

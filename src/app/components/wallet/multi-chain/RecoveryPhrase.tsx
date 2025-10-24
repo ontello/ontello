@@ -16,7 +16,15 @@ enum Step {
   Step2 = 'step2',
 }
 
-export function RecoveryPhrase({ phrase, onClose }: { phrase: string; onClose: () => void }) {
+export function RecoveryPhrase({
+  phrase,
+  onClose,
+  onSuccess,
+}: {
+  phrase: string;
+  onClose: () => void;
+  onSuccess?: () => void;
+}) {
   const [step, setStep] = useState<Step>(Step.Step1);
   const { availableChains } = useChainConfig();
   const chains = useMemo(() => availableChains.filter((chain) => chain.isMain), [availableChains]);
@@ -70,11 +78,19 @@ export function RecoveryPhrase({ phrase, onClose }: { phrase: string; onClose: (
     } catch (error) {
       console.error(error);
       setStatus(SyncStatus.Init);
+      throw error;
     }
   };
 
-  const onDone = () => {
+  const onCloseWithStatus = (closeStatus?: SyncStatus) => {
+    if (closeStatus === SyncStatus.Success && onSuccess) {
+      onSuccess?.();
+    }
     onClose();
+  };
+
+  const onDone = () => {
+    onCloseWithStatus(SyncStatus.Success);
   };
 
   const onFail = () => {
@@ -115,7 +131,7 @@ export function RecoveryPhrase({ phrase, onClose }: { phrase: string; onClose: (
       prependElement={prependElement}
       chains={chains}
       onEstimateFee={onEstimateFee}
-      onClose={onClose}
+      onClose={onCloseWithStatus}
       onDone={onDone}
       onFail={onFail}
       status={status}

@@ -15,7 +15,7 @@ export function RecoverAccount({
   username: string;
   aaAddress: string;
   recoveryPhrase: string;
-  onSuccess: () => void;
+  onSuccess?: () => void;
   onClose: () => void;
 }) {
   const [status, setStatus] = useState<SyncStatus>(SyncStatus.Init);
@@ -67,12 +67,19 @@ export function RecoverAccount({
     } catch (error) {
       console.error(error);
       setStatus(SyncStatus.Init);
+      throw error;
     }
   };
 
-  const onDone = () => {
-    onSuccess();
+  const onCloseWithStatus = (closeStatus?: SyncStatus) => {
+    if (closeStatus === SyncStatus.Success && onSuccess) {
+      onSuccess();
+    }
     onClose();
+  };
+
+  const onDone = () => {
+    onCloseWithStatus(SyncStatus.Success);
   };
 
   const onFail = () => {
@@ -86,7 +93,7 @@ export function RecoverAccount({
       chains={availableChains}
       chainsNotAllowedToSelect={chainsNotAllowedToSelect}
       onEstimateFee={onEstimateFee}
-      onClose={onClose}
+      onClose={onCloseWithStatus}
       onDone={onDone}
       onFail={onFail}
       feeSessionData={feeSessionData}
