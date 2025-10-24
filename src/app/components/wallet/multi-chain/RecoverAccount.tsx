@@ -15,7 +15,7 @@ export function RecoverAccount({
   username: string;
   aaAddress: string;
   recoveryPhrase: string;
-  onSuccess: () => void;
+  onSuccess?: () => void;
   onClose: () => void;
 }) {
   const [status, setStatus] = useState<SyncStatus>(SyncStatus.Init);
@@ -72,7 +72,7 @@ export function RecoverAccount({
   };
 
   const onCloseWithStatus = (closeStatus?: SyncStatus) => {
-    if (closeStatus === SyncStatus.Success) {
+    if (closeStatus === SyncStatus.Success && onSuccess) {
       onSuccess();
     }
     onClose();

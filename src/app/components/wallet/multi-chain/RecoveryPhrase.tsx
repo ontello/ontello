@@ -23,7 +23,7 @@ export function RecoveryPhrase({
 }: {
   phrase: string;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess?: () => void;
 }) {
   const [step, setStep] = useState<Step>(Step.Step1);
   const { availableChains } = useChainConfig();
@@ -83,8 +83,8 @@ export function RecoveryPhrase({
   };
 
   const onCloseWithStatus = (closeStatus?: SyncStatus) => {
-    if (closeStatus === SyncStatus.Success) {
-      onSuccess();
+    if (closeStatus === SyncStatus.Success && onSuccess) {
+      onSuccess?.();
     }
     onClose();
   };

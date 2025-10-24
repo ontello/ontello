@@ -14,7 +14,7 @@ export function SyncOwnershipChange({
 }: {
   chainIds: number[];
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess?: () => void;
 }) {
   const mx = useMatrixClient();
   const userId = mx.getUserId();
@@ -70,8 +70,8 @@ export function SyncOwnershipChange({
   };
 
   const onCloseWithStatus = (closeStatus?: SyncStatus) => {
-    if (closeStatus === SyncStatus.Success) {
-      onSuccess();
+    if (closeStatus === SyncStatus.Success && onSuccess) {
+      onSuccess?.();
     }
     onClose();
   };
