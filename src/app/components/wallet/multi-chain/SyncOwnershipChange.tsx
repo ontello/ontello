@@ -29,13 +29,16 @@ export function SyncOwnershipChange({
 
   const [needSyncChainIds, setNeedSyncChainIds] = useState<number[]>([]);
   const [isGettingSyncStatus, setIsGettingSyncStatus] = useState(false);
+  const [selectedChainIds, setSelectedChainIds] = useState<number[]>([]);
 
   useEffect(() => {
     setIsGettingSyncStatus(true);
     getSyncStatusRef
       .current(chainIds)
       .then((syncStatus) => {
-        setNeedSyncChainIds(chainIds.filter((chainId) => !syncStatus[chainId]));
+        const needSyncIds = chainIds.filter((chainId) => !syncStatus[chainId]);
+        setNeedSyncChainIds(needSyncIds);
+        setSelectedChainIds(needSyncIds);
       })
       .finally(() => {
         setIsGettingSyncStatus(false);
@@ -46,10 +49,6 @@ export function SyncOwnershipChange({
   const chains = useMemo(
     () => availableChains.filter((chain) => needSyncChainIds.includes(chain.chainId)),
     [availableChains, needSyncChainIds]
-  );
-
-  const [selectedChainIds, setSelectedChainIds] = useState<number[]>(
-    chains.map((chain) => chain.chainId)
   );
 
   const [status, setStatus] = useState<SyncStatus>(SyncStatus.Init);
