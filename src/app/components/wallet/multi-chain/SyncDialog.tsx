@@ -362,7 +362,7 @@ export function SyncDialog({
           </Box>
           {isSponsoredNetworkFee && (
             <Box direction="Row" gap="200" justifyContent="End" alignItems="Center">
-              <Text size="T300">Sponsored by Ontology</Text>
+              <Text size="T300">Sponsored by Ontello</Text>
             </Box>
           )}
         </Box>
