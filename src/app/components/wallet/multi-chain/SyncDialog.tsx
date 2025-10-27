@@ -212,16 +212,6 @@ export function SyncDialog({
     return false;
   }, [status, feeInfoIsLoaded, chains, selectedChains]);
 
-  const buttonText = useMemo(() => {
-    if (showNeedTopUpFeeToken) return 'Fund wallet';
-    if (status === SyncStatus.Init) return 'Estimate fee';
-    if (status === SyncStatus.EstimatedFeeLoaded) return confirmButtonText;
-    if (status === SyncStatus.Loading) return 'Loading...';
-    if (status === SyncStatus.Success) return doneButtonText;
-    if (status === SyncStatus.Failed) return failButtonText;
-    return '';
-  }, [showNeedTopUpFeeToken, status, confirmButtonText, doneButtonText, failButtonText]);
-
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   const onTopUpFeeToken = () => {
     setShowReceiveUi(true);
@@ -237,11 +227,11 @@ export function SyncDialog({
       if (!isSponsoredNetworkFee) {
         await payFeeRef.current(
           feeSessionData.session as `0x${string}`,
-          feeSessionData.fee.tokenAddr as `0x${string}`,
           parseUnits(
-            feeSessionData.fee.balance, // 小数字符串，如 "0.001"
-            feeSessionData.fee.decimals // 小数位数，如 18
-          )
+            feeSessionData.fee.balance, // string, e.g. "0.001"
+            feeSessionData.fee.decimals // number, e.g. 18
+          ),
+          (feeSessionData.fee.tokenAddr as `0x${string}`) || undefined
         );
       }
 
@@ -268,6 +258,16 @@ export function SyncDialog({
       setEstimateFeeStatus(EstimateFeeStatus.Failed);
     }
   }, [onEstimateFee]);
+
+  const buttonText = useMemo(() => {
+    if (showNeedTopUpFeeToken) return 'Fund wallet';
+    if (status === SyncStatus.Init) return 'Estimate fee';
+    if (status === SyncStatus.EstimatedFeeLoaded) return confirmButtonText;
+    if (status === SyncStatus.Loading) return 'Loading...';
+    if (status === SyncStatus.Success) return doneButtonText;
+    if (status === SyncStatus.Failed) return failButtonText;
+    return '';
+  }, [showNeedTopUpFeeToken, status, confirmButtonText, doneButtonText, failButtonText]);
 
   const buttonClick = useMemo(() => {
     if (showNeedTopUpFeeToken) return () => onTopUpFeeToken();
