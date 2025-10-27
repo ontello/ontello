@@ -54,7 +54,7 @@ export function ReviewTransferContent({
         // Get sending token balance
         const tokenRes = await walletApi.walletdataTransferBalanceGet({
           chain_id: transferData.chainId,
-          token_addr: transferData.token.address || '0x0000000000000000000000000000000000000000',
+          token_addr: transferData.token.address || '',
           addr: aaAddress,
         });
         setTokenBalance(tokenRes.result.balance || '0');
@@ -62,7 +62,7 @@ export function ReviewTransferContent({
         // Get fee token balance
         const feeRes = await walletApi.walletdataTransferBalanceGet({
           chain_id: transferData.chainId,
-          token_addr: transferData.fee.address,
+          token_addr: transferData.fee.address || '',
           addr: aaAddress,
         });
         setFeeTokenBalance(feeRes.result.balance || '0');
@@ -125,7 +125,7 @@ export function ReviewTransferContent({
       const feeBal = parseFloat(feeTokenBalance);
 
       // Three scenarios of balance validation
-      if (transferData.token.address?.toLowerCase() === transferData.fee.address.toLowerCase()) {
+      if (transferData.token.address?.toLowerCase() === transferData.fee.address?.toLowerCase()) {
         // Same token for both transfer and fee
         if (tokenBal < sendAmount + feeInToken) {
           throw new Error('Insufficient balance');

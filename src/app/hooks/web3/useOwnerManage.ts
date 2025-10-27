@@ -74,8 +74,9 @@ export const useOwnerManage = (aaAddress: Address) => {
     return { userOp, userOpHash };
   };
 
-  const payFee = async (session: Hex, token: Address, amount: bigint) => {
+  const payFee = async (session: string, amount: bigint, token?: Address) => {
     const keyIndex = await getCurrentKeyIndex();
+    const sessionHex = toHex(session.replace(/-/g, ''), { size: 32 });
 
     const operations: BuildUserOperationParams = [
       {
@@ -84,8 +85,9 @@ export const useOwnerManage = (aaAddress: Address) => {
         data: encodeFunctionData({
           abi: CrossChainRelayerAbi,
           functionName: 'payFee',
-          args: [session, token, amount],
+          args: [sessionHex, token || '0x0000000000000000000000000000000000000000', amount],
         }),
+        value: token ? BigInt(0) : amount,
       },
     ];
     const callData = await buildCallData(operations);

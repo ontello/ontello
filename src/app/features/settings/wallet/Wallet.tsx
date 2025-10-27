@@ -34,7 +34,7 @@ import { SettingTile } from '../../../components/setting-tile';
 import { getSecret } from '../../../../client/state/auth';
 import { useFetchPasskeyList } from '../../../hooks/useFetchPasskeyList';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
-import { useAbstractAccount } from '../../../hooks/web3/useAbstractAccount';
+// import { useAbstractAccount } from '../../../hooks/web3/useAbstractAccount';
 import { useAsyncCallback, AsyncStatus } from '../../../hooks/useAsyncCallback';
 import { OwnerItem } from './OwnerItem';
 import { RecoveryPhrase } from '../../../components/wallet/multi-chain/RecoveryPhrase';
@@ -53,19 +53,19 @@ export function Wallet({ requestClose }: Props) {
   const userId = mx.getUserId();
   const [passkeyData, refetch] = useFetchPasskeyList(userId!);
 
-  const { addOwnerByAddress } = useAbstractAccount(aaAddress as Address);
+  // const { addOwnerByAddress } = useAbstractAccount(aaAddress as Address);
 
-  const [addState, startAddOwnerByAddress] = useAsyncCallback<
-    UserOperationReceipt,
-    Error,
-    Parameters<typeof addOwnerByAddress>
-  >(useCallback(addOwnerByAddress, [addOwnerByAddress]));
+  // const [addState, startAddOwnerByAddress] = useAsyncCallback<
+  //   UserOperationReceipt,
+  //   Error,
+  //   Parameters<typeof addOwnerByAddress>
+  // >(useCallback(addOwnerByAddress, [addOwnerByAddress]));
 
-  const [copyChecked, setCopyChecked] = useState(false);
+  // const [copyChecked, setCopyChecked] = useState(false);
 
   const handleGenerateRecovery = async () => {
     const mnemonic = generateMnemonic(english);
-    const mnemonicAccount = mnemonicToAccount(mnemonic);
+    // const mnemonicAccount = mnemonicToAccount(mnemonic);
     setIsRecoveryDialogOpen(true);
     setRecoveryKey(mnemonic);
     // try {

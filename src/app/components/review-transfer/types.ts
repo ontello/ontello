@@ -15,7 +15,7 @@ export interface RecipientInfo {
   chainIcon: string;
 }
 export interface FeeTokenInfo {
-  address: Address;
+  address?: Address;
   name: string;
   // decimals: bigint;
   exchangeRate: string;

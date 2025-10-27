@@ -187,7 +187,7 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
       },
       chainId: selectedToken.chainId,
       fee: {
-        address: feeToken.token_hash as Address,
+        address: feeToken.token_type === 'native' ? undefined : (feeToken.token_hash as Address),
         name: feeToken.token_name,
         exchangeRate: feeToken.exchange_rate,
         price: feeToken.currency_price,
