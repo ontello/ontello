@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Box, Spinner, Text } from 'folds';
 import { useChainConfig } from '@src/app/hooks/web3/useChainConfig';
 import { useAsyncCallback, AsyncStatus } from '@src/app/hooks/useAsyncCallback';
 import { FeeSessionResp } from '@src/app/externalApis';
@@ -20,18 +21,34 @@ export function SyncOwnershipChange({
   const userId = mx.getUserId();
   const [passkeyData] = useFetchPasskeyList(userId!);
 
-  const { syncOwner } = useOwnerManage(passkeyData?.walletAddress as `0x${string}`);
+  const { syncOwner, getSyncStatus } = useOwnerManage(passkeyData?.walletAddress as `0x${string}`);
+
+  const getSyncStatusRef = useRef(getSyncStatus);
 
   const syncOwnerRef = useRef(syncOwner);
 
+  const [needSyncChainIds, setNeedSyncChainIds] = useState<number[]>([]);
+  const [isGettingSyncStatus, setIsGettingSyncStatus] = useState(false);
+  const [selectedChainIds, setSelectedChainIds] = useState<number[]>([]);
+
+  useEffect(() => {
+    setIsGettingSyncStatus(true);
+    getSyncStatusRef
+      .current(chainIds)
+      .then((syncStatus) => {
+        const needSyncIds = chainIds.filter((chainId) => !syncStatus[chainId]);
+        setNeedSyncChainIds(needSyncIds);
+        setSelectedChainIds(needSyncIds);
+      })
+      .finally(() => {
+        setIsGettingSyncStatus(false);
+      });
+  }, [chainIds]);
+
   const { availableChains } = useChainConfig();
   const chains = useMemo(
-    () => availableChains.filter((chain) => chainIds.includes(chain.chainId)),
-    [availableChains, chainIds]
-  );
-
-  const [selectedChainIds, setSelectedChainIds] = useState<number[]>(
-    chains.map((chain) => chain.chainId)
+    () => availableChains.filter((chain) => needSyncChainIds.includes(chain.chainId)),
+    [availableChains, needSyncChainIds]
   );
 
   const [status, setStatus] = useState<SyncStatus>(SyncStatus.Init);
@@ -84,10 +101,42 @@ export function SyncOwnershipChange({
     setStatus(SyncStatus.Init);
   };
 
+  const customBody = useMemo(() => {
+    if (isGettingSyncStatus) {
+      return (
+        <Box
+          direction="Column"
+          gap="600"
+          alignItems="Center"
+          justifyContent="Center"
+          style={{ minHeight: '200px' }}
+        >
+          <Spinner size="200" />
+          <Text size="T300">Checking sync status...</Text>
+        </Box>
+      );
+    }
+
+    if (chains.length === 0) {
+      return (
+        <Box
+          direction="Column"
+          gap="200"
+          alignItems="Center"
+          justifyContent="Center"
+          style={{ minHeight: '200px' }}
+        >
+          <Text size="T300">All chains are already synced.</Text>
+        </Box>
+      );
+    }
+    return undefined;
+  }, [chains, isGettingSyncStatus]);
+
   const description = useMemo(
     () =>
       `You've modified the ownership of Signers on your OVM wallet. You’ll need to sync these changes so they take effect on ${
-        chains.length > 1 ? 'other' : chains[0].chainNameView
+        chains.length > 1 ? 'other' : chains[0]?.chainNameView
       } ${chains.length > 1 ? 'chains' : 'chain'}.`,
     [chains]
   );
@@ -95,6 +144,7 @@ export function SyncOwnershipChange({
   return (
     <SyncDialog
       title="Sync Ownership Change"
+      customBody={customBody}
       description={description}
       chains={chains}
       onEstimateFee={onEstimateFee}
