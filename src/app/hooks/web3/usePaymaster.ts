@@ -50,7 +50,11 @@ export const usePaymaster = (chainId: number) => {
     if (res.Error !== 0) {
       throw new Error(`Get supported gas tokens failed: ${res.Desc}`);
     }
-    return res.Result;
+    const result = (res.Result as GasToken[]).map((token) => ({
+      ...token,
+      token_hash: token.token_type === 'native' ? '' : token.token_hash,
+    }));
+    return result;
   };
   return {
     getPaymasterSign,
