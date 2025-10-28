@@ -212,16 +212,6 @@ export function SyncDialog({
     return false;
   }, [status, feeInfoIsLoaded, chains, selectedChains]);
 
-  const buttonText = useMemo(() => {
-    if (showNeedTopUpFeeToken) return 'Fund wallet';
-    if (status === SyncStatus.Init) return 'Estimate fee';
-    if (status === SyncStatus.EstimatedFeeLoaded) return confirmButtonText;
-    if (status === SyncStatus.Loading) return 'Loading...';
-    if (status === SyncStatus.Success) return doneButtonText;
-    if (status === SyncStatus.Failed) return failButtonText;
-    return '';
-  }, [showNeedTopUpFeeToken, status, confirmButtonText, doneButtonText, failButtonText]);
-
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   const onTopUpFeeToken = () => {
     setShowReceiveUi(true);
@@ -237,11 +227,11 @@ export function SyncDialog({
       if (!isSponsoredNetworkFee) {
         await payFeeRef.current(
           feeSessionData.session as `0x${string}`,
-          feeSessionData.fee.tokenAddr as `0x${string}`,
           parseUnits(
-            feeSessionData.fee.balance, // 小数字符串，如 "0.001"
-            feeSessionData.fee.decimals // 小数位数，如 18
-          )
+            feeSessionData.fee.balance, // string, e.g. "0.001"
+            feeSessionData.fee.decimals // number, e.g. 18
+          ),
+          (feeSessionData.fee.tokenAddr as `0x${string}`) || undefined
         );
       }
 
@@ -269,14 +259,24 @@ export function SyncDialog({
     }
   }, [onEstimateFee]);
 
+  const buttonText = useMemo(() => {
+    if (status === SyncStatus.Loading) return 'Loading...';
+    if (status === SyncStatus.Success) return doneButtonText;
+    if (status === SyncStatus.Failed) return failButtonText;
+    if (showNeedTopUpFeeToken) return 'Fund wallet';
+    if (status === SyncStatus.Init) return 'Estimate fee';
+    if (status === SyncStatus.EstimatedFeeLoaded) return confirmButtonText;
+    return '';
+  }, [showNeedTopUpFeeToken, status, confirmButtonText, doneButtonText, failButtonText]);
+
   const buttonClick = useMemo(() => {
-    if (showNeedTopUpFeeToken) return () => onTopUpFeeToken();
-    if (status === SyncStatus.Init) return () => doEstimateFee();
-    if (status === SyncStatus.EstimatedFeeLoaded) return () => confirmClick();
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     if (status === SyncStatus.Loading) return () => {};
     if (status === SyncStatus.Success) return () => onDone();
     if (status === SyncStatus.Failed) return () => onFail();
+    if (showNeedTopUpFeeToken) return () => onTopUpFeeToken();
+    if (status === SyncStatus.Init) return () => doEstimateFee();
+    if (status === SyncStatus.EstimatedFeeLoaded) return () => confirmClick();
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     return () => {};
   }, [showNeedTopUpFeeToken, status, confirmClick, onDone, onFail, doEstimateFee]);
@@ -362,7 +362,7 @@ export function SyncDialog({
           </Box>
           {isSponsoredNetworkFee && (
             <Box direction="Row" gap="200" justifyContent="End" alignItems="Center">
-              <Text size="T300">Sponsored by Ontology</Text>
+              <Text size="T300">Sponsored by Ontello</Text>
             </Box>
           )}
         </Box>
