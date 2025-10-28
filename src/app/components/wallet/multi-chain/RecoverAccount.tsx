@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { mnemonicToAccount } from 'viem/accounts';
 import { useChainConfig } from '@src/app/hooks/web3/useChainConfig';
 import { useAsyncCallback, AsyncStatus } from '@src/app/hooks/useAsyncCallback';
 import { FeeSessionResp } from '@src/app/externalApis';
@@ -58,6 +59,14 @@ export function RecoverAccount({
     return feeDataState.data;
   }, [feeDataState]);
 
+  const signMessageFunc = useCallback(
+    async (message: `0x${string}`) => {
+      const mnemonicAccount = mnemonicToAccount(recoveryPhrase);
+      return mnemonicAccount.sign({ hash: message });
+    },
+    [recoveryPhrase]
+  );
+
   // Load fee data when chains change
   const onEstimateFee = async () => {
     try {
@@ -105,6 +114,7 @@ export function RecoverAccount({
       successText="Submit successful"
       failText="Submit failed"
       failButtonText="Try again"
+      signMessageFunc={signMessageFunc}
     />
   );
 }

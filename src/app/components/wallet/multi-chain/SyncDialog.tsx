@@ -47,6 +47,7 @@ export function SyncDialog({
   setSelectedChainIds,
   status,
   setStatus,
+  signMessageFunc,
 }: {
   title: string;
   description?: string;
@@ -71,6 +72,7 @@ export function SyncDialog({
   setSelectedChainIds?: (chainIds: number[]) => void;
   status: SyncStatus;
   setStatus: (status: SyncStatus) => void;
+  signMessageFunc?: (message: `0x${string}`) => Promise<`0x${string}`>;
 }) {
   const [showReceiveUi, setShowReceiveUi] = useState(false);
   const [estimateFeeStatus, setEstimateFeeStatus] = useState<EstimateFeeStatus>(
@@ -231,7 +233,8 @@ export function SyncDialog({
             feeSessionData.fee.balance, // string, e.g. "0.001"
             feeSessionData.fee.decimals // number, e.g. 18
           ),
-          (feeSessionData.fee.tokenAddr as `0x${string}`) || undefined
+          (feeSessionData.fee.tokenAddr as `0x${string}`) || undefined,
+          signMessageFunc
         );
       }
 
@@ -246,7 +249,7 @@ export function SyncDialog({
       console.error(error);
       setStatus(SyncStatus.Failed);
     }
-  }, [feeSessionData, setStatus, isSponsoredNetworkFee]);
+  }, [feeSessionData, setStatus, isSponsoredNetworkFee, signMessageFunc]);
 
   const doEstimateFee = useCallback(async () => {
     try {
