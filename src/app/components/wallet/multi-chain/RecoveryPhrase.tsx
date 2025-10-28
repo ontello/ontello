@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useCallback, useEffect, useRef } from 'react';
-import { mnemonicToAccount } from 'viem/accounts';
+import { english, generateMnemonic, mnemonicToAccount } from 'viem/accounts';
 import { Box, Text } from 'folds';
 import { ContainerColor } from '@src/app/styles/ContainerColor.css';
 import { useAsyncCallback, AsyncStatus } from '@src/app/hooks/useAsyncCallback';
@@ -17,11 +17,11 @@ enum Step {
 }
 
 export function RecoveryPhrase({
-  phrase,
+  // phrase,
   onClose,
   onSuccess,
 }: {
-  phrase: string;
+  // phrase: string;
   onClose: () => void;
   onSuccess?: () => void;
 }) {
@@ -32,6 +32,11 @@ export function RecoveryPhrase({
   const mx = useMatrixClient();
   const userId = mx.getUserId();
   const [passkeyData] = useFetchPasskeyList(userId!);
+  const [phrase, setPhrase] = useState('');
+  useEffect(() => {
+    const mnemonic = generateMnemonic(english);
+    setPhrase(mnemonic);
+  }, []);
 
   const { addOwnerByAddress } = useOwnerManage(passkeyData?.walletAddress as `0x${string}`);
 
