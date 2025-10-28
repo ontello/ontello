@@ -230,7 +230,7 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
       const estimatedGas = await estimateUserOperationGas(userOp);
       userOp.preVerificationGas = BigInt(estimatedGas.preVerificationGas);
       userOp.verificationGasLimit = chainConfig.supportPassKeySign
-        ? BigInt(estimatedGas.verificationGasLimit)
+        ? (BigInt(estimatedGas.verificationGasLimit) * BigInt(12)) / BigInt(10)
         : BigInt(3000000); // maxVerificationGas of 3000000
       userOp.callGasLimit = BigInt(estimatedGas.callGasLimit);
 
@@ -249,7 +249,7 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
       userOp.signature = await getUserOpSignature(userOpHash, keyIndex, signMessageFunc);
 
       // console.log('userOp', userOp);
-      formatUserOpStruct(userOp);
+      // formatUserOpStruct(userOp);
       // console.log('userOpHash', userOpHash);
 
       // const validateUserOp = await ethClient.readContract({
