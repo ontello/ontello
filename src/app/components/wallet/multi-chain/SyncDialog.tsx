@@ -260,23 +260,23 @@ export function SyncDialog({
   }, [onEstimateFee]);
 
   const buttonText = useMemo(() => {
-    if (showNeedTopUpFeeToken) return 'Fund wallet';
-    if (status === SyncStatus.Init) return 'Estimate fee';
-    if (status === SyncStatus.EstimatedFeeLoaded) return confirmButtonText;
     if (status === SyncStatus.Loading) return 'Loading...';
     if (status === SyncStatus.Success) return doneButtonText;
     if (status === SyncStatus.Failed) return failButtonText;
+    if (showNeedTopUpFeeToken) return 'Fund wallet';
+    if (status === SyncStatus.Init) return 'Estimate fee';
+    if (status === SyncStatus.EstimatedFeeLoaded) return confirmButtonText;
     return '';
   }, [showNeedTopUpFeeToken, status, confirmButtonText, doneButtonText, failButtonText]);
 
   const buttonClick = useMemo(() => {
-    if (showNeedTopUpFeeToken) return () => onTopUpFeeToken();
-    if (status === SyncStatus.Init) return () => doEstimateFee();
-    if (status === SyncStatus.EstimatedFeeLoaded) return () => confirmClick();
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     if (status === SyncStatus.Loading) return () => {};
     if (status === SyncStatus.Success) return () => onDone();
     if (status === SyncStatus.Failed) return () => onFail();
+    if (showNeedTopUpFeeToken) return () => onTopUpFeeToken();
+    if (status === SyncStatus.Init) return () => doEstimateFee();
+    if (status === SyncStatus.EstimatedFeeLoaded) return () => confirmClick();
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     return () => {};
   }, [showNeedTopUpFeeToken, status, confirmClick, onDone, onFail, doEstimateFee]);
