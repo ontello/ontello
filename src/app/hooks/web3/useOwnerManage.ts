@@ -74,7 +74,12 @@ export const useOwnerManage = (aaAddress: Address) => {
     return { userOp, userOpHash };
   };
 
-  const payFee = async (session: string, amount: bigint, token?: Address) => {
+  const payFee = async (
+    session: string,
+    amount: bigint,
+    token?: Address,
+    signMessageFunc?: (message: `0x${string}`) => Promise<`0x${string}`>
+  ) => {
     const keyIndex = await getCurrentKeyIndex();
     const sessionHex = toHex(session.replace(/-/g, ''), { size: 32 });
 
@@ -91,7 +96,7 @@ export const useOwnerManage = (aaAddress: Address) => {
       },
     ];
     const callData = await buildCallData(operations);
-    const { userOp, userOpHash } = await buildUserOperation(callData, keyIndex, undefined);
+    const { userOp, userOpHash } = await buildUserOperation(callData, keyIndex, signMessageFunc);
     await sendUserOperation(userOp);
     return {
       userOp,
