@@ -37,23 +37,23 @@ import { useBundler } from './useBundler';
 import { usePaymaster } from './usePaymaster';
 import { useChainConfig } from './useChainConfig';
 
-function formatUserOpStruct(struct: UserOperation) {
-  const output = `{
-            sender: ${struct.sender},
-            nonce : ${struct.nonce},
-            initCode : hex"${struct.initCode.slice(2)}",
-            callData : hex"${struct.callData.slice(2)}",
-            callGasLimit : ${struct.callGasLimit},
-            verificationGasLimit : ${struct.verificationGasLimit},
-            preVerificationGas : ${struct.preVerificationGas},
-            maxFeePerGas : ${struct.maxFeePerGas},
-            maxPriorityFeePerGas : ${struct.maxPriorityFeePerGas},
-            paymasterAndData : hex"${struct.paymasterAndData.slice(2)}",
-            signature : hex"${struct.signature.slice(2)}"
-        }`;
+// function formatUserOpStruct(struct: UserOperation) {
+//   const output = `{
+//             sender: ${struct.sender},
+//             nonce : ${struct.nonce},
+//             initCode : hex"${struct.initCode.slice(2)}",
+//             callData : hex"${struct.callData.slice(2)}",
+//             callGasLimit : ${struct.callGasLimit},
+//             verificationGasLimit : ${struct.verificationGasLimit},
+//             preVerificationGas : ${struct.preVerificationGas},
+//             maxFeePerGas : ${struct.maxFeePerGas},
+//             maxPriorityFeePerGas : ${struct.maxPriorityFeePerGas},
+//             paymasterAndData : hex"${struct.paymasterAndData.slice(2)}",
+//             signature : hex"${struct.signature.slice(2)}"
+//         }`;
 
-  console.log(output);
-}
+//   console.log(output);
+// }
 
 // TODO
 const MAIN_NETWORK_GAS_ADDRESS = '0xd878dfE2b33A07E7FB290c1578A0b3cbc8aDadEA';
