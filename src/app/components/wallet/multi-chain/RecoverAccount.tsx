@@ -59,14 +59,6 @@ export function RecoverAccount({
     return feeDataState.data;
   }, [feeDataState]);
 
-  const signMessageFunc = useCallback(
-    async (message: `0x${string}`) => {
-      const mnemonicAccount = mnemonicToAccount(recoveryPhrase);
-      return mnemonicAccount.sign({ hash: message });
-    },
-    [recoveryPhrase]
-  );
-
   // Load fee data when chains change
   const onEstimateFee = async () => {
     try {
@@ -114,7 +106,7 @@ export function RecoverAccount({
       successText="Submit successful"
       failText="Submit failed"
       failButtonText="Try again"
-      signMessageFunc={signMessageFunc}
+      account={mnemonicToAccount(recoveryPhrase)}
     />
   );
 }

@@ -231,7 +231,7 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
       userOp.preVerificationGas = BigInt(estimatedGas.preVerificationGas);
       userOp.verificationGasLimit = chainConfig.supportPassKeySign
         ? (BigInt(estimatedGas.verificationGasLimit) * BigInt(12)) / BigInt(10)
-        : BigInt(3000000); // maxVerificationGas of 3000000
+        : BigInt(1000000); // maxVerificationGas of 3000000
       userOp.callGasLimit = BigInt(estimatedGas.callGasLimit);
 
       if (gasAddress) {
@@ -293,7 +293,7 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
     const estimatedGas = await estimateUserOperationGas(userOp);
     const actualVerificationGasLimit = chainConfig.supportPassKeySign
       ? BigInt(estimatedGas.verificationGasLimit)
-      : BigInt(3000000);
+      : BigInt(1000000);
     const maxEthFee =
       (BigInt(estimatedGas.callGasLimit) +
         actualVerificationGasLimit +

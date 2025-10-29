@@ -1,4 +1,13 @@
-import { Address, encodeFunctionData, getContract, Hex, toHex } from 'viem';
+import {
+  Address,
+  encodeFunctionData,
+  getContract,
+  HDAccount,
+  Hex,
+  LocalAccount,
+  PrivateKeyAccount,
+  toHex,
+} from 'viem';
 import { AccountAbi, CrossChainRelayerAbi, EntryPointAbi } from '@src/app/static/abis';
 import { getUserOpSignature, serializeBigInt } from '@src/app/utils/web3';
 import { FeeSessionResp, walletApi } from '@src/app/externalApis';
@@ -78,9 +87,12 @@ export const useOwnerManage = (aaAddress: Address) => {
     session: string,
     amount: bigint,
     token?: Address,
-    signMessageFunc?: (message: `0x${string}`) => Promise<`0x${string}`>
+    account?: HDAccount | PrivateKeyAccount
   ) => {
-    const keyIndex = await getCurrentKeyIndex();
+    const keyIndex = account
+      ? await getKeyIndexThroughAddress(account.address)
+      : await getCurrentKeyIndex();
+
     const sessionHex = toHex(session.replace(/-/g, ''), { size: 32 });
 
     const operations: BuildUserOperationParams = [
@@ -96,7 +108,11 @@ export const useOwnerManage = (aaAddress: Address) => {
       },
     ];
     const callData = await buildCallData(operations);
-    const { userOp, userOpHash } = await buildUserOperation(callData, keyIndex, signMessageFunc);
+    const { userOp, userOpHash } = await buildUserOperation(
+      callData,
+      keyIndex,
+      account && ((message) => account.sign({ hash: message }))
+    );
     await sendUserOperation(userOp);
     return {
       userOp,

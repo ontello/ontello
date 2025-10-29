@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { Box, Button, Text, Checkbox, config, Spinner } from 'folds';
-import { parseUnits } from 'viem';
+import { HDAccount, parseUnits } from 'viem';
 import { ChainConfig, FeeSessionResp, Token, walletApi } from '@src/app/externalApis';
 import { ContainerColor } from '@src/app/styles/ContainerColor.css';
 import { hexToBase58 } from '@src/app/utils/ontello/crypto';
@@ -47,7 +47,7 @@ export function SyncDialog({
   setSelectedChainIds,
   status,
   setStatus,
-  signMessageFunc,
+  account,
 }: {
   title: string;
   description?: string;
@@ -72,7 +72,7 @@ export function SyncDialog({
   setSelectedChainIds?: (chainIds: number[]) => void;
   status: SyncStatus;
   setStatus: (status: SyncStatus) => void;
-  signMessageFunc?: (message: `0x${string}`) => Promise<`0x${string}`>;
+  account?: HDAccount;
 }) {
   const [showReceiveUi, setShowReceiveUi] = useState(false);
   const [estimateFeeStatus, setEstimateFeeStatus] = useState<EstimateFeeStatus>(
@@ -234,7 +234,7 @@ export function SyncDialog({
             feeSessionData.fee.decimals // number, e.g. 18
           ),
           (feeSessionData.fee.tokenAddr as `0x${string}`) || undefined,
-          signMessageFunc
+          account
         );
       }
 
@@ -249,7 +249,7 @@ export function SyncDialog({
       console.error(error);
       setStatus(SyncStatus.Failed);
     }
-  }, [feeSessionData, setStatus, isSponsoredNetworkFee, signMessageFunc]);
+  }, [feeSessionData, setStatus, isSponsoredNetworkFee, account]);
 
   const doEstimateFee = useCallback(async () => {
     try {
