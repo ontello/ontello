@@ -70,8 +70,8 @@ export function RevokePasskey({
 
   return (
     <SyncDialog
-      title="Revoke the passkey"
-      description="Devices using this key for login will be automatically logged out and can't use this key for future access once it's revoked."
+      title="Revoke the recover phrase"
+      description="Once revoked, this recovery phrase will become invalid and can no longer be used to restore your wallet."
       chains={availableChains}
       chainsCannotSelectFlag
       onEstimateFee={onEstimateFee}
