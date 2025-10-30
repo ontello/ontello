@@ -71,7 +71,7 @@ export function ActivityItem({ activity }: { activity: ActivityWithChain }) {
           <Text size="H6">
             {activity.txType === 3 ? '+' : '-'} {formatDollarNumber(activity.value)}
           </Text>
-          <Text size="T300" priority="300">
+          <Text size="T300" priority="300" style={{ textAlign: 'right' }}>
             {activity.amount} {activity.assetSymbol}
           </Text>
         </Box>
