@@ -5,6 +5,7 @@ import { useChainConfig } from '../../../hooks/web3/useChainConfig';
 import { Token, TokenWithChain } from '../../../../types/wallet/types';
 import { ContainerColor } from '../../../styles/ContainerColor.css';
 import { formatDollarNumber } from '../../../utils/ontello/number';
+import { formatPrecision } from '../../../utils/number';
 
 export function TokenItem({
   token,
@@ -51,7 +52,7 @@ export function TokenItem({
           {formatDollarNumber(token.currency || 0)}
         </Text>
         <Text size="T200" align="Right" priority="300">
-          {token.balance} {token.symbol}
+          {formatPrecision(token.balance)} {token.symbol}
         </Text>
       </Box>
       {isSelected && (

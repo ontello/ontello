@@ -4,7 +4,6 @@ import {
   getContract,
   HDAccount,
   Hex,
-  LocalAccount,
   PrivateKeyAccount,
   toHex,
 } from 'viem';
