@@ -11,7 +11,7 @@ export function ActivityItem({ activity }: { activity: ActivityWithChain }) {
       return 'Received';
     }
     if (activity.txType === 4) {
-      return 'Send';
+      return 'Sent';
     }
     return 'Unknown';
   }, [activity.txType]);

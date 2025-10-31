@@ -90,7 +90,7 @@ export function RecoveryKeyForm() {
           resize="None"
           required
           outlined
-          style={{ minHeight: 80 }}
+          style={{ minHeight: 80, paddingRight: 10 }}
         />
       </Box>
       {errorData && (

@@ -135,7 +135,7 @@ export function SyncOwnershipChange({
 
   const description = useMemo(
     () =>
-      `You've modified the ownership of Signers on your OVM wallet. You’ll need to sync these changes so they take effect on ${
+      `You've modified the ownership of Signers on your wallet. You’ll need to sync these changes so they take effect on ${
         chains.length > 1 ? 'other' : chains[0]?.chainNameView
       } ${chains.length > 1 ? 'chains' : 'chain'}.`,
     [chains]
