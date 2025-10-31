@@ -335,7 +335,7 @@ function InviteUser({ isOpen, roomId, searchTerm, onRequestClose }) {
                   onClick={() => tabClick(false)}
                   type="button"
                 >
-                  Name or userId
+                  ONT ID or Matrix ID
                 </button>
                 <button
                   className={`invite-user__tab-item ${

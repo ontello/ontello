@@ -8,6 +8,7 @@ import { OntelloDialog } from '../../ontello/OntelloDialog';
 import { useChainConfig } from '../../../hooks/web3/useChainConfig';
 import { ReceiveUi, ReceiveChainInfo } from '../ReceiveUi';
 import { useOwnerManage } from '../../../hooks/web3/useOwnerManage';
+import { formatDollarNumber } from '../../../utils/ontello/number';
 
 export enum SyncStatus {
   Init = 'init',
@@ -357,7 +358,8 @@ export function SyncDialog({
                 size="T300"
                 style={{ textDecoration: isSponsoredNetworkFee ? 'line-through' : 'none' }}
               >
-                {networkFeeData?.balance} {networkFeeData?.symbol}
+                {formatDollarNumber(networkFeeData?.currency)}·{networkFeeData?.balance}
+                {networkFeeData?.symbol}
               </Text>
             ) : (
               <Text size="T300">-</Text>
