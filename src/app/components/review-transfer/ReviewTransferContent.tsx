@@ -38,45 +38,10 @@ export function ReviewTransferContent({
   const aaAddress = localStorage.getItem(cons.secretKey.AA_ADDRESS) as Address;
   const { transfer, estimateTransfer } = useAbstractAccount(aaAddress, chainConfig.chainId);
 
-  // Balance state management
-  const [tokenBalance, setTokenBalance] = useState<string>('0');
-  const [feeTokenBalance, setFeeTokenBalance] = useState<string>('0');
-
   const [feeEstimate, setFeeEstimate] = useState<{
     // estimatedEthFee: bigint;
     maxEthFee: bigint;
   } | null>(null);
-
-  // Fetch balances for validation
-  useEffect(() => {
-    const fetchBalances = async () => {
-      try {
-        // Get sending token balance
-        const tokenRes = await walletApi.walletdataTransferBalanceGet({
-          chain_id: transferData.chainId,
-          token_addr: transferData.token.address || '',
-          addr: aaAddress,
-        });
-        setTokenBalance(tokenRes.result.balance || '0');
-
-        // Get fee token balance
-        const feeRes = await walletApi.walletdataTransferBalanceGet({
-          chain_id: transferData.chainId,
-          token_addr: transferData.fee.address || '',
-          addr: aaAddress,
-        });
-        setFeeTokenBalance(feeRes.result.balance || '0');
-      } catch (error) {
-        console.error('Failed to fetch balances:', error);
-        setTokenBalance('0');
-        setFeeTokenBalance('0');
-      }
-    };
-
-    if (aaAddress) {
-      fetchBalances();
-    }
-  }, [transferData.chainId, transferData.token.address, transferData.fee.address, aaAddress]);
 
   const [calculateFeeState, calculateFee] = useAsyncCallback<void, Error, []>(
     useCallback(async () => {
@@ -104,14 +69,42 @@ export function ReviewTransferContent({
 
   const [transferState, executeTransfer] = useAsyncCallback<void, Error, []>(
     useCallback(async () => {
+      if (!aaAddress) {
+        throw new Error('Account address not found');
+      }
+
+      let tokenBalanceRaw = '0';
+      let feeBalanceRaw = '0';
+
+      try {
+        const [tokenRes, feeRes] = await Promise.all([
+          walletApi.walletdataTransferBalanceGet({
+            chain_id: transferData.chainId,
+            token_addr: transferData.token.address || '',
+            addr: aaAddress,
+          }),
+          walletApi.walletdataTransferBalanceGet({
+            chain_id: transferData.chainId,
+            token_addr: transferData.fee.address || '',
+            addr: aaAddress,
+          }),
+        ]);
+
+        tokenBalanceRaw = tokenRes.result.balance || '0';
+        feeBalanceRaw = feeRes.result.balance || '0';
+      } catch (error) {
+        console.error('Failed to fetch balances:', error);
+        throw new Error('Failed to fetch balances');
+      }
+
       // Balance validation before transfer
       const sendAmount = parseFloat(transferData.token.amount);
-      const tokenBal = parseFloat(tokenBalance);
+      const tokenBal = parseFloat(tokenBalanceRaw);
 
       // Calculate fee amount
       const feeInEth = feeEstimate ? Number(formatEther(feeEstimate.maxEthFee)) : 0;
       const feeInToken = feeInEth * Number(transferData.fee.exchangeRate);
-      const feeBal = parseFloat(feeTokenBalance);
+      const feeBal = parseFloat(feeBalanceRaw);
 
       // Three scenarios of balance validation
       if (transferData.token.address?.toLowerCase() === transferData.fee.address?.toLowerCase()) {
@@ -142,7 +135,7 @@ export function ReviewTransferContent({
       );
 
       console.log(receipt);
-    }, [transferData, transfer, tokenBalance, feeTokenBalance, feeEstimate])
+    }, [aaAddress, feeEstimate, transfer, transferData])
   );
 
   const feeDisplay = useMemo(() => {
