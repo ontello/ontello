@@ -302,7 +302,7 @@ export function ReviewTransferContent({
                         <Spinner variant="Primary" size="200" />
                       ) : undefined
                     }
-                    aria-disabled={transferState.status === AsyncStatus.Loading || !feeEstimate}
+                    disabled={transferState.status === AsyncStatus.Loading || !feeEstimate}
                   >
                     <Text size="B400">Send</Text>
                   </Button>
