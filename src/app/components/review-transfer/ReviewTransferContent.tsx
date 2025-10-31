@@ -78,40 +78,29 @@ export function ReviewTransferContent({
     }
   }, [transferData.chainId, transferData.token.address, transferData.fee.address, aaAddress]);
 
+  const [calculateFeeState, calculateFee] = useAsyncCallback<void, Error, []>(
+    useCallback(async () => {
+      const amountWithDecimals = parseUnits(
+        transferData.token.amount,
+        Number(transferData.token.decimals)
+      );
+
+      const estimateResult = await estimateTransfer(
+        transferData.recipient.addr as Address,
+        amountWithDecimals,
+        transferData.fee.address,
+        transferData.token.address
+      );
+
+      setFeeEstimate(estimateResult);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+  );
+
   useEffect(() => {
-    const calculateFee = async () => {
-      if (!feeEstimate) {
-        try {
-          const amountWithDecimals = parseUnits(
-            transferData.token.amount,
-            Number(transferData.token.decimals)
-          );
-
-          const estimateResult = await estimateTransfer(
-            transferData.recipient.addr as Address,
-            amountWithDecimals,
-            transferData.fee.address,
-            transferData.token.address
-          );
-
-          setFeeEstimate(estimateResult);
-        } catch (error) {
-          console.error('Failed to calculate fee:', error);
-        }
-      }
-    };
-
     calculateFee();
-  }, [
-    feeEstimate,
-    transferData.chainId,
-    transferData.token.address,
-    transferData.token.amount,
-    transferData.token.decimals,
-    transferData.fee.address,
-    estimateTransfer,
-    transferData.recipient.addr,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [transferState, executeTransfer] = useAsyncCallback<void, Error, []>(
     useCallback(async () => {
@@ -281,6 +270,14 @@ export function ReviewTransferContent({
                     <Text size="B400">{totalCostUSD}</Text>
                   </Box>
                 </Box>
+
+                {calculateFeeState.status === AsyncStatus.Error && (
+                  <Box className={css.ErrorSection}>
+                    <Text className={css.ErrorText} size="T300">
+                      {calculateFeeState.error?.message}
+                    </Text>
+                  </Box>
+                )}
 
                 {/* Error Section */}
                 {transferState.status === AsyncStatus.Error && (
