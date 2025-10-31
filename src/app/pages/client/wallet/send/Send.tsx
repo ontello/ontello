@@ -136,7 +136,7 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
         // Estimate fee in ETH
         const { maxEthFee } = await abstractAccount.estimateTransfer(
           recipient.address as Address,
-          parseUnits('0', selectedToken.decimals),
+          BigInt(1),
           feeToken.token_hash as Address,
           selectedToken.tokenAddr as Address
         );
@@ -166,6 +166,7 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
         finalUsdValue = calculateUsdValue(finalAmount);
       } catch (error) {
         console.error(error);
+        return;
       } finally {
         setIsEstimatingFee(false);
       }
