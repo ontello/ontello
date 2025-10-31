@@ -42,7 +42,11 @@ export const useTokens = () => {
 
   useEffect(() => {
     getTokens();
-  }, [passkeyData?.walletAddress, getTokens]);
+    const interval = setInterval(() => {
+      getTokens();
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [getTokens]);
 
   return { tokens, getTokens, totalTokensCurrency };
 };

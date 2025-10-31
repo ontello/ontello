@@ -9,6 +9,8 @@ import { useChainConfig } from '../../../../hooks/web3/useChainConfig';
 import { useFetchPasskeyList } from '../../../../hooks/useFetchPasskeyList';
 import { useMatrixClient } from '../../../../hooks/useMatrixClient';
 import { walletApi } from '../../../../externalApis';
+import { useSetting } from '../../../../state/hooks/settings';
+import { settingsAtom } from '../../../../state/settings';
 
 export function ActivityList({ selectedNetworkChainId }: { selectedNetworkChainId: number }) {
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -18,6 +20,7 @@ export function ActivityList({ selectedNetworkChainId }: { selectedNetworkChainI
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [firstPageIsLoaded, setFirstPageIsLoaded] = useState(false);
+  const [dateFormatString] = useSetting(settingsAtom, 'dateFormatString');
   const containerRef = useRef<HTMLDivElement>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const pageSize = 20;
@@ -180,12 +183,14 @@ export function ActivityList({ selectedNetworkChainId }: { selectedNetworkChainI
   // eslint-disable-next-line arrow-body-style
   const groupByDate = useMemo(() => {
     return activitiesWithChainForSelectedNetwork.reduce((acc, activity) => {
-      const date = dayjs((activity.createTime ?? 0) * 1000).format('MMM D, YYYY');
+      const date = dayjs((activity.createTime ?? 0) * 1000).format(
+        dateFormatString || 'MMM D, YYYY'
+      );
       acc[date] = acc[date] || [];
       acc[date].push(activity);
       return acc;
     }, {} as Record<string, ActivityWithChain[]>);
-  }, [activitiesWithChainForSelectedNetwork]);
+  }, [activitiesWithChainForSelectedNetwork, dateFormatString]);
 
   return (
     <Box
