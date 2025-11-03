@@ -13,15 +13,7 @@ export function TokensList({
   onSelect: ((token: TokenWithChain) => void) | null;
 }) {
   const [tokensForSelectedNetwork, setTokensForSelectedNetwork] = useState<TokenWithChain[]>([]);
-  const { tokens, getTokens } = useTokensContext();
-
-  useEffect(() => {
-    getTokens();
-    const interval = setInterval(() => {
-      getTokens();
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [getTokens]);
+  const { tokens } = useTokensContext();
 
   useEffect(() => {
     if (filterChainId === AllChainId) {
