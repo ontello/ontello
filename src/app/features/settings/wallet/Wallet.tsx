@@ -73,6 +73,28 @@ export function Wallet({ requestClose }: Props) {
           <PageContent>
             <Box direction="Column" gap="700">
               <Box direction="Column" gap="100">
+                <Text size="L400">Wallet address</Text>
+                <SequenceCard
+                  className={SequenceCardStyle}
+                  variant="SurfaceVariant"
+                  direction="Column"
+                  gap="400"
+                >
+                  <SettingTile
+                    title={passkeyData?.walletAddress ?? ''}
+                    after={
+                      <Chip
+                        variant="Secondary"
+                        radii="Pill"
+                        onClick={() => copyToClipboard(passkeyData?.walletAddress ?? '')}
+                      >
+                        <Text size="T200">Copy</Text>
+                      </Chip>
+                    }
+                  />
+                </SequenceCard>
+              </Box>
+              <Box direction="Column" gap="100">
                 <Text size="L400">Backup your wallet</Text>
                 <SequenceCard
                   className={SequenceCardStyle}
@@ -102,7 +124,7 @@ export function Wallet({ requestClose }: Props) {
                   >
                     <SettingTile
                       title="Sync ownership changes"
-                      description="You've modified the ownership of Signers on your OVM wallet. You'll need to sync these changes so they take effect on other chains."
+                      description="You've modified the ownership of signers on your OVM wallet. You'll need to sync these changes so they take effect on other chains."
                       after={
                         <Button size="300" radii="300" onClick={handleSync}>
                           <Text size="B300">Sync</Text>
@@ -127,32 +149,10 @@ export function Wallet({ requestClose }: Props) {
                     />
                   ))}
                 </SequenceCard>
-                <Text>
+                <Text size="B300">
                   Please never modify the key name of Passkey, as doing so may result in a loss of
                   access.
                 </Text>
-              </Box>
-              <Box direction="Column" gap="100">
-                <Text size="L400">Wallet Address</Text>
-                <SequenceCard
-                  className={SequenceCardStyle}
-                  variant="SurfaceVariant"
-                  direction="Column"
-                  gap="400"
-                >
-                  <SettingTile
-                    title={passkeyData?.walletAddress ?? ''}
-                    after={
-                      <Chip
-                        variant="Secondary"
-                        radii="Pill"
-                        onClick={() => copyToClipboard(passkeyData?.walletAddress ?? '')}
-                      >
-                        <Text size="T200">Copy</Text>
-                      </Chip>
-                    }
-                  />
-                </SequenceCard>
               </Box>
             </Box>
           </PageContent>

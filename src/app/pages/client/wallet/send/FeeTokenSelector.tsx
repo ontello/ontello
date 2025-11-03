@@ -48,6 +48,9 @@ export function FeeTokenSelector({ value, onChange, chainId }: FeeTokenSelectorP
           loadedRef.current = true;
           const res = await getSupportGasTokens();
           setGasTokens(res);
+          if (res.length === 1) {
+            onChange(res[0]);
+          }
         } catch (err) {
           // eslint-disable-next-line no-console
           console.error('Failed to load gas tokens:', err);

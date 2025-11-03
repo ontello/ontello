@@ -1,6 +1,6 @@
 {
   "name": "ontello",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Say it. Send it. Own it.",
   "main": "index.js",
   "type": "module",
