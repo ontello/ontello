@@ -3,6 +3,7 @@ import { type MatrixClient } from 'matrix-js-sdk';
 import { bytesToBigInt, Hex, toBytes, toHex } from 'viem';
 import { v4 as uuidv4 } from 'uuid';
 import { getPasskeyCredentials } from '../extendApis';
+import { timeFullDateTime } from './time';
 
 // const RPID = 'localhost';
 
@@ -174,6 +175,8 @@ const getRegisterChallenge = (name: string): ArrayBuffer => getChallenge(name, '
 
 export const createPasskey = async (name: string, challenge: ArrayBuffer) => {
   // const userIdArray = new TextEncoder().encode(name);
+  const ts = Date.now();
+  const regName = `${name} ${timeFullDateTime(ts)}`;
   const uuid = uuidv4();
   const uuidBytes = new TextEncoder().encode(uuid);
   const publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions = {
@@ -184,8 +187,8 @@ export const createPasskey = async (name: string, challenge: ArrayBuffer) => {
     },
     user: {
       id: uuidBytes,
-      name,
-      displayName: name,
+      name: regName,
+      displayName: regName,
     },
     pubKeyCredParams: [
       {
