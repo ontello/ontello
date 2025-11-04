@@ -1,6 +1,6 @@
 /* eslint-disable no-await-in-loop */
 import { type MatrixClient } from 'matrix-js-sdk';
-import { Hex, toHex } from 'viem';
+import { bytesToBigInt, Hex, toBytes, toHex } from 'viem';
 import { v4 as uuidv4 } from 'uuid';
 import { getPasskeyCredentials } from '../extendApis';
 
@@ -313,15 +313,11 @@ export interface WebAuthnSignature {
 export const signMessageWithPasskey = async (message: Hex): Promise<WebAuthnSignature> => {
   try {
     console.log('message', message);
-    // const prefixedMessageHash = hashMessage({ raw: message });
-    // const challenge = hexToBytes(prefixedMessageHash);
+
     const challenge = hexToUint8Array(message);
 
-    // const challenge = hexToArrayBuffer(prefixedMessageHash);
-    // const challenge = hexToUint8Array(prefixedMessageHash);
-
     console.log('challenge', challenge);
-    console.log('challengeBase64Url', toBase64Url(challenge.buffer));
+    // console.log('challengeBase64Url', toBase64Url(challenge.buffer));
 
     const { response } = await signWithPasskey(challenge);
     const { signature, authenticatorData, clientDataJSON } =
@@ -329,13 +325,18 @@ export const signMessageWithPasskey = async (message: Hex): Promise<WebAuthnSign
 
     const derSig = new Uint8Array(signature);
     const { r, s } = parseDER(derSig);
-
+    const n = BigInt('0xFFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551');
+    let sBigint = bytesToBigInt(s);
+    if (sBigint > n / BigInt(2)) {
+      sBigint = n - sBigint;
+    }
+    const normalizeS = toBytes(sBigint);
     const clientDataString = new TextDecoder().decode(clientDataJSON);
-    console.log('signature', toHex(new Uint8Array(signature)));
-    console.log('clientDataJSON', clientDataJSON);
-    console.log('clientDataString', clientDataString);
-    console.log('authenticatorData', authenticatorData);
-    console.log('authenticatorDataHex', toHex(new Uint8Array(authenticatorData)));
+    // console.log('signature', toHex(new Uint8Array(signature)));
+    // console.log('clientDataJSON', clientDataJSON);
+    // console.log('clientDataString', clientDataString);
+    // console.log('authenticatorData', authenticatorData);
+    // console.log('authenticatorDataHex', toHex(new Uint8Array(authenticatorData)));
 
     // const isValid = await verifySignature(
     //   await recoverPublicKey(
@@ -353,7 +354,7 @@ export const signMessageWithPasskey = async (message: Hex): Promise<WebAuthnSign
       challengeIndex: clientDataString.indexOf('"challenge"'),
       typeIndex: clientDataString.indexOf('"type"'),
       r,
-      s,
+      s: normalizeS,
     };
   } catch (error) {
     console.error('signMessageWithPasskey failed:', error);
