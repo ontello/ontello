@@ -68,8 +68,9 @@ export function FeeTokenSelector({ value, onChange, chainId }: FeeTokenSelectorP
 
   // Filter tokens by gasToken addresses
   const gasTokenAddresses = gasTokens.map((gasToken) => gasToken.token_hash.toLowerCase());
-  const convertedTokens: TokenWithChain[] = tokens.filter((token) =>
-    gasTokenAddresses.includes(token.tokenAddr?.toLowerCase() || '')
+  const convertedTokens: TokenWithChain[] = tokens.filter(
+    (token) =>
+      gasTokenAddresses.includes(token.tokenAddr?.toLowerCase() || '') && token.chainId === chainId
   );
   const handleCardClick = () => {
     setIsOpen(true);
