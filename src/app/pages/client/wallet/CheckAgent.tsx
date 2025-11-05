@@ -3,16 +3,20 @@ import { useNavigate } from 'react-router-dom';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Box, Text, Spinner } from 'folds';
 import { Membership } from '@src/types/matrix/room';
+import { getMxIdServer } from '@src/app/utils/matrix';
 import { getWalletDirectPath } from '../../pathUtils';
 import * as roomActions from '../../../../client/action/room';
 
-const walletAgentId = '@smartwallet.agent:ont.network';
+const walletAgentName = 'smartwallet.agent';
 
 export function CheckAgent() {
   const mx = useMatrixClient();
   const navigate = useNavigate();
   const [addError, setAddError] = useState<string | null>(null);
   const [addingToChat, setAddingToChat] = useState(false);
+  const userId = mx.getUserId()!;
+  const server = getMxIdServer(userId);
+  const walletAgentId = `@${walletAgentName}:${server}`;
 
   const checkAgent = useCallback(async () => {
     setAddingToChat(true);
@@ -42,7 +46,7 @@ export function CheckAgent() {
     } finally {
       setAddingToChat(false);
     }
-  }, [mx, navigate]);
+  }, [mx, navigate, walletAgentId]);
 
   useEffect(() => {
     checkAgent();

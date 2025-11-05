@@ -298,6 +298,7 @@ export function PasswordRegisterForm({
             outlined
             required
           />
+          <Text size="B300">Username must be at least 9 characters, letters and numbers only.</Text>
           {registerError?.errcode === RegisterError.UserTaken && (
             <FieldError message="This username is already taken." />
           )}
