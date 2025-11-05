@@ -1,7 +1,7 @@
 /**
  * Convert Matrix ID (@username:server.name) to ONT ID (username.server.name)
  * @example
- * mxidToOntid("@chichi:ont.im") // returns "chichi.ont.im"
+ * mxidToOntid("@chichi:ont.id") // returns "chichi.ont.id"
  * mxidToOntid("@alice:matrix.org") // returns "alice.matrix.org"
  * mxidToOntid("invalid") // returns null
  * @param mxid Matrix ID string
@@ -17,13 +17,13 @@ export function mxidToOntid(mxid: string): string | null {
   if (!match || !match[1] || !match[2]) return null;
   const [, username, serverName] = match;
 
-  return `${username}.${'ont.im'}`;
+  return `${username}.${'ont.id'}`;
 }
 
 /**
  * Convert ONT ID (username.server.name) to Matrix ID (@username:server.name)
  * @example
- * ontidToMxid("chichi.ont.im") // returns "@chichi:ont.im"
+ * ontidToMxid("chichi.ont.id") // returns "@chichi:ont.id"
  * ontidToMxid("alice.matrix.org") // returns "@alice:matrix.org"
  * ontidToMxid("invalid") // returns null
  * @param ontid ONT ID string
@@ -45,7 +45,7 @@ export function ontidToMxid(ontid: string): string | null {
 /**
  * Check if a string is a valid ONT ID
  * @example
- * isValidOntid("chichi.ont.im") // returns true
+ * isValidOntid("chichi.ont.id") // returns true
  * isValidOntid("alice.matrix.org") // returns true
  * isValidOntid("invalid") // returns false
  * @param ontid String to check

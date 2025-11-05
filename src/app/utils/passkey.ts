@@ -166,7 +166,7 @@ export const signWithPasskey = async (challenge: BufferSource): Promise<PublicKe
 
 const getChallenge = (name: string, prefix: string): ArrayBuffer => {
   const timestampInSeconds = Math.floor(Date.now() / 1000);
-  const challenge = `${prefix} ${name}.ont.im at ${timestampInSeconds}`;
+  const challenge = `${prefix} ${name}.ont.id at ${timestampInSeconds}`;
   return new TextEncoder().encode(challenge).buffer;
 };
 const getLoginChallenge = (name: string): ArrayBuffer => getChallenge(name, 'Login');
