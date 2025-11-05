@@ -276,7 +276,6 @@ export function SyncDialog({
   }, [showNeedTopUpFeeToken, status, confirmButtonText, doneButtonText, failButtonText]);
 
   const buttonClick = useMemo(() => {
-    return () => onTopUpFeeToken();
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     if (status === SyncStatus.Loading) return () => {};
     if (status === SyncStatus.Success) return () => onDone();
