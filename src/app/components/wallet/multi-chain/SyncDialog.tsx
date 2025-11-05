@@ -169,6 +169,7 @@ export function SyncDialog({
       ...receiveChainInfo,
       chainName: 'Ontology Native',
       chainNameView: 'Ontology Native',
+      chainId: 6666666, // dummy chain id for ontology native
       iconUrls: ['https://img.ontello.app/Ontologynative.png'],
       address: hexToBase58(receiveChainInfo.address),
       supportedAssets: [networkFeeData],
@@ -275,6 +276,7 @@ export function SyncDialog({
   }, [showNeedTopUpFeeToken, status, confirmButtonText, doneButtonText, failButtonText]);
 
   const buttonClick = useMemo(() => {
+    return () => onTopUpFeeToken();
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     if (status === SyncStatus.Loading) return () => {};
     if (status === SyncStatus.Success) return () => onDone();

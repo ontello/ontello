@@ -38,8 +38,8 @@ export const hexToBase58 = (ethAddress: string) => {
   const address = ethAddress.substring(2, ethAddress.length);
   const ADDR_VERSION = '17';
   const data = ADDR_VERSION + address;
-  const hash = sha256(toHex(data));
-  const hash2 = sha256(new Uint8Array(toBytes(hash.substring(2)))).substring(2);
+  const hash = sha256(hexToUint8Array(data));
+  const hash2 = sha256(hexToUint8Array(hash.substring(2))).substring(2);
   const checksum = hash2.slice(0, 8);
   const datas = data + checksum;
   return bs58.encode(hexToUint8Array(datas));
