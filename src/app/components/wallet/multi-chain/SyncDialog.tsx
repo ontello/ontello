@@ -206,7 +206,7 @@ export function SyncDialog({
     if (isSponsoredNetworkFee) return false;
     if (!feeInfoIsLoaded) return false;
     if (!yourNetworkFeeTokenData || !networkFeeData) return false;
-    return yourNetworkFeeTokenData.balance < networkFeeData.balance;
+    return Number(yourNetworkFeeTokenData.balance) < Number(networkFeeData.balance);
   }, [isSponsoredNetworkFee, feeInfoIsLoaded, yourNetworkFeeTokenData, networkFeeData]);
 
   const buttonDisabled = useMemo(() => {
