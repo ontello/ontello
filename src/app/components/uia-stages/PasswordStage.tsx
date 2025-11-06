@@ -1,13 +1,12 @@
 import { Box, Button, color, config, Dialog, Header, Icon, IconButton, Icons, Text } from 'folds';
 import React, { FormEventHandler, useState } from 'react';
 import { AuthType } from 'matrix-js-sdk';
-import { getMxIdLocalPart } from '@src/app/utils/matrix';
+import { getMxIdLocalPart, getMxIdServer } from '@src/app/utils/matrix';
 import { StageComponentProps } from './types';
 import { ErrorCode } from '../../cs-errorcode';
 import { PasswordInput } from '../password-input';
 import { useMatrixClient } from '../../hooks/useMatrixClient';
 import { loginWithPasskey } from '../../utils/passkey';
-import { getIdServer } from '../../../util/matrixUtil';
 
 export function PasswordStage({
   stageData,
@@ -35,7 +34,11 @@ export function PasswordStage({
     if (!name) return;
     let password = null;
     try {
-      const passkeyRes = await loginWithPasskey(name, mx, getIdServer(userId));
+      const idServer = getMxIdServer(userId);
+      if (!idServer) {
+        throw Error('Unable to determine homeserver');
+      }
+      const passkeyRes = await loginWithPasskey(name, mx, idServer);
       password = passkeyRes.password;
     } catch (err) {
       setPassKeyError(err as string);

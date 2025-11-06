@@ -3,9 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Box, Text, Spinner } from 'folds';
 import { Membership } from '@src/types/matrix/room';
-import { getMxIdServer } from '@src/app/utils/matrix';
+import { createDirectRoom, getMxIdServer } from '@src/app/utils/matrix';
 import { getWalletDirectPath } from '../../pathUtils';
-import * as roomActions from '../../../../client/action/room';
 
 const walletAgentName = 'smartwallet.agent';
 
@@ -39,8 +38,8 @@ export function CheckAgent() {
         navigate(getWalletDirectPath(validateRoom.roomId));
         return;
       }
-      const result = await roomActions.createDM(mx, walletAgentId);
-      navigate(getWalletDirectPath(result.room_id));
+      const roomId = await createDirectRoom(mx, walletAgentId);
+      navigate(getWalletDirectPath(roomId));
     } catch (error: any) {
       setAddError(error.message || 'Failed to add agent to chats');
     } finally {

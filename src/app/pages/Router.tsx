@@ -38,7 +38,6 @@ import {
   AGENT_DIRECT_PATH,
   CREATE_PATH,
 } from './paths';
-import { isAuthenticated } from '../../client/state/auth';
 import {
   getAppPathFromHref,
   getExploreFeaturedPath,
@@ -75,6 +74,8 @@ import { CreateRoomModalRenderer } from '../features/create-room';
 import { HomeCreateRoom } from './client/home/CreateRoom';
 import { Create } from './client/create';
 import { CreateSpaceModalRenderer } from '../features/create-space';
+import { SearchModalRenderer } from '../features/search';
+import { getFallbackSession } from '../state/sessions';
 import { Agent } from './client/agent/Agent';
 import { AgentStore } from './client/agent/AgentStore';
 import { Wallet } from './client/wallet/Wallet';
@@ -89,7 +90,7 @@ export const createRouter = (clientConfig: ClientConfig, screenSize: ScreenSize)
       <Route
         index
         loader={() => {
-          if (isAuthenticated()) return redirect(getHomePath());
+          if (getFallbackSession()) return redirect(getHomePath());
           const afterLoginPath = getAppPathFromHref(getOriginBaseUrl(), window.location.href);
           if (afterLoginPath) setAfterLoginRedirectPath(afterLoginPath);
           return redirect(getLoginPath());
@@ -97,7 +98,7 @@ export const createRouter = (clientConfig: ClientConfig, screenSize: ScreenSize)
       />
       <Route
         loader={() => {
-          if (isAuthenticated()) {
+          if (getFallbackSession()) {
             return redirect(getHomePath());
           }
 
@@ -118,7 +119,7 @@ export const createRouter = (clientConfig: ClientConfig, screenSize: ScreenSize)
 
       <Route
         loader={() => {
-          if (!isAuthenticated()) {
+          if (!getFallbackSession()) {
             const afterLoginPath = getAppPathFromHref(
               getOriginBaseUrl(hashRouter),
               window.location.href
@@ -144,6 +145,7 @@ export const createRouter = (clientConfig: ClientConfig, screenSize: ScreenSize)
                       >
                         <Outlet />
                       </ClientLayout>
+                      <SearchModalRenderer />
                       <UserRoomProfileRenderer />
                       <CreateRoomModalRenderer />
                       <CreateSpaceModalRenderer />

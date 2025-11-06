@@ -22,25 +22,19 @@ import FocusTrap from 'focus-trap-react';
 import { Link } from 'react-router-dom';
 import { createClient, MatrixError } from 'matrix-js-sdk';
 import { getPasskeyCredentials } from '@src/app/extendApis';
-import { getMxIdLocalPart, getMxIdServer, isUserId } from '../../../utils/matrix';
-import { EMAIL_REGEX } from '../../../utils/regex';
 import { useAutoDiscoveryInfo } from '../../../hooks/useAutoDiscoveryInfo';
 import { AsyncStatus, useAsyncCallback } from '../../../hooks/useAsyncCallback';
 import { useAuthServer } from '../../../hooks/useAuthServer';
-import { clientDefaultServer, useClientConfig } from '../../../hooks/useClientConfig';
 import {
   CustomLoginResponse,
   LoginError,
-  factoryGetBaseUrl,
   login,
   useLoginComplete,
 } from './loginUtil';
-import { PasswordInput } from '../../../components/password-input';
 import { FieldError } from '../FiledError';
-import { getRecoveryAccountPath, getResetPasswordPath } from '../../pathUtils';
+import { getRecoveryAccountPath } from '../../pathUtils';
 import { stopPropagation } from '../../../utils/keyboard';
 import { loginWithPasskey } from '../../../utils/passkey';
-import cons from '../../../../client/state/cons';
 
 function UsernameHint({ server }: { server: string }) {
   const [anchor, setAnchor] = useState<RectCords>();
@@ -76,13 +70,13 @@ function UsernameHint({ server }: { server: string }) {
                 <Text as="span" size="Inherit" priority="300">
                   Username:
                 </Text>{' '}
-                johndoe
+                user123
               </Text>
               {/* <Text size="T300">
                 <Text as="span" size="Inherit" priority="300">
                   Matrix ID:
                 </Text>
-                {` @johndoe:${server}`}
+                {` @user123:${server}`}
               </Text>
               <Text size="T300">
                 <Text as="span" size="Inherit" priority="300">

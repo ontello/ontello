@@ -16,14 +16,13 @@ import {
 } from 'folds';
 import FocusTrap from 'focus-trap-react';
 import { useQueryClient } from '@tanstack/react-query';
-import { getDMRoomFor } from '@src/app/utils/matrix';
+import { createDirectRoom, getDMRoomFor } from '@src/app/utils/matrix';
 import OntelloIcon from '@src/app/static/icons/OntelloIcon';
 import WebsiteIcon from '@src/app/static/icons/WebsiteIcon';
 import XIcon from '@src/app/static/icons/XIcon';
 import { KnownMembership } from 'matrix-js-sdk';
 import { BotInfo, BotInfoMediasInner, BotInfoMediasInnerMediaEnum } from '../../../externalApis';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
-import * as roomActions from '../../../../client/action/room';
 import { useRoomNavigate } from '../../../hooks/useRoomNavigate';
 import { timeDayMonthYear } from '../../../utils/time';
 import { copyToClipboard } from '../../../utils/dom';
@@ -108,9 +107,10 @@ export function AgentDetailDialog({ agent, open, onClose }: AgentDetailDialogPro
           return;
         }
       }
-      const result = await roomActions.createDM(mx, agent.mx_id);
+      const roomId = await createDirectRoom(mx, agent.mx_id);
+
       queryClient.invalidateQueries({ queryKey: ['bots'] });
-      navigateRoom(result.room_id);
+      navigateRoom(roomId);
 
       onClose();
     } catch (error: any) {

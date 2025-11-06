@@ -4,13 +4,14 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ClientConfig, clientAllowedServer } from '../../../hooks/useClientConfig';
 import { autoDiscovery, specVersions } from '../../../cs-api';
-import { updateLocalStore } from '../../../../client/action/auth';
 import { ErrorCode } from '../../../cs-errorcode';
+import { updateLocalStore } from '../../../../client/action/auth';
 import {
   deleteAfterLoginRedirectPath,
   getAfterLoginRedirectPath,
 } from '../../afterLoginRedirectPath';
 import { getHomePath } from '../../pathUtils';
+import { setFallbackSession } from '../../../state/sessions';
 
 export enum GetBaseUrlError {
   NotAllow = 'NotAllow',
@@ -128,6 +129,7 @@ export const useLoginComplete = (data?: CustomLoginResponse) => {
         data.publicKey,
         data.aaAddress
       );
+      setFallbackSession(loginRes.access_token, loginRes.device_id, loginRes.user_id, loginBaseUrl);
       const afterLoginRedirectUrl = getAfterLoginRedirectPath();
       deleteAfterLoginRedirectPath();
       navigate(afterLoginRedirectUrl ?? getHomePath(), { replace: true });

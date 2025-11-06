@@ -27,7 +27,7 @@ import { Page, PageContent, PageHeader } from '../../../components/page';
 import { useRoom } from '../../../hooks/useRoom';
 import { useRoomMembers } from '../../../hooks/useRoomMembers';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
-import { usePowerLevels } from '../../../hooks/usePowerLevels';
+import { useGetMemberPowerLevel, usePowerLevels } from '../../../hooks/usePowerLevels';
 import { VirtualTile } from '../../../components/virtualizer';
 import { MemberTile } from '../../../components/member-tile';
 import { useMediaAuthentication } from '../../../hooks/useMediaAuthentication';
@@ -55,6 +55,7 @@ import {
 import { useSpaceOptionally } from '../../../hooks/useSpace';
 import { useFlattenPowerTagMembers, useGetMemberPowerTag } from '../../../hooks/useMemberPowerTag';
 import { useRoomCreators } from '../../../hooks/useRoomCreators';
+import { getMouseEventCords } from '../../../utils/dom';
 
 const SEARCH_OPTIONS: UseAsyncSearchOptions = {
   limit: 1000,
@@ -86,12 +87,13 @@ export function Members({ requestClose }: MembersProps) {
   const powerLevels = usePowerLevels(room);
   const creators = useRoomCreators(room);
   const getPowerTag = useGetMemberPowerTag(room, creators, powerLevels);
+  const getPowerLevel = useGetMemberPowerLevel(powerLevels);
 
   const [membershipFilterIndex, setMembershipFilterIndex] = useState(0);
   const [sortFilterIndex, setSortFilterIndex] = useSetting(settingsAtom, 'memberSortFilterIndex');
   const membershipFilter = useMembershipFilter(membershipFilterIndex, useMembershipFilterMenu());
   const memberSort = useMemberSort(sortFilterIndex, useMemberSortMenu());
-  const memberPowerSort = useMemberPowerSort(creators);
+  const memberPowerSort = useMemberPowerSort(creators, getPowerLevel);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -145,7 +147,7 @@ export function Members({ requestClose }: MembersProps) {
     const btn = evt.currentTarget as HTMLButtonElement;
     const userId = btn.getAttribute('data-user-id');
     if (userId) {
-      openProfile(room.roomId, space?.roomId, userId, btn.getBoundingClientRect());
+      openProfile(room.roomId, space?.roomId, userId, getMouseEventCords(evt.nativeEvent));
     }
   };
 

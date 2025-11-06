@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Text, Icon, Icons } from 'folds';
 import Copy from '../static/icons/Copy';
-import { copyToClipboard } from '../../util/common';
 import { copyIcon } from './CopyIcon.css';
+import { copyToClipboard } from '../utils/dom';
 
 export function CopyIcon({
   text,

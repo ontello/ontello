@@ -8,15 +8,16 @@ import {
 } from 'matrix-js-sdk';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { updateLocalStore } from '../../../../client/action/auth';
 import { LoginPathSearchParams } from '../../paths';
 import { ErrorCode } from '../../../cs-errorcode';
+import { updateLocalStore } from '../../../../client/action/auth';
 import {
   deleteAfterLoginRedirectPath,
   getAfterLoginRedirectPath,
 } from '../../afterLoginRedirectPath';
 import { getHomePath, getLoginPath, withSearchParam } from '../../pathUtils';
 import { getMxIdLocalPart, getMxIdServer } from '../../../utils/matrix';
+import { setFallbackSession } from '../../../state/sessions';
 
 export enum RegisterError {
   UserTaken = 'UserTaken',
@@ -126,6 +127,7 @@ export const useRegisterComplete = (data?: CustomRegisterResponse) => {
 
       if (accessToken && deviceId) {
         updateLocalStore(accessToken, deviceId, userId, baseUrl, data.publicKey, data.aaAddress);
+        setFallbackSession(accessToken, deviceId, userId, baseUrl);
         const afterLoginRedirectPath = getAfterLoginRedirectPath();
         deleteAfterLoginRedirectPath();
         navigate(afterLoginRedirectPath ?? getHomePath(), { replace: true });

@@ -32,7 +32,7 @@ import {
 } from './matrix-to';
 import { onEnterOrSpace } from '../utils/keyboard';
 import { tryDecodeURIComponent } from '../utils/dom';
-import { confirmDialog } from '../molecules/confirm-dialog/ConfirmDialog';
+import { confirmDialog } from '../components/confirm';
 import { testOntelloLink, parseOntelloLink } from './ontello-link';
 import { openReviewTransfer } from '../../client/action/navigation';
 
@@ -50,12 +50,12 @@ export const handleExternalLinkClick = async (
   }
 
   const openExternalLink = async () => {
-    const isConfirmed = await confirmDialog(
-      'Warning',
-      `This link isn't verified. Make sure you trust this link before proceeding. If you don't recognize the URL, don't open the link to access the site. ${href}`,
-      'Go anyway',
-      'primary'
-    );
+    const isConfirmed = await confirmDialog({
+      title: 'Warning',
+      message: `This link isn't verified. Make sure you trust this link before proceeding. If you don't recognize the URL, don't open the link to access the site. ${href}`,
+      confirmLabel: 'Go anyway',
+      cancelLabel: 'Cancel',
+    });
 
     if (isConfirmed) {
       window.open(href, '_blank');
