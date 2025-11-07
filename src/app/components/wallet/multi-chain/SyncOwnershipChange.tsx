@@ -30,8 +30,21 @@ export function SyncOwnershipChange({
   const [needSyncChainIds, setNeedSyncChainIds] = useState<number[]>([]);
   const [isGettingSyncStatus, setIsGettingSyncStatus] = useState(false);
   const [selectedChainIds, setSelectedChainIds] = useState<number[]>([]);
+  const prevChainIdsRef = useRef<number[]>([]);
+
+  // Deep compare arrays
+  const areArraysEqual = (arr1: number[], arr2: number[]): boolean => {
+    if (arr1.length !== arr2.length) return false;
+    return arr1.every((val, index) => val === arr2[index]);
+  };
 
   useEffect(() => {
+    // If the content has not changed, do not re-fetch data
+    if (areArraysEqual(prevChainIdsRef.current, chainIds)) {
+      return;
+    }
+    prevChainIdsRef.current = [...chainIds];
+
     setIsGettingSyncStatus(true);
     getSyncStatusRef
       .current(chainIds)
