@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, Button, Icon, Icons, Text, config, toRem } from 'folds';
 import { Page, PageHero, PageHeroSection } from '../../components/page';
 import OntelloSVG from '../../../../public/res/svg/ontello.svg';
-import cons from '../../../client/state/cons';
+import { APP_INFO } from '../../config/appInfo';
 
 export function WelcomePage() {
   return (
@@ -16,16 +16,16 @@ export function WelcomePage() {
         <PageHeroSection>
           <PageHero
             icon={<img width="70" height="70" src={OntelloSVG} alt="Ontello Logo" />}
-            title="Welcome to Ontello"
+            title={`Welcome to ${APP_INFO.name}`}
             subTitle={
               <span>
-                Say it. Send it. Own it.{' '}
+                {APP_INFO.tagline}{' '}
                 <a
-                  href="https://github.com/ontello/ontello/releases"
+                  href={APP_INFO.releases}
                   target="_blank"
                   rel="noreferrer noopener"
                 >
-                  v{cons.version}
+                  v{APP_INFO.version}
                 </a>
               </span>
             }

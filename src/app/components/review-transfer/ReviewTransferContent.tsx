@@ -17,7 +17,7 @@ import {
 
 import { useAbstractAccount } from '@src/app/hooks/web3/useAbstractAccount';
 import { walletApi } from '@src/app/externalApis';
-import cons from '@src/client/state/cons';
+import { getAuthExtras } from '../../state/authExtras';
 import { Address, parseUnits, formatEther } from 'viem';
 import { useAsyncCallback, AsyncStatus } from '../../hooks/useAsyncCallback';
 import { stopPropagation } from '../../utils/keyboard';
@@ -35,7 +35,11 @@ export function ReviewTransferContent({
 }: ReviewTransferContentProps) {
   const { getChainConfig } = useChainConfig();
   const chainConfig = getChainConfig(transferData.chainId);
-  const aaAddress = localStorage.getItem(cons.secretKey.AA_ADDRESS) as Address;
+  const extras = getAuthExtras();
+  const aaAddress = extras.aaAddress as Address | null;
+  if (!aaAddress) {
+    throw new Error('Account address not found');
+  }
   const { transfer, estimateTransfer } = useAbstractAccount(aaAddress, chainConfig.chainId);
 
   const [feeEstimate, setFeeEstimate] = useState<{

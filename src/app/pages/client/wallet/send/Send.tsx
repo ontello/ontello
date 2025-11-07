@@ -17,9 +17,11 @@ import { useTokensContext } from '../../../../hooks/wallet/useTokens';
 import { useAbstractAccount } from '../../../../hooks/web3/useAbstractAccount';
 import { walletApi } from '../../../../externalApis';
 import { SyncOwnershipChange } from '../../../../components/wallet/multi-chain/SyncOwnershipChange';
+import { getAuthExtras } from '@src/app/state/authExtras';
 
 export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavMode) => void }) {
-  const aaAddress = localStorage.getItem('cinny_aa_address') as Address;
+  const extras = getAuthExtras();
+  const aaAddress = (extras.aaAddress ?? '0x0') as Address;
   const { tokens } = useTokensContext();
   const openReviewTransfer = useOpenReviewTransferDialog();
 

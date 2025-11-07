@@ -5,7 +5,7 @@ import { SequenceCard } from '../../../components/sequence-card';
 import { SequenceCardStyle } from '../styles.css';
 import { SettingTile } from '../../../components/setting-tile';
 import OntelloSVG from '../../../../../public/res/svg/ontello.svg';
-import cons from '../../../../client/state/cons';
+import { APP_INFO } from '../../../config/appInfo';
 import { clearCacheAndReload } from '../../../../client/initMatrix';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
 
@@ -46,16 +46,16 @@ export function About({ requestClose }: AboutProps) {
                 <Box direction="Column" gap="300">
                   <Box direction="Column" gap="100">
                     <Box gap="100" alignItems="End">
-                      <Text size="H3">Ontello</Text>
-                      <Text size="T200">v{cons.version}</Text>
+                      <Text size="H3">{APP_INFO.name}</Text>
+                      <Text size="T200">v{APP_INFO.version}</Text>
                     </Box>
-                    <Text>Say it. Send it. Own it.</Text>
+                    <Text>{APP_INFO.tagline}</Text>
                   </Box>
 
                   <Box gap="200" wrap="Wrap">
                     <Button
                       as="a"
-                      href="https://github.com/ontello/ontello"
+                      href={APP_INFO.releases}
                       rel="noreferrer noopener"
                       target="_blank"
                       variant="Secondary"

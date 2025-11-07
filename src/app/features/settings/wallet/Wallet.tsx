@@ -10,7 +10,7 @@ import { Page, PageContent, PageHeader } from '../../../components/page';
 import { SequenceCard } from '../../../components/sequence-card';
 import { SequenceCardStyle } from '../styles.css';
 import { SettingTile } from '../../../components/setting-tile';
-import { getSecret } from '../../../../client/state/auth';
+import { getAuthExtras } from '../../../state/authExtras';
 import { useFetchPasskeyList } from '../../../hooks/useFetchPasskeyList';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
 import { OwnerItem } from './OwnerItem';
@@ -25,7 +25,7 @@ export function Wallet({ requestClose }: Props) {
   const [isSetIsSyncDialogOpen, setIsSyncDialogOpen] = useState(false);
   const [isOwnerInitial, setIsOwnerInitial] = useState<boolean>(true);
   const { availableChains } = useChainConfig();
-  const { publicKey: currentPublicKey, aaAddress } = getSecret();
+  const { publicKey: currentPublicKey, aaAddress } = getAuthExtras();
   const mx = useMatrixClient();
   const userId = mx.getUserId();
   const [passkeyData, refetch] = useFetchPasskeyList(userId!);

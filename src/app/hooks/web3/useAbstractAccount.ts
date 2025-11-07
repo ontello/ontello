@@ -32,7 +32,7 @@ import {
   getUserOpSignature,
   serializeBigInt,
 } from '../../utils/web3';
-import cons from '../../../client/state/cons';
+import { getAuthExtras } from '../../state/authExtras';
 import { useBundler } from './useBundler';
 import { usePaymaster } from './usePaymaster';
 import { useChainConfig } from './useChainConfig';
@@ -96,7 +96,7 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
       return '0x' as Hex;
     }
 
-    const publicKeyBase64 = localStorage.getItem(cons.secretKey.PUBLIC_KEY);
+    const { publicKey: publicKeyBase64 } = getAuthExtras();
     if (!publicKeyBase64) {
       throw new Error('Public key not found in local storage');
     }
@@ -124,7 +124,7 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
   };
 
   const getCurrentKeyIndex = async () => {
-    const publicKeyBase64 = localStorage.getItem(cons.secretKey.PUBLIC_KEY);
+    const { publicKey: publicKeyBase64 } = getAuthExtras();
     if (!publicKeyBase64) {
       throw new Error('Public key not found in local storage');
     }

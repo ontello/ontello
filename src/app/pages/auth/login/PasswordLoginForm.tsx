@@ -25,12 +25,7 @@ import { getPasskeyCredentials } from '@src/app/extendApis';
 import { useAutoDiscoveryInfo } from '../../../hooks/useAutoDiscoveryInfo';
 import { AsyncStatus, useAsyncCallback } from '../../../hooks/useAsyncCallback';
 import { useAuthServer } from '../../../hooks/useAuthServer';
-import {
-  CustomLoginResponse,
-  LoginError,
-  login,
-  useLoginComplete,
-} from './loginUtil';
+import { CustomLoginResponse, LoginError, login, useLoginComplete } from './loginUtil';
 import { FieldError } from '../FiledError';
 import { getRecoveryAccountPath } from '../../pathUtils';
 import { stopPropagation } from '../../../utils/keyboard';
@@ -219,7 +214,6 @@ export function PasswordLoginForm({ defaultUsername, defaultEmail }: PasswordLog
     // }
     const aaAddress = (await getPasskeyCredentials(mx, `@${username}:${server}`)).walletAddress;
     await handleUsernameLogin(username, password, publicKey, aaAddress);
-    // localStorage.setItem(cons.secretKey.PUBLIC_KEY, publicKey);
   };
 
   return (
