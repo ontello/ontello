@@ -1,41 +1,41 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
-import cons from '../../../client/state/cons';
-import navigation from '../../../client/state/navigation';
 import ReviewTransferContent from './ReviewTransferContent';
-import type { TransferData } from './types';
+import {
+  useReviewTransferDialogState,
+  useCloseReviewTransferDialog,
+} from '../../state/hooks/reviewTransferDialog';
 
 export function ReviewTransferDialog() {
+  const transferData = useReviewTransferDialogState();
+  const closeDialog = useCloseReviewTransferDialog();
   const [isOpen, setIsOpen] = useState(false);
-  const [transferData, setTransferData] = useState<TransferData | null>(null);
 
   useEffect(() => {
-    const handleOpen = (data: TransferData) => {
+    if (transferData) {
       setIsOpen(true);
-      setTransferData(data);
-    };
-    navigation.on(cons.events.navigation.REVIEW_TRANSFER_OPENED, handleOpen);
-    return () => {
-      navigation.removeListener(cons.events.navigation.REVIEW_TRANSFER_OPENED, handleOpen);
-    };
-  }, []);
+    } else {
+      setIsOpen(false);
+    }
+  }, [transferData]);
 
-  const handleClose = () => {
-    setIsOpen(false);
-  };
+  const handleClose = () => setIsOpen(false);
 
   const handleAfterClose = () => {
-    setTransferData(null);
+    setIsOpen(false);
+    closeDialog();
   };
 
-  return transferData && isOpen ? (
+  if (!transferData) return null;
+
+  return (
     <ReviewTransferContent
       isOpen={isOpen}
       onClose={handleClose}
       onAfterClose={handleAfterClose}
       transferData={transferData}
     />
-  ) : null;
+  );
 }
 
 export default ReviewTransferDialog;

@@ -14,11 +14,6 @@ const cons = {
     SUCCESS: 'success',
     ERROR: 'error',
   },
-  events: {
-    navigation: {
-      REVIEW_TRANSFER_OPENED: 'REVIEW_TRANSFER_OPENED',
-    },
-  },
 };
 
 Object.freeze(cons);

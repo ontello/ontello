@@ -1,9 +1,9 @@
 import React, { useRef, useState, useMemo, useEffect } from 'react';
 import { Box, Button, Text, color, toRem } from 'folds';
 import { Address, parseUnits, formatUnits } from 'viem';
-import { openReviewTransfer } from '@src/client/action/navigation';
 import { GasToken } from '@src/app/hooks/web3/types';
 import { TransferData } from '@src/app/components/review-transfer';
+import { useOpenReviewTransferDialog } from '@src/app/state/hooks/reviewTransferDialog';
 import { useOwnerManage } from '@src/app/hooks/web3/useOwnerManage';
 import { PageNavContent } from '../../../../components/page';
 import { WalletNavMode, TokenWithChain } from '../../../../../types/wallet/types';
@@ -21,6 +21,7 @@ import { SyncOwnershipChange } from '../../../../components/wallet/multi-chain/S
 export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavMode) => void }) {
   const aaAddress = localStorage.getItem('cinny_aa_address') as Address;
   const { tokens } = useTokensContext();
+  const openReviewTransfer = useOpenReviewTransferDialog();
 
   const [amount, setAmount] = useState('');
   const [selectedToken, setSelectedToken] = useState<TokenWithChain | null>(null);
