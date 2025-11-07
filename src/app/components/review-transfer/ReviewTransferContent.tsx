@@ -45,19 +45,27 @@ export function ReviewTransferContent({
 
   const [calculateFeeState, calculateFee] = useAsyncCallback<void, Error, []>(
     useCallback(async () => {
-      const amountWithDecimals = parseUnits(
-        transferData.token.amount,
-        Number(transferData.token.decimals)
-      );
+      try {
+        const amountWithDecimals = parseUnits(
+          transferData.token.amount,
+          Number(transferData.token.decimals)
+        );
 
-      const estimateResult = await estimateTransfer(
-        transferData.recipient.addr as Address,
-        amountWithDecimals,
-        transferData.fee.address,
-        transferData.token.address
-      );
+        const estimateResult = await estimateTransfer(
+          transferData.recipient.addr as Address,
+          amountWithDecimals,
+          transferData.fee.address,
+          transferData.token.address
+        );
 
-      setFeeEstimate(estimateResult);
+        setFeeEstimate(estimateResult);
+      } catch (error) {
+        console.error('Failed to estimate fee:', error);
+        if (error instanceof Error && error.message.includes('AA23 reverted (or OOG)')) {
+          throw new Error('Insufficient gas fee');
+        }
+        throw error;
+      }
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
   );

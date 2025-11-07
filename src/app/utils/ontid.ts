@@ -53,5 +53,5 @@ export function ontidToMxid(ontid: string): string | null {
  */
 export function isValidOntid(ontid: string): boolean {
   if (!ontid) return false;
-  return /^[a-zA-Z0-9_-]+\..+$/.test(ontid);
+  return /^[a-zA-Z0-9_-]+\.ont\.id$/.test(ontid);
 }
