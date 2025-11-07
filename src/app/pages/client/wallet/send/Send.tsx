@@ -113,6 +113,10 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
   }, [amount, selectedToken, recipient, feeToken]);
 
   const handlePay = async () => {
+    console.log('handlePay');
+
+    console.log(!isFormValid || !selectedToken || !recipient || !feeToken || !aaAddress);
+
     if (!isFormValid || !selectedToken || !recipient || !feeToken || !aaAddress) return;
 
     const [syncStatus, isOwnerInitial] = await Promise.all([
@@ -121,6 +125,8 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
     ]);
 
     if (!syncStatus[selectedToken.chainId] && !isOwnerInitial) {
+      console.log(1111);
+
       setShowSyncOwnershipChange(true);
       return;
     }
@@ -194,6 +200,7 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
         price: feeToken.currency_price,
       },
     };
+    console.log(2222);
 
     openReviewTransfer(transferData);
   };

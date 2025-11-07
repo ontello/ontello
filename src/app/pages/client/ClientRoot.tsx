@@ -35,6 +35,7 @@ import { stopPropagation } from '../../utils/keyboard';
 import { SyncStatus } from './SyncStatus';
 import { AuthMetadataProvider } from '../../hooks/useAuthMetadata';
 import { getFallbackSession } from '../../state/sessions';
+import { ReviewTransferDialog } from '../../components/review-transfer';
 
 function ClientRootLoading() {
   return (
@@ -226,7 +227,10 @@ export function ClientRoot({ children }: ClientRootProps) {
               <CapabilitiesProvider value={serverConfigs.capabilities ?? {}}>
                 <MediaConfigProvider value={serverConfigs.mediaConfig ?? {}}>
                   <AuthMetadataProvider value={serverConfigs.authMetadata}>
-                    {children}
+                    <>
+                      <ReviewTransferDialog />
+                      {children}
+                    </>
                   </AuthMetadataProvider>
                 </MediaConfigProvider>
               </CapabilitiesProvider>
