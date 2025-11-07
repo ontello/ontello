@@ -29,7 +29,7 @@ export function mxidToOntid(mxid: string): string | null {
  * @param ontid ONT ID string
  * @returns Matrix ID string or null if invalid format
  */
-export function ontidToMxid(ontid: string): string | null {
+export function ontidToMxid(ontid: string, serverName?: string): string | null {
   if (!ontid) return null;
 
   // Only allow alphanumeric characters, underscores, and hyphens in usernames
@@ -37,9 +37,9 @@ export function ontidToMxid(ontid: string): string | null {
   const match = ontid.match(regex);
 
   if (!match || !match[1] || !match[2]) return null;
-  const [, username, serverName] = match;
+  const [, username, matchServerName] = match;
 
-  return `@${username}:${serverName}`;
+  return `@${username}:${serverName || matchServerName}`;
 }
 
 /**

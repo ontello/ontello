@@ -44,6 +44,8 @@ function InviteUser({ isOpen, roomId, searchTerm, onRequestClose }) {
   const mx = useMatrixClient();
   const { navigateRoom } = useRoomNavigate();
 
+  const mxIdServer = mx.getUserId().split(':')[1];
+
   function getMapCopy(myMap) {
     const newMap = new Map();
     myMap.forEach((data, key) => {
@@ -288,7 +290,7 @@ function InviteUser({ isOpen, roomId, searchTerm, onRequestClose }) {
 
   useEffect(() => {
     if (isOpen && typeof searchTerm === 'string') {
-      searchUser(isValidOntid(searchTerm) ? ontidToMxid(searchTerm) : searchTerm);
+      searchUser(isValidOntid(searchTerm) ? ontidToMxid(searchTerm, mxIdServer) : searchTerm);
     } else if (isSearchAgent) {
       searchUser('');
     }
@@ -318,7 +320,7 @@ function InviteUser({ isOpen, roomId, searchTerm, onRequestClose }) {
             e.preventDefault();
             searchUser(
               isValidOntid(usernameRef.current.value)
-                ? ontidToMxid(usernameRef.current.value)
+                ? ontidToMxid(usernameRef.current.value, mxIdServer)
                 : usernameRef.current.value
             );
           }}
