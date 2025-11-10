@@ -36,8 +36,9 @@ export function RecoveryKeyForm() {
   const handleSubmit: FormEventHandler<HTMLFormElement> = async (evt) => {
     evt.preventDefault();
     try {
-      const aaAddress = (await getPasskeyCredentials(mx, `@${form.username}:${server}`))
-        .walletAddress;
+      const aaAddress = (
+        await getPasskeyCredentials(mx, `@${form.username.trim().toLowerCase()}:${server}`)
+      ).walletAddress;
       setAddress(aaAddress);
       mnemonicToAccount(form.recoveryKey); // check
       setShowRecoverAccount(true);
@@ -110,7 +111,7 @@ export function RecoveryKeyForm() {
       </Button>
       {showRecoverAccount && (
         <RecoverAccount
-          username={form.username}
+          username={form.username.trim().toLowerCase()}
           aaAddress={address}
           recoveryPhrase={form.recoveryKey}
           onSuccess={() => setShowRecoverAccount(false)}

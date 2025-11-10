@@ -232,7 +232,7 @@ export function PasswordRegisterForm({
       termsInput,
     } = evt.target as HTMLFormElement & RegisterFormInputs;
     const token = tokenInput?.value.trim();
-    const username = usernameInput.value.trim();
+    const username = usernameInput.value.trim().toLowerCase();
     // const password = passwordInput.value;
     // const confirmPassword = confirmPasswordInput.value;
     // if (password !== confirmPassword) {

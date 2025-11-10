@@ -183,7 +183,7 @@ export function PasswordLoginForm({ defaultUsername, defaultEmail }: PasswordLog
       // passwordInput: HTMLInputElement;
     };
 
-    const username = usernameInput.value.trim();
+    const username = usernameInput.value.trim().toLowerCase();
     // const password = passwordInput.value;
     if (!username) {
       usernameInput.focus();
