@@ -1,9 +1,10 @@
 ## Builder
-FROM node:20.12.2-alpine3.18 as builder
+FROM node:22.17.1 as builder
 
 WORKDIR /src
 
-COPY .npmrc package.json package-lock.json /src/
+COPY .npmrc package.json /src/
+RUN npm install
 RUN npm ci
 COPY . /src/
 ENV NODE_OPTIONS=--max_old_space_size=4096
