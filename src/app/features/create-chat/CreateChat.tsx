@@ -12,6 +12,7 @@ import { millisecondsToMinutes } from '../../utils/common';
 import { createRoomEncryptionState } from '../../components/create-room';
 import { useAlive } from '../../hooks/useAlive';
 import { getDirectRoomPath } from '../../pages/pathUtils';
+import { isValidOntid, ontidToMxid } from '@src/app/utils/ontid';
 
 type CreateChatProps = {
   defaultUserId?: string;
@@ -56,9 +57,13 @@ export function CreateChat({ defaultUserId }: CreateChatProps) {
 
     const target = evt.target as HTMLFormElement | undefined;
     const userIdInput = target?.userIdInput as HTMLInputElement | undefined;
-    const userId = userIdInput?.value.trim();
+    let userId = userIdInput?.value.trim();
 
     if (!userIdInput || !userId) return;
+    if (isValidOntid(userId)) {
+      userId = ontidToMxid(userId, mx)!;
+    }
+
     if (!isUserId(userId)) {
       setInvalidUserId(true);
       return;
@@ -75,10 +80,10 @@ export function CreateChat({ defaultUserId }: CreateChatProps) {
   return (
     <Box as="form" onSubmit={handleSubmit} grow="Yes" direction="Column" gap="500">
       <Box direction="Column" gap="100">
-        <Text size="L400">User ID</Text>
+        <Text size="L400">User ID / ONT ID</Text>
         <Input
           defaultValue={defaultUserId}
-          placeholder="@username:server"
+          placeholder="@username:server / username.ont.id"
           name="userIdInput"
           variant="SurfaceVariant"
           size="500"

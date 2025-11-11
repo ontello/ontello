@@ -1,5 +1,5 @@
 import { Hex } from 'viem';
-import { bigIntSerializer } from '@src/app/utils/web3';
+import { bigIntSerializerToString } from '@src/app/utils/web3';
 import { GasToken, UserOperation } from './types';
 
 export const usePaymaster = (chainId: number) => {
@@ -25,7 +25,7 @@ export const usePaymaster = (chainId: number) => {
             call_gas_limit: userOp.callGasLimit,
             nonce: userOp.nonce,
           },
-          bigIntSerializer
+          bigIntSerializerToString
         ),
       }
     );

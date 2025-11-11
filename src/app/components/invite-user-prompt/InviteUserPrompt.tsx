@@ -148,7 +148,7 @@ export function InviteUserPrompt({ room, requestClose }: InviteUserProps) {
   const handleSearchChange: ChangeEventHandler<HTMLInputElement> = (evt) => {
     const rawValue = evt.currentTarget.value.trim();
     if (isSearchAgent) {
-      const normalizedValue = isValidOntid(rawValue) ? ontidToMxid(rawValue) : rawValue;
+      const normalizedValue = isValidOntid(rawValue) ? ontidToMxid(rawValue, mx) : rawValue;
       if (normalizedValue && isUserId(normalizedValue)) {
         setValidUserId(normalizedValue);
       } else {
@@ -157,7 +157,7 @@ export function InviteUserPrompt({ room, requestClose }: InviteUserProps) {
       performAgentSearch(rawValue);
       return;
     }
-    const value = isValidOntid(rawValue) ? ontidToMxid(rawValue) : rawValue;
+    const value = isValidOntid(rawValue) ? ontidToMxid(rawValue, mx) : rawValue;
     if (!value) {
       setValidUserId(undefined);
       resetSearch();

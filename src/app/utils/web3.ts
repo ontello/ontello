@@ -104,13 +104,13 @@ export const getUserOpSignature = async (
   return signatureWrapper;
 };
 
-export const bigIntSerializer = (key: string, value: any) => {
+export const bigIntSerializerToString = (key: string, value: any) => {
   if (typeof value === 'bigint') {
     return value.toString();
   }
   return value;
 };
-export const serializerToHex = (key: string, value: any) => {
+export const bigIntSerializerToHex = (key: string, value: any) => {
   if (typeof value === 'bigint') {
     return toHex(value);
   }

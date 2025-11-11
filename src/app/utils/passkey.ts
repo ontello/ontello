@@ -47,16 +47,16 @@ export function parseDER(derBytes: Uint8Array): {
 } {
   if (derBytes[0] !== 0x30) throw new Error('Invalid DER format: missing SEQUENCE');
 
-  let offset = 2; // 跳过 SEQUENCE (0x30) 和总长度
+  let offset = 2;
 
   if (derBytes[offset] !== 0x02) throw new Error('Invalid DER format: missing INTEGER for r');
-  const rLen = derBytes[offset + 1]; // r 的长度
+  const rLen = derBytes[offset + 1];
   let r = derBytes.slice(offset + 2, offset + 2 + rLen);
 
   offset += 2 + rLen;
 
   if (derBytes[offset] !== 0x02) throw new Error('Invalid DER format: missing INTEGER for s');
-  const sLen = derBytes[offset + 1]; // s 的长度
+  const sLen = derBytes[offset + 1];
   let s = derBytes.slice(offset + 2, offset + 2 + sLen);
 
   if (r.length === 33 && r[0] === 0) {
@@ -174,7 +174,6 @@ const getLoginChallenge = (name: string): ArrayBuffer => getChallenge(name, 'Log
 const getRegisterChallenge = (name: string): ArrayBuffer => getChallenge(name, 'Register');
 
 export const createPasskey = async (name: string, challenge: ArrayBuffer) => {
-  // const userIdArray = new TextEncoder().encode(name);
   const ts = Date.now();
   const regName = `${name} ${timeFullDateTime(ts)}`;
   const uuid = uuidv4();
@@ -316,11 +315,8 @@ export interface WebAuthnSignature {
 export const signMessageWithPasskey = async (message: Hex): Promise<WebAuthnSignature> => {
   try {
     console.log('message', message);
-
     const challenge = hexToUint8Array(message);
-
     console.log('challenge', challenge);
-    // console.log('challengeBase64Url', toBase64Url(challenge.buffer));
 
     const { response } = await signWithPasskey(challenge);
     const { signature, authenticatorData, clientDataJSON } =
@@ -335,21 +331,6 @@ export const signMessageWithPasskey = async (message: Hex): Promise<WebAuthnSign
     }
     const normalizeS = toBytes(sBigint);
     const clientDataString = new TextDecoder().decode(clientDataJSON);
-    // console.log('signature', toHex(new Uint8Array(signature)));
-    // console.log('clientDataJSON', clientDataJSON);
-    // console.log('clientDataString', clientDataString);
-    // console.log('authenticatorData', authenticatorData);
-    // console.log('authenticatorDataHex', toHex(new Uint8Array(authenticatorData)));
-
-    // const isValid = await verifySignature(
-    //   await recoverPublicKey(
-    //     'gu6yIxrv3hPWybt3qqXj_JUeftTVPkzfjxwoodmXTDk5hlWeXMe7CZq5JV1ZrYCnrhrujG2zM7u6r7rTICsgSA'
-    //   ),
-    //   signature,
-    //   clientDataJSON,
-    //   authenticatorData
-    // );
-    // console.log('isValid', isValid);
 
     return {
       authenticatorData,

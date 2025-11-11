@@ -1,5 +1,5 @@
 import { Hex } from 'viem';
-import { serializerToHex } from '@src/app/utils/web3';
+import { bigIntSerializerToHex } from '@src/app/utils/web3';
 import { polling } from '@src/app/utils/common';
 import { UserOperation, UserOperationReceipt } from './types';
 import { useWeb3Client } from './useWeb3Client';
@@ -26,7 +26,7 @@ export const useBundler = (chainId?: number) => {
           method: 'eth_estimateUserOperationGas',
           params: [userOp, chainConfig.entrypointAddr],
         },
-        serializerToHex
+        bigIntSerializerToHex
       ),
     });
     const res = await response.json();
@@ -48,7 +48,7 @@ export const useBundler = (chainId?: number) => {
           method: 'eth_sendUserOperation',
           params: [userOp, chainConfig.entrypointAddr],
         },
-        serializerToHex
+        bigIntSerializerToHex
       ),
     });
     const res = await response.json();
