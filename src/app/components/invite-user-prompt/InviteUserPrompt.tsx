@@ -269,8 +269,7 @@ export function InviteUserPrompt({ room, requestClose }: InviteUserProps) {
                         radii="300"
                         onClick={() => toggleSearchMode(false)}
                       >
-                        {/* <Text size="B300">ONT/Matrix ID</Text> */}
-                        <Text size="B300">Matrix ID</Text>
+                        <Text size="B300">ONT/Matrix ID</Text>
                       </Button>
                       <Button
                         type="button"
