@@ -269,7 +269,8 @@ export function InviteUserPrompt({ room, requestClose }: InviteUserProps) {
                         radii="300"
                         onClick={() => toggleSearchMode(false)}
                       >
-                        <Text size="B300">ONT/Matrix ID</Text>
+                        {/* <Text size="B300">ONT/Matrix ID</Text> */}
+                        <Text size="B300">Matrix ID</Text>
                       </Button>
                       <Button
                         type="button"
@@ -401,11 +402,11 @@ export function InviteUserPrompt({ room, requestClose }: InviteUserProps) {
                                           <Text size="T300" truncate>
                                             <b>{agent.bot_name ?? agent.mx_id}</b>
                                           </Text>
-                                          {agent.description && (
+                                          {/* {agent.description && (
                                             <Text size="T200" truncate>
                                               {agent.description}
                                             </Text>
-                                          )}
+                                          )} */}
                                         </Box>
                                       </MenuItem>
                                     ))}
