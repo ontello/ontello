@@ -18,6 +18,9 @@ import {
 } from 'folds';
 import { stopPropagation } from '../../utils/keyboard';
 import { APP_INFO } from '../../config/appInfo';
+import othersPng from '@app/static/imgs/Group 99246462.png';
+import iosPng1 from '@app/static/imgs/IMG_9524.png';
+import iosPng2 from '@app/static/imgs/IMG_9525.png';
 
 export type InstallPromptPlatform = 'android' | 'ios' | 'other';
 export const INSTALL_PROMPT_DISMISS_KEY = 'ontello_install_prompt_dismissed';
@@ -38,22 +41,16 @@ export function InstallPromptModal({
   onDismiss,
 }: InstallPromptModalProps) {
   const [dontShowAgain, setDontShowAgain] = useState(initialDontShowAgain);
-  const isAndroidFlow = platform === 'android' && typeof onInstallClick === 'function';
 
   const platformContent = useMemo(() => {
     if (platform === 'android') {
       return (
         <Box direction="Column" gap="200">
-          <Text size="B400">[Android UI 占位] 在这里放置一键安装的说明与插画。</Text>
-          {isAndroidFlow ? (
-            <Button disabled={installing} onClick={onInstallClick}>
-              <Text as="span" size="B400">
-                {installing ? '安装中…' : '安装到桌面'}
-              </Text>
-            </Button>
-          ) : (
-            <Text size="B400">[Android CTA 占位] 按钮禁用状态的额外提示。</Text>
-          )}
+          <Button disabled={installing} onClick={onInstallClick}>
+            <Text as="span" size="B400">
+              {installing ? 'Installing...' : 'Install'}
+            </Text>
+          </Button>
         </Box>
       );
     }
@@ -61,26 +58,21 @@ export function InstallPromptModal({
     if (platform === 'ios') {
       return (
         <Box direction="Column" gap="200">
-          {/* <Text size="B400">[iOS UI 占位] 展示 Safari“分享 → 添加到主屏幕”的操作。</Text>
-          <Box direction="Column" gap="100">
-            <Text size="B400">1. TODO：插入分享按钮的图示或描述。</Text>
-            <Text size="B400">2. TODO：插入“添加到主屏幕”步骤。</Text>
-          </Box> */}
           <Text size="B400">1.Click the button on the toolbar.</Text>
+          <img src={iosPng1} alt="" />
+          <Text size="B400">2.Click “Add to screen ”</Text>
+          <img src={iosPng2} alt="" />
         </Box>
       );
     }
 
     return (
       <Box direction="Column" gap="200">
-        <Text size="B400">[通用 UI 占位] 这里用于其它浏览器的安装指引。</Text>
-        <Box direction="Column" gap="100">
-          <Text size="B400">• TODO：步骤一文案。</Text>
-          <Text size="B400">• TODO：步骤二文案。</Text>
-        </Box>
+        <Text>Open this page in Chrome, then follow the guide below.</Text>
+        <img src={othersPng} alt="" />
       </Box>
     );
-  }, [platform, isAndroidFlow, installing, onInstallClick]);
+  }, [platform, installing, onInstallClick]);
 
   const handleDontShowAgainChange = () => {
     const nextValue = !dontShowAgain;

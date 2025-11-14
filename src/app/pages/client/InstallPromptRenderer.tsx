@@ -96,7 +96,9 @@ export function InstallPromptRenderer() {
     Boolean(installEnvironment && !installEnvironment.isStandalone) &&
     storageLoaded &&
     !initialOptOut &&
-    !sessionDismissed;
+    !sessionDismissed &&
+    // Android Chrome 只有在 beforeinstallprompt 事件触发时才显示弹窗
+    !(installEnvironment?.isAndroidChrome && !deferredPrompt);
 
   const canInstallDirectly = Boolean(installEnvironment?.isAndroidChrome && deferredPrompt);
 
