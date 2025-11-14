@@ -28,17 +28,24 @@ export function InstallPromptRenderer() {
   const [installing, setInstalling] = useState(false);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    // if (typeof window === 'undefined') return;
     const stored = window.localStorage.getItem(INSTALL_PROMPT_DISMISS_KEY) === 'true';
     setInitialOptOut(stored);
     setStorageLoaded(true);
   }, []);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    console.log('test1');
 
-    const handleBeforeInstallPrompt = (event: Event) => {
+    // if (typeof window === 'undefined') return;
+
+    const handleBeforeInstallPrompt = (event: any) => {
+      console.log('handleBeforeInstallPrompt');
+
       event.preventDefault();
+      //TODO
+      event.prompt();
+
       setDeferredPrompt(event as BeforeInstallPromptEvent);
     };
 
@@ -47,7 +54,7 @@ export function InstallPromptRenderer() {
   }, []);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    // if (typeof window === 'undefined') return;
 
     const parser = new UAParser(window.navigator.userAgent);
 
@@ -92,6 +99,12 @@ export function InstallPromptRenderer() {
     return 'other';
   }, [installEnvironment]);
 
+  console.log('installEnvironment', installEnvironment);
+  console.log('storageLoaded', storageLoaded);
+  console.log('initialOptOut', initialOptOut);
+  console.log('sessionDismissed', sessionDismissed);
+  console.log('deferredPrompt', deferredPrompt);
+
   const shouldShowInstallPrompt =
     Boolean(installEnvironment && !installEnvironment.isStandalone) &&
     storageLoaded &&
@@ -103,6 +116,8 @@ export function InstallPromptRenderer() {
   const canInstallDirectly = Boolean(installEnvironment?.isAndroidChrome && deferredPrompt);
 
   const handleInstall = useCallback(async () => {
+    console.log('handleInstall');
+
     if (!deferredPrompt) return;
     setInstalling(true);
 
