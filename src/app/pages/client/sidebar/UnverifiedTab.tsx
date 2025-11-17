@@ -49,7 +49,9 @@ function UnverifiedIndicator() {
     <>
       {hasUnverified && (
         <SidebarItem active={settings} className={css.UnverifiedTab}>
-          <SidebarItemTooltip tooltip={unverified ? 'Unverified Device' : 'Unverified Devices'}>
+          <SidebarItemTooltip
+            tooltip={'Encrypted messages won’t be readable until verification is complete.'}
+          >
             {(triggerRef) => (
               <SidebarAvatar
                 className={unverified ? css.UnverifiedAvatar : css.UnverifiedOtherAvatar}
