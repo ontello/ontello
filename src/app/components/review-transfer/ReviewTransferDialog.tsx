@@ -19,9 +19,9 @@ export function ReviewTransferDialog() {
     }
   }, [transferData]);
 
-  const handleClose = () => setIsOpen(false);
+  // const handleClose = () => setIsOpen(false);
 
-  const handleAfterClose = () => {
+  const handleClose = () => {
     setIsOpen(false);
     closeDialog();
   };
@@ -32,7 +32,7 @@ export function ReviewTransferDialog() {
     <ReviewTransferContent
       isOpen={isOpen}
       onClose={handleClose}
-      onAfterClose={handleAfterClose}
+      // onAfterClose={handleAfterClose}
       transferData={transferData}
     />
   );

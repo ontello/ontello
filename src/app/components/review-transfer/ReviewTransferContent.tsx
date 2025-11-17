@@ -31,6 +31,7 @@ import { TransferResult, TransferResultEnum } from '../wallet/TransferResult';
 export function ReviewTransferContent({
   isOpen,
   onClose,
+  // onAfterClose,
   transferData,
 }: ReviewTransferContentProps) {
   const { getChainConfig } = useChainConfig();
@@ -188,11 +189,12 @@ export function ReviewTransferContent({
   };
 
   const handleClose = () => {
-    if (transferState.status === AsyncStatus.Success) {
-      onClose();
-    } else if (transferState.status !== AsyncStatus.Loading) {
-      onClose();
+    if (transferState.status === AsyncStatus.Loading) {
+      return;
     }
+
+    onClose();
+    // onAfterClose?.();
   };
 
   return (
@@ -315,7 +317,7 @@ export function ReviewTransferContent({
           </FocusTrap>
         </OverlayCenter>
       </Overlay>
-    )) || <TransferResult type={TransferResultEnum.Success} onClose={onClose} />
+    )) || <TransferResult type={TransferResultEnum.Success} onClose={handleClose} />
   );
 }
 
