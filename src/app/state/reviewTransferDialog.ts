@@ -1,14 +1,13 @@
-import { atom, getDefaultStore } from 'jotai';
+import { atom } from 'jotai';
 import type { TransferData } from '../components/review-transfer/types';
+import { appJotaiStore } from './jotaiStore';
 
 export const reviewTransferDialogAtom = atom<TransferData | undefined>(undefined);
 
-const defaultStore = getDefaultStore();
-
 export const openReviewTransferDialog = (data: TransferData) => {
-  defaultStore.set(reviewTransferDialogAtom, data);
+  appJotaiStore.set(reviewTransferDialogAtom, data);
 };
 
 export const closeReviewTransferDialog = () => {
-  defaultStore.set(reviewTransferDialogAtom, undefined);
+  appJotaiStore.set(reviewTransferDialogAtom, undefined);
 };
