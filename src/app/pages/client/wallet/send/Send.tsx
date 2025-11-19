@@ -3,8 +3,8 @@ import { Box, Button, Text, color, toRem } from 'folds';
 import { Address, parseUnits, formatUnits } from 'viem';
 import { GasToken } from '@src/app/hooks/web3/types';
 import { TransferData } from '@src/app/components/review-transfer';
-import { useOpenReviewTransferDialog } from '@src/app/state/hooks/reviewTransferDialog';
-import { useOpenSyncOwnershipDialog } from '@src/app/state/hooks/syncOwnershipDialog';
+import { useOpenGlobalDialog } from '@src/app/state/hooks/globalDialogs';
+import { GlobalDialogType } from '@src/app/state/globalDialogs';
 import { useOwnerManage } from '@src/app/hooks/web3/useOwnerManage';
 import { PageNavContent } from '../../../../components/page';
 import { WalletNavMode, TokenWithChain } from '../../../../../types/wallet/types';
@@ -23,7 +23,7 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
   const extras = getAuthExtras();
   const aaAddress = (extras.aaAddress ?? '0x0') as Address;
   const { tokens } = useTokensContext();
-  const openReviewTransfer = useOpenReviewTransferDialog();
+  const openReviewTransfer = useOpenGlobalDialog(GlobalDialogType.ReviewTransfer);
 
   const [amount, setAmount] = useState('');
   const [selectedToken, setSelectedToken] = useState<TokenWithChain | null>(null);
@@ -32,7 +32,7 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
   const [isMaxAmount, setIsMaxAmount] = useState(false);
   const [isEstimatingFee, setIsEstimatingFee] = useState(false);
   const { checkOwnerInitial, getSyncStatus } = useOwnerManage(aaAddress);
-  const openSyncOwnershipDialog = useOpenSyncOwnershipDialog();
+  const openSyncOwnershipDialog = useOpenGlobalDialog(GlobalDialogType.SyncOwnershipChange);
 
   const scrollRef = useRef<HTMLDivElement>(null);
 

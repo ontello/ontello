@@ -1,14 +1,12 @@
 import React, { useEffect, useState } from 'react';
 
 import ReviewTransferContent from './ReviewTransferContent';
-import {
-  useReviewTransferDialogState,
-  useCloseReviewTransferDialog,
-} from '../../state/hooks/reviewTransferDialog';
+import { useCloseGlobalDialog, useGlobalDialogState } from '../../state/hooks/globalDialogs';
+import { GlobalDialogType } from '../../state/globalDialogs';
 
 export function ReviewTransferDialog() {
-  const transferData = useReviewTransferDialogState();
-  const closeDialog = useCloseReviewTransferDialog();
+  const transferData = useGlobalDialogState(GlobalDialogType.ReviewTransfer);
+  const closeDialog = useCloseGlobalDialog(GlobalDialogType.ReviewTransfer);
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {

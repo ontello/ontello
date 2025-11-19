@@ -10,7 +10,8 @@ import { SequenceCard } from '../../../components/sequence-card';
 import { SequenceCardStyle } from '../styles.css';
 import { SettingTile } from '../../../components/setting-tile';
 import { getAuthExtras } from '../../../state/authExtras';
-import { useOpenSyncOwnershipDialog } from '@src/app/state/hooks/syncOwnershipDialog';
+import { useOpenGlobalDialog } from '@src/app/state/hooks/globalDialogs';
+import { GlobalDialogType } from '@src/app/state/globalDialogs';
 import { useFetchPasskeyList } from '../../../hooks/useFetchPasskeyList';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
 import { OwnerItem } from './OwnerItem';
@@ -29,7 +30,7 @@ export function Wallet({ requestClose }: Props) {
   const userId = mx.getUserId();
   const [passkeyData, refetch] = useFetchPasskeyList(userId!);
   const { checkOwnerInitial } = useOwnerManage(aaAddress as Address);
-  const openSyncOwnershipDialog = useOpenSyncOwnershipDialog();
+  const openSyncOwnershipDialog = useOpenGlobalDialog(GlobalDialogType.SyncOwnershipChange);
 
   useEffect(() => {
     const checkOwnerStatus = async () => {

@@ -3,21 +3,17 @@ import { Box, Spinner, Text } from 'folds';
 import { useChainConfig } from '@src/app/hooks/web3/useChainConfig';
 import { useAsyncCallback, AsyncStatus } from '@src/app/hooks/useAsyncCallback';
 import { FeeSessionResp } from '@src/app/externalApis';
-import { useMatrixClient } from '@src/app/hooks/useMatrixClient';
 import { useOwnerManage } from '@src/app/hooks/web3/useOwnerManage';
-import {
-  useCloseSyncOwnershipDialog,
-  useSyncOwnershipDialogState,
-} from '@src/app/state/hooks/syncOwnershipDialog';
+import { useCloseGlobalDialog, useGlobalDialogState } from '@src/app/state/hooks/globalDialogs';
+import { GlobalDialogType } from '@src/app/state/globalDialogs';
 import { SyncDialog, SyncStatus } from './SyncDialog';
 import { Address } from 'viem';
 import { AUTH_EXTRA_KEYS } from '@src/app/state/authExtras';
 
 export function SyncOwnershipChangeDialog() {
-  const dialogData = useSyncOwnershipDialogState();
-  const closeDialog = useCloseSyncOwnershipDialog();
+  const dialogData = useGlobalDialogState(GlobalDialogType.SyncOwnershipChange);
+  const closeDialog = useCloseGlobalDialog(GlobalDialogType.SyncOwnershipChange);
 
-  const mx = useMatrixClient();
   const aaAddress = localStorage.getItem(AUTH_EXTRA_KEYS.AA_ADDRESS) as Address;
 
   const { syncOwner, getSyncStatus } = useOwnerManage(aaAddress);

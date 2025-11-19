@@ -34,7 +34,7 @@ import { onEnterOrSpace } from '../utils/keyboard';
 import { tryDecodeURIComponent } from '../utils/dom';
 import { confirmDialog } from '../components/confirm';
 import { testOntelloLink, parseOntelloLink } from './ontello-link';
-import { openReviewTransferDialog } from '../state/reviewTransferDialog';
+import { openGlobalDialog, GlobalDialogType } from '../state/globalDialogs';
 import { TransferData } from '../components/review-transfer';
 
 const ReactPrism = lazy(() => import('./react-prism/ReactPrism'));
@@ -433,7 +433,10 @@ export const getReactCustomHtmlParser = (
               // Handle different types of Ontello links
               switch (ontelloData.type) {
                 case 'transfer':
-                  openReviewTransferDialog(ontelloData.data as TransferData);
+                  openGlobalDialog(
+                    GlobalDialogType.ReviewTransfer,
+                    ontelloData.data as TransferData
+                  );
                   break;
                 // Future: add other types here
                 default:
