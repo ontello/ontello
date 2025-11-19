@@ -4,6 +4,7 @@ import { Address, parseUnits, formatUnits } from 'viem';
 import { GasToken } from '@src/app/hooks/web3/types';
 import { TransferData } from '@src/app/components/review-transfer';
 import { useOpenReviewTransferDialog } from '@src/app/state/hooks/reviewTransferDialog';
+import { useOpenSyncOwnershipDialog } from '@src/app/state/hooks/syncOwnershipDialog';
 import { useOwnerManage } from '@src/app/hooks/web3/useOwnerManage';
 import { PageNavContent } from '../../../../components/page';
 import { WalletNavMode, TokenWithChain } from '../../../../../types/wallet/types';
@@ -16,7 +17,6 @@ import { AmountInput } from './AmountInput';
 import { useTokensContext } from '../../../../hooks/wallet/useTokens';
 import { useAbstractAccount } from '../../../../hooks/web3/useAbstractAccount';
 import { walletApi } from '../../../../externalApis';
-import { SyncOwnershipChange } from '../../../../components/wallet/multi-chain/SyncOwnershipChange';
 import { getAuthExtras } from '@src/app/state/authExtras';
 
 export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavMode) => void }) {
@@ -31,8 +31,8 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
   const [feeToken, setFeeToken] = useState<GasToken | null>(null);
   const [isMaxAmount, setIsMaxAmount] = useState(false);
   const [isEstimatingFee, setIsEstimatingFee] = useState(false);
-  const [showSyncOwnershipChange, setShowSyncOwnershipChange] = useState(false);
   const { checkOwnerInitial, getSyncStatus } = useOwnerManage(aaAddress);
+  const openSyncOwnershipDialog = useOpenSyncOwnershipDialog();
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -128,9 +128,9 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
     ]);
 
     if (!syncStatus[selectedToken.chainId] && !isOwnerInitial) {
-      console.log(1111);
-
-      setShowSyncOwnershipChange(true);
+      openSyncOwnershipDialog({
+        chainIds: [selectedToken.chainId],
+      });
       return;
     }
 
@@ -310,12 +310,6 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
           {isEstimatingFee ? 'Calculating...' : 'Pay'}
         </Button>
       </PageNavContent>
-      {showSyncOwnershipChange && selectedToken?.chainId && (
-        <SyncOwnershipChange
-          chainIds={[selectedToken?.chainId]}
-          onClose={() => setShowSyncOwnershipChange(false)}
-        />
-      )}
     </Box>
   );
 }

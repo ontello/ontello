@@ -76,6 +76,7 @@ import { Create } from './client/create';
 import { CreateSpaceModalRenderer } from '../features/create-space';
 import { SearchModalRenderer } from '../features/search';
 import { ReviewTransferDialog } from '../components/review-transfer';
+import { SyncOwnershipChangeDialog } from '../components/wallet/multi-chain/SyncOwnershipChange';
 import { getFallbackSession } from '../state/sessions';
 import { Agent } from './client/agent/Agent';
 import { AgentStore } from './client/agent/AgentStore';
@@ -148,6 +149,7 @@ export const createRouter = (clientConfig: ClientConfig, screenSize: ScreenSize)
                       </ClientLayout>
                       <SearchModalRenderer />
                       <ReviewTransferDialog />
+                      <SyncOwnershipChangeDialog />
                       <UserRoomProfileRenderer />
                       <CreateRoomModalRenderer />
                       <CreateSpaceModalRenderer />
