@@ -5,7 +5,7 @@ import { GasToken } from '@src/app/hooks/web3/types';
 import { TransferData } from '@src/app/components/review-transfer';
 import { useOpenGlobalDialog } from '@src/app/state/hooks/globalDialogs';
 import { GlobalDialogType } from '@src/app/state/globalDialogs';
-import { useOwnerManage } from '@src/app/hooks/web3/useOwnerManage';
+import { ensureOwnershipSynced } from '@src/app/utils/ownershipSync';
 import { PageNavContent } from '../../../../components/page';
 import { WalletNavMode, TokenWithChain } from '../../../../../types/wallet/types';
 import { Back } from '../../../../components/ontello/Back';
@@ -31,9 +31,6 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
   const [feeToken, setFeeToken] = useState<GasToken | null>(null);
   const [isMaxAmount, setIsMaxAmount] = useState(false);
   const [isEstimatingFee, setIsEstimatingFee] = useState(false);
-  const { checkOwnerInitial, getSyncStatus } = useOwnerManage(aaAddress);
-  const openSyncOwnershipDialog = useOpenGlobalDialog(GlobalDialogType.SyncOwnershipChange);
-
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Get abstract account hook at component level
@@ -122,15 +119,9 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
 
     if (!isFormValid || !selectedToken || !recipient || !feeToken || !aaAddress) return;
 
-    const [syncStatus, isOwnerInitial] = await Promise.all([
-      getSyncStatus([selectedToken.chainId]),
-      checkOwnerInitial(),
-    ]);
-
-    if (!syncStatus[selectedToken.chainId] && !isOwnerInitial) {
-      openSyncOwnershipDialog({
-        chainIds: [selectedToken.chainId],
-      });
+    try {
+      await ensureOwnershipSynced([selectedToken.chainId]);
+    } catch {
       return;
     }
 

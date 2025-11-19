@@ -16,9 +16,10 @@ export function SyncOwnershipChangeDialog() {
 
   const aaAddress = localStorage.getItem(AUTH_EXTRA_KEYS.AA_ADDRESS) as Address;
 
-  const { syncOwner, getSyncStatus } = useOwnerManage(aaAddress);
+  const { syncOwner, getSyncStatus, checkOwnerInitial } = useOwnerManage(aaAddress);
 
   const getSyncStatusRef = useRef(getSyncStatus);
+  const checkOwnerInitialRef = useRef(checkOwnerInitial);
 
   const syncOwnerRef = useRef(syncOwner);
 
@@ -41,6 +42,23 @@ export function SyncOwnershipChangeDialog() {
     prevChainIdsRef.current = [];
   }, []);
 
+  const onCloseWithStatus = useCallback(
+    (closeStatus?: SyncStatus) => {
+      if (!dialogData) {
+        closeDialog();
+        return;
+      }
+      if (closeStatus === SyncStatus.Success) {
+        dialogData.onSuccess?.();
+      } else {
+        dialogData.onClose?.();
+      }
+      resetDialogState();
+      closeDialog();
+    },
+    [closeDialog, dialogData, resetDialogState]
+  );
+
   useEffect(() => {
     if (!dialogData) {
       return;
@@ -49,6 +67,7 @@ export function SyncOwnershipChangeDialog() {
     resetDialogState();
     const targetChainIds = dialogData.chainIds;
     if (!targetChainIds.length) {
+      onCloseWithStatus(SyncStatus.Success);
       return;
     }
 
@@ -59,17 +78,31 @@ export function SyncOwnershipChangeDialog() {
     prevChainIdsRef.current = [...targetChainIds];
 
     setIsGettingSyncStatus(true);
-    getSyncStatusRef
-      .current(targetChainIds)
-      .then((syncStatus) => {
+    Promise.all([
+      getSyncStatusRef.current(targetChainIds),
+      checkOwnerInitialRef.current(),
+    ])
+      .then(([syncStatus, isOwnerInitial]) => {
+        if (isOwnerInitial) {
+          onCloseWithStatus(SyncStatus.Success);
+          return;
+        }
         const needSyncIds = targetChainIds.filter((chainId) => !syncStatus[chainId]);
+        if (!needSyncIds.length) {
+          onCloseWithStatus(SyncStatus.Success);
+          return;
+        }
         setNeedSyncChainIds(needSyncIds);
         setSelectedChainIds(needSyncIds);
+      })
+      .catch((error) => {
+        console.error(error);
+        onCloseWithStatus();
       })
       .finally(() => {
         setIsGettingSyncStatus(false);
       });
-  }, [dialogData, resetDialogState]);
+  }, [dialogData, onCloseWithStatus, resetDialogState]);
 
   const { availableChains } = useChainConfig();
   const chains = useMemo(
@@ -110,19 +143,6 @@ export function SyncOwnershipChangeDialog() {
       setStatus(SyncStatus.Init);
       throw error;
     }
-  };
-
-  const onCloseWithStatus = (closeStatus?: SyncStatus) => {
-    if (!dialogData) {
-      closeDialog();
-      return;
-    }
-    if (closeStatus === SyncStatus.Success) {
-      dialogData.onSuccess?.();
-    }
-    dialogData.onClose?.();
-    resetDialogState();
-    closeDialog();
   };
 
   const onDone = () => {
