@@ -1,4 +1,4 @@
-import { openGlobalDialog, GlobalDialogType } from '../state/globalDialogs';
+import { openGlobalDialog, GlobalDialogType, closeGlobalDialog } from '../state/globalDialogs';
 
 export type OwnershipSyncResult = 'already-synced' | 'synced';
 
@@ -13,12 +13,14 @@ export const ensureOwnershipSynced = (chainIds: number[]): Promise<OwnershipSync
     const handleSuccess = () => {
       if (settled) return;
       settled = true;
+      closeGlobalDialog(GlobalDialogType.SyncOwnershipChange);
       resolve('synced');
     };
 
     const handleClose = () => {
       if (settled) return;
       settled = true;
+      closeGlobalDialog(GlobalDialogType.SyncOwnershipChange);
       reject(new Error('sync cancelled'));
     };
 

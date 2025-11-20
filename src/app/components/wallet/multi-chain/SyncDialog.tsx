@@ -17,6 +17,7 @@ export enum SyncStatus {
   Loading = 'loading',
   Success = 'success',
   Failed = 'failed',
+  NoSyncNeeded = 'noSyncNeeded',
 }
 
 enum EstimateFeeStatus {
@@ -210,6 +211,7 @@ export function SyncDialog({
   }, [isSponsoredNetworkFee, feeInfoIsLoaded, yourNetworkFeeTokenData, networkFeeData]);
 
   const buttonDisabled = useMemo(() => {
+    if (status === SyncStatus.NoSyncNeeded) return false;
     if (!chains || chains.length === 0) return true;
     if (status === SyncStatus.Loading) return true;
     if (selectedChains.length === 0) return true;
@@ -268,6 +270,7 @@ export function SyncDialog({
   const buttonText = useMemo(() => {
     if (status === SyncStatus.Loading) return 'Loading...';
     if (status === SyncStatus.Success) return doneButtonText;
+    if (status === SyncStatus.NoSyncNeeded) return doneButtonText;
     if (status === SyncStatus.Failed) return failButtonText;
     if (showNeedTopUpFeeToken) return 'Fund wallet';
     if (status === SyncStatus.Init) return 'Estimate fee';
@@ -279,6 +282,7 @@ export function SyncDialog({
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     if (status === SyncStatus.Loading) return () => {};
     if (status === SyncStatus.Success) return () => onDone();
+    if (status === SyncStatus.NoSyncNeeded) return () => onDone();
     if (status === SyncStatus.Failed) return () => onFail();
     if (showNeedTopUpFeeToken) return () => onTopUpFeeToken();
     if (status === SyncStatus.Init) return () => doEstimateFee();

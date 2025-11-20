@@ -27,6 +27,7 @@ export function SyncOwnershipChangeDialog() {
   const [isGettingSyncStatus, setIsGettingSyncStatus] = useState(false);
   const [selectedChainIds, setSelectedChainIds] = useState<number[]>([]);
   const prevChainIdsRef = useRef<number[]>([]);
+  const [status, setStatus] = useState<SyncStatus>(SyncStatus.Init);
 
   // Deep compare arrays
   const areArraysEqual = (arr1: number[], arr2: number[]): boolean => {
@@ -43,18 +44,20 @@ export function SyncOwnershipChangeDialog() {
   }, []);
 
   const onCloseWithStatus = useCallback(
-    (closeStatus?: SyncStatus) => {
+    (status?: SyncStatus) => {
       if (!dialogData) {
-        closeDialog();
-        return;
+        throw Error('dialogData is undefined');
       }
-      if (closeStatus === SyncStatus.Success) {
+      if (status === SyncStatus.Success) {
+        dialogData.onSuccess?.();
+        closeDialog();
+      } else if (status === SyncStatus.NoSyncNeeded) {
         dialogData.onSuccess?.();
       } else {
         dialogData.onClose?.();
+        closeDialog();
       }
       resetDialogState();
-      closeDialog();
     },
     [closeDialog, dialogData, resetDialogState]
   );
@@ -78,18 +81,17 @@ export function SyncOwnershipChangeDialog() {
     prevChainIdsRef.current = [...targetChainIds];
 
     setIsGettingSyncStatus(true);
-    Promise.all([
-      getSyncStatusRef.current(targetChainIds),
-      checkOwnerInitialRef.current(),
-    ])
+    Promise.all([getSyncStatusRef.current(targetChainIds), checkOwnerInitialRef.current()])
       .then(([syncStatus, isOwnerInitial]) => {
         if (isOwnerInitial) {
-          onCloseWithStatus(SyncStatus.Success);
+          setStatus(SyncStatus.NoSyncNeeded);
+          onCloseWithStatus(SyncStatus.NoSyncNeeded);
           return;
         }
         const needSyncIds = targetChainIds.filter((chainId) => !syncStatus[chainId]);
         if (!needSyncIds.length) {
-          onCloseWithStatus(SyncStatus.Success);
+          setStatus(SyncStatus.NoSyncNeeded);
+          onCloseWithStatus(SyncStatus.NoSyncNeeded);
           return;
         }
         setNeedSyncChainIds(needSyncIds);
@@ -110,7 +112,6 @@ export function SyncOwnershipChangeDialog() {
     [availableChains, needSyncChainIds]
   );
 
-  const [status, setStatus] = useState<SyncStatus>(SyncStatus.Init);
   // Define the asynchronous function to fetch fee data
   const fetchFeeData = useCallback(async () => {
     if (!selectedChainIds.length) {

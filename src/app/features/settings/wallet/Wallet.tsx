@@ -15,6 +15,7 @@ import { useFetchPasskeyList } from '../../../hooks/useFetchPasskeyList';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
 import { OwnerItem } from './OwnerItem';
 import { RecoveryPhrase } from '../../../components/wallet/multi-chain/RecoveryPhrase';
+import { GlobalDialogType, openGlobalDialog } from '@src/app/state/globalDialogs';
 
 type Props = {
   requestClose: () => void;
@@ -48,11 +49,14 @@ export function Wallet({ requestClose }: Props) {
     setIsRecoveryDialogOpen(true);
   };
   const handleSync = async () => {
-    try {
-      await ensureOwnershipSynced(availableChains.map((chain) => chain.chainId));
-    } catch {
-      // User dismissed dialog without syncing
-    }
+    // try {
+    //   await ensureOwnershipSynced(availableChains.map((chain) => chain.chainId));
+    // } catch {
+    //   // User dismissed dialog without syncing
+    // }
+    openGlobalDialog(GlobalDialogType.SyncOwnershipChange, {
+      chainIds: availableChains.map((chain) => chain.chainId),
+    });
   };
 
   return (
