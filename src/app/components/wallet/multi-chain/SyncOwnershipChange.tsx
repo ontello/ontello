@@ -200,7 +200,7 @@ export function SyncOwnershipChangeDialog() {
 
   return (
     <SyncDialog
-      title="Sync Ownership Change"
+      title="Sync ownership change"
       customBody={customBody}
       description={description}
       chains={chains}

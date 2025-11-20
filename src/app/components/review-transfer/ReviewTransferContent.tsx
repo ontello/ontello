@@ -156,7 +156,7 @@ export function ReviewTransferContent({
     if (feeEstimate) {
       const feeInEth = Number(formatEther(feeEstimate.maxEthFee));
       const exchangeRate = Number(transferData.fee.exchangeRate);
-      const feeInToken = (feeInEth * exchangeRate).toFixed(4);
+      const feeInToken = (feeInEth * exchangeRate).toFixed(5);
       return `${feeInToken} ${transferData.fee.name}`;
     }
     return 'Calculating...';
