@@ -157,7 +157,7 @@ export function RecipientSelector({ value, onChange }: RecipientSelectorProps) {
               />
             ) : (
               <Text size="T400" priority="400">
-                Choose a recipient
+                Recipient
               </Text>
             )}
           </Box>
