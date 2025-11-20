@@ -25,7 +25,9 @@ if ('serviceWorker' in navigator) {
       ? `${trimTrailingSlash(import.meta.env.BASE_URL)}/sw.js`
       : `/dev-sw.js?dev-sw`;
 
-  navigator.serviceWorker.register(swUrl);
+  navigator.serviceWorker
+    .register(swUrl)
+    .catch((error) => console.error('Service worker registration failed', error));
   navigator.serviceWorker.addEventListener('message', (event) => {
     if (event.data?.type === 'token' && event.data?.responseKey) {
       // Get the token for SW.

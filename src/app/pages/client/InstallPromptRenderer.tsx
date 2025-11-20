@@ -44,7 +44,7 @@ export function InstallPromptRenderer() {
 
       event.preventDefault();
       //TODO
-      event.prompt();
+      // event.prompt();
 
       setDeferredPrompt(event as BeforeInstallPromptEvent);
     };
