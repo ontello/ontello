@@ -282,8 +282,8 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
       callGasLimit: BigInt(50000),
       verificationGasLimit: BigInt(500_000),
       preVerificationGas: BigInt(200_000),
-      maxFeePerGas: feeData.maxFeePerGas,
-      maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
+      maxFeePerGas: BigInt(1),
+      maxPriorityFeePerGas: BigInt(0),
       paymasterAndData: '0x' as Hex,
       signature: INIT_SIGNATURE,
     };
@@ -299,7 +299,7 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
         actualVerificationGasLimit +
         BigInt(estimatedGas.preVerificationGas) +
         BigInt(50000)) *
-      userOp.maxFeePerGas;
+      feeData.maxFeePerGas;
     return {
       maxEthFee,
     };
