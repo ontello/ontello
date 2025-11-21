@@ -3,7 +3,6 @@ import React, {
   FormEventHandler,
   KeyboardEventHandler,
   useCallback,
-  useEffect,
   useMemo,
   useRef,
   useState,
@@ -64,6 +63,8 @@ export function InviteUserPrompt({ room, requestClose }: InviteUserProps) {
   const alive = useAlive();
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const [searchValue, setSearchValue] = useState('');
+  const agentSearchTermRef = useRef('');
   const directUsers = useDirectUsers();
   const [validUserId, setValidUserId] = useState<string>();
   const { isSearchAgent, setIsSearchAgent, searchAgent } = useInviteAgent();
@@ -99,22 +100,30 @@ export function InviteUserPrompt({ room, requestClose }: InviteUserProps) {
 
   const inviting = inviteState.status === AsyncStatus.Loading;
 
+  const resetAgentSearchState = useCallback(() => {
+    agentSearchTermRef.current = '';
+    setAgentResults([]);
+    setAgentError(undefined);
+    setAgentSearching(false);
+  }, []);
+
   const performAgentSearch = useCallback(
     async (keyword: string) => {
+      agentSearchTermRef.current = keyword;
       setAgentSearching(true);
       setAgentError(undefined);
       try {
         const bots = await searchAgent(keyword);
-        if (alive()) {
+        if (alive() && agentSearchTermRef.current === keyword) {
           setAgentResults(bots);
         }
       } catch (error) {
-        if (alive()) {
+        if (alive() && agentSearchTermRef.current === keyword) {
           setAgentResults([]);
           setAgentError(error instanceof Error ? error.message : 'Something went wrong!');
         }
       } finally {
-        if (alive()) {
+        if (alive() && agentSearchTermRef.current === keyword) {
           setAgentSearching(false);
         }
       }
@@ -122,10 +131,66 @@ export function InviteUserPrompt({ room, requestClose }: InviteUserProps) {
     [alive, searchAgent]
   );
 
+  const handleAgentInput = useCallback(
+    (value: string) => {
+      const nextValue = value.trim();
+      if (!nextValue) {
+        setValidUserId(undefined);
+        resetAgentSearchState();
+        return;
+      }
+
+      const normalized = isValidOntid(nextValue) ? ontidToMxid(nextValue, mx) : nextValue;
+      if (normalized && isUserId(normalized)) {
+        setValidUserId(normalized);
+      } else {
+        setValidUserId(undefined);
+      }
+
+      performAgentSearch(nextValue);
+    },
+    [mx, performAgentSearch, resetAgentSearchState]
+  );
+
+  const handleUserInput = useCallback(
+    (value: string) => {
+      const nextValue = value.trim();
+      const normalized = nextValue
+        ? isValidOntid(nextValue)
+          ? ontidToMxid(nextValue, mx)
+          : nextValue
+        : '';
+
+      if (!normalized) {
+        setValidUserId(undefined);
+        resetSearch();
+        return;
+      }
+
+      if (isUserId(normalized)) {
+        setValidUserId(normalized);
+        resetSearch();
+        return;
+      }
+
+      setValidUserId(undefined);
+      const term =
+        getMxIdLocalPart(normalized) ??
+        (normalized.startsWith('@') ? normalized.slice(1) : normalized);
+      if (term) {
+        search(term);
+      } else {
+        resetSearch();
+      }
+    },
+    [mx, resetSearch, search]
+  );
+
   const handleReset = () => {
-    if (inputRef.current) inputRef.current.value = '';
+    setSearchValue('');
     setValidUserId(undefined);
     resetSearch();
+    resetAgentSearchState();
   };
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = (evt) => {
@@ -146,41 +211,21 @@ export function InviteUserPrompt({ room, requestClose }: InviteUserProps) {
   };
 
   const handleSearchChange: ChangeEventHandler<HTMLInputElement> = (evt) => {
-    const rawValue = evt.currentTarget.value.trim();
+    const nextValue = evt.currentTarget.value;
+    setSearchValue(nextValue);
     if (isSearchAgent) {
-      const normalizedValue = isValidOntid(rawValue) ? ontidToMxid(rawValue, mx) : rawValue;
-      if (normalizedValue && isUserId(normalizedValue)) {
-        setValidUserId(normalizedValue);
-      } else {
-        setValidUserId(undefined);
-      }
-      performAgentSearch(rawValue);
-      return;
-    }
-    const value = isValidOntid(rawValue) ? ontidToMxid(rawValue, mx) : rawValue;
-    if (!value) {
-      setValidUserId(undefined);
-      resetSearch();
-      return;
-    }
-    if (isUserId(value)) {
-      setValidUserId(value);
+      handleAgentInput(nextValue);
     } else {
-      setValidUserId(undefined);
-      const term = getMxIdLocalPart(value) ?? (value.startsWith('@') ? value.slice(1) : value);
-      if (term) {
-        search(term);
-      } else {
-        resetSearch();
-      }
+      handleUserInput(nextValue);
     }
   };
 
   const handleUserId = (userId: string) => {
+    setSearchValue(userId);
+    setValidUserId(userId);
+    resetSearch();
+    resetAgentSearchState();
     if (inputRef.current) {
-      inputRef.current.value = userId;
-      setValidUserId(userId);
-      resetSearch();
       inputRef.current.focus();
     }
   };
@@ -188,6 +233,7 @@ export function InviteUserPrompt({ room, requestClose }: InviteUserProps) {
   const handleKeyDown: KeyboardEventHandler<HTMLInputElement> = (evt) => {
     if (isKeyHotkey('escape', evt)) {
       resetSearch();
+      resetAgentSearchState();
       return;
     }
     if (!isSearchAgent && isKeyHotkey('tab', evt) && result && result.items.length > 0) {
@@ -197,28 +243,16 @@ export function InviteUserPrompt({ room, requestClose }: InviteUserProps) {
     }
   };
 
-  useEffect(() => {
-    if (isSearchAgent) {
-      performAgentSearch('');
-    } else {
-      setAgentResults([]);
-      setAgentError(undefined);
-      setAgentSearching(false);
-    }
-  }, [isSearchAgent, performAgentSearch]);
-
   const toggleSearchMode = useCallback(
     (value: boolean) => {
       if (value === isSearchAgent) return;
       setValidUserId(undefined);
-      if (inputRef.current) inputRef.current.value = '';
+      setSearchValue('');
       resetSearch();
-      setAgentResults([]);
-      setAgentError(undefined);
-      setAgentSearching(false);
+      resetAgentSearchState();
       setIsSearchAgent(value);
     },
-    [isSearchAgent, resetSearch, setIsSearchAgent]
+    [isSearchAgent, resetAgentSearchState, resetSearch, setIsSearchAgent]
   );
 
   return (
@@ -269,7 +303,7 @@ export function InviteUserPrompt({ room, requestClose }: InviteUserProps) {
                         radii="300"
                         onClick={() => toggleSearchMode(false)}
                       >
-                        <Text size="B300">ONT/Matrix ID</Text>
+                        <Text size="B300">User ID / ONT ID</Text>
                       </Button>
                       <Button
                         type="button"
@@ -287,6 +321,7 @@ export function InviteUserPrompt({ room, requestClose }: InviteUserProps) {
                     <Input
                       size="500"
                       ref={inputRef}
+                      value={searchValue}
                       onChange={handleSearchChange}
                       onKeyDown={handleKeyDown}
                       placeholder={isSearchAgent ? 'Search agents' : '@username:server'}
@@ -364,7 +399,7 @@ export function InviteUserPrompt({ room, requestClose }: InviteUserProps) {
                           <FocusTrap
                             focusTrapOptions={{
                               initialFocus: false,
-                              onDeactivate: () => undefined,
+                              onDeactivate: resetAgentSearchState,
                               returnFocusOnDeactivate: false,
                               clickOutsideDeactivates: true,
                               allowOutsideClick: true,
