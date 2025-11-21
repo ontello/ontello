@@ -5,12 +5,12 @@ import {
   InstallPromptModal,
   type InstallPromptPlatform,
 } from './InstallPromptModal';
-
-type BeforeInstallPromptEvent = Event & {
-  prompt: () => Promise<void>;
-  readonly platforms: string[];
-  readonly userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
-};
+import {
+  clearDeferredPrompt,
+  getDeferredPrompt,
+  subscribeBeforeInstallPrompt,
+  type BeforeInstallPromptEvent,
+} from '../../utils/beforeInstallPromptStore';
 
 type InstallEnvironment = {
   isStandalone: boolean;
@@ -35,22 +35,13 @@ export function InstallPromptRenderer() {
   }, []);
 
   useEffect(() => {
-    console.log('test1');
-
-    // if (typeof window === 'undefined') return;
-
-    const handleBeforeInstallPrompt = (event: any) => {
-      console.log('handleBeforeInstallPrompt');
-
-      event.preventDefault();
-      //TODO
-      // event.prompt();
-
-      setDeferredPrompt(event as BeforeInstallPromptEvent);
+    const syncDeferredPrompt = (event: BeforeInstallPromptEvent | null) => {
+      setDeferredPrompt(event);
     };
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    syncDeferredPrompt(getDeferredPrompt() ?? null);
+    const unsubscribe = subscribeBeforeInstallPrompt(syncDeferredPrompt);
+    return unsubscribe;
   }, []);
 
   useEffect(() => {
@@ -126,6 +117,7 @@ export function InstallPromptRenderer() {
       await deferredPrompt.userChoice;
     } finally {
       setInstalling(false);
+      clearDeferredPrompt();
       setDeferredPrompt(null);
       setSessionDismissed(true);
     }

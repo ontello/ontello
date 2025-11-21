@@ -5,6 +5,7 @@ import { enableMapSet } from 'immer';
 import '@fontsource/inter/variable.css';
 import 'folds/dist/style.css';
 import { configClass, varsClass } from 'folds';
+import { initBeforeInstallPromptListener } from './app/utils/beforeInstallPromptStore';
 
 enableMapSet();
 
@@ -17,6 +18,9 @@ import App from './app/pages/App';
 import './app/i18n';
 
 document.body.classList.add(configClass, varsClass);
+
+// 捕获 beforeinstallprompt，避免组件挂载前错过事件
+initBeforeInstallPromptListener();
 
 // Register Service Worker
 if ('serviceWorker' in navigator) {

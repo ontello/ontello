@@ -106,7 +106,7 @@ export function InstallPromptModal({
               size="500"
             >
               <Box grow="Yes">
-                <Text size="H4">安装 {APP_INFO.name}</Text>
+                <Text size="H4">Install {APP_INFO.name}</Text>
               </Box>
               <IconButton size="300" onClick={onDismiss} radii="300">
                 <Icon src={Icons.Cross} />
@@ -119,7 +119,7 @@ export function InstallPromptModal({
               <Box alignItems="Center" gap="200">
                 {/* @ts-expect-error - folds Checkbox typing differs from DOM checkbox props */}
                 <Checkbox checked={dontShowAgain} onChange={handleDontShowAgainChange} size="300" />
-                <Text size="B400">下次不再提示</Text>
+                <Text size="B400">Don't remind me again</Text>
               </Box>
             </Box>
           </Dialog>
