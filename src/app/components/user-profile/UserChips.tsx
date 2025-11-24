@@ -25,7 +25,13 @@ import { getMxIdServer } from '../../utils/matrix';
 import { useCloseUserRoomProfile } from '../../state/hooks/userRoomProfile';
 import { stopPropagation } from '../../utils/keyboard';
 import { copyToClipboard } from '../../utils/dom';
-import { getExploreServerPath } from '../../pages/pathUtils';
+import {
+  getDirectCreatePath,
+  getExploreServerPath,
+  getOriginBaseUrl,
+  withOriginBaseUrl,
+  withSearchParam,
+} from '../../pages/pathUtils';
 import { AsyncStatus, useAsyncCallback } from '../../hooks/useAsyncCallback';
 import { factoryRoomIdByAtoZ } from '../../utils/sort';
 import { useMutualRooms, useMutualRoomsSupport } from '../../hooks/useMutualRooms';
@@ -36,11 +42,11 @@ import { useAllJoinedRoomsSet, useGetRoom } from '../../hooks/useGetRoom';
 import { RoomAvatar, RoomIcon } from '../room-avatar';
 import { getDirectRoomAvatarUrl, getRoomAvatarUrl } from '../../utils/room';
 import { nameInitials } from '../../utils/common';
-import { getMatrixToUser } from '../../plugins/matrix-to';
 import { useTimeoutToggle } from '../../hooks/useTimeoutToggle';
 import { useIgnoredUsers } from '../../hooks/useIgnoredUsers';
 import { CutoutCard } from '../cutout-card';
 import { SettingTile } from '../setting-tile';
+import { useClientConfig } from '../../hooks/useClientConfig';
 
 export function ServerChip({ server }: { server: string }) {
   const mx = useMatrixClient();
@@ -146,6 +152,7 @@ export function ShareChip({ userId }: { userId: string }) {
   const [cords, setCords] = useState<RectCords>();
 
   const [copied, setCopied] = useTimeoutToggle();
+  const { hashRouter } = useClientConfig();
 
   const open: MouseEventHandler<HTMLButtonElement> = (evt) => {
     setCords(evt.currentTarget.getBoundingClientRect());
@@ -191,7 +198,9 @@ export function ShareChip({ userId }: { userId: string }) {
                 size="300"
                 radii="300"
                 onClick={() => {
-                  copyToClipboard(getMatrixToUser(userId));
+                  const baseUrl = getOriginBaseUrl(hashRouter);
+                  const path = withSearchParam(getDirectCreatePath(), { userId });
+                  copyToClipboard(withOriginBaseUrl(baseUrl, path));
                   setCopied();
                   close();
                 }}

@@ -71,7 +71,6 @@ import { MessageEditor } from './MessageEditor';
 import { UserAvatar } from '../../../components/user-avatar';
 import { copyToClipboard } from '../../../utils/dom';
 import { stopPropagation } from '../../../utils/keyboard';
-import { getMatrixToRoomEvent } from '../../../plugins/matrix-to';
 import { getViaServers } from '../../../plugins/via-servers';
 import { useMediaAuthentication } from '../../../hooks/useMediaAuthentication';
 import { useRoomPinnedEvents } from '../../../hooks/useRoomPinnedEvents';
@@ -79,6 +78,8 @@ import { MemberPowerTag, StateEvent } from '../../../../types/matrix/room';
 import { PowerIcon } from '../../../components/power';
 import colorMXID from '../../../../util/colorMXID';
 import { getPowerTagIconSrc } from '../../../hooks/useMemberPowerTag';
+import { getHomeRoomPath, getOriginBaseUrl, withOriginBaseUrl } from '../../../pages/pathUtils';
+import { useClientConfig } from '../../../hooks/useClientConfig';
 
 export type ReactionHandler = (keyOrMxc: string, shortcode: string) => void;
 
@@ -325,13 +326,22 @@ export const MessageCopyLinkItem = as<
   }
 >(({ room, mEvent, onClose, ...props }, ref) => {
   const mx = useMatrixClient();
+  const { hashRouter } = useClientConfig();
 
   const handleCopy = () => {
     const roomIdOrAlias = getCanonicalAliasOrRoomId(mx, room.roomId);
     const eventId = mEvent.getId();
     const viaServers = isRoomAlias(roomIdOrAlias) ? undefined : getViaServers(room);
     if (!eventId) return;
-    copyToClipboard(getMatrixToRoomEvent(roomIdOrAlias, eventId, viaServers));
+
+    const baseUrl = getOriginBaseUrl(hashRouter);
+    const path = getHomeRoomPath(roomIdOrAlias, eventId);
+    const viaQuery =
+      viaServers && viaServers.length > 0
+        ? `?via=${viaServers.map((server) => encodeURIComponent(server)).join(',')}`
+        : '';
+
+    copyToClipboard(withOriginBaseUrl(baseUrl, `${path}${viaQuery}`));
     onClose?.();
   };
 
@@ -345,7 +355,7 @@ export const MessageCopyLinkItem = as<
       ref={ref}
     >
       <Text className={css.MessageMenuItemText} as="span" size="T300" truncate>
-        Copy Link
+        Copy Link 1
       </Text>
     </MenuItem>
   );

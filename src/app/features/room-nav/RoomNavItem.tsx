@@ -35,7 +35,6 @@ import { LeaveRoomPrompt } from '../../components/leave-room-prompt';
 import { useRoomTypingMember } from '../../hooks/useRoomTypingMembers';
 import { TypingIndicator } from '../../components/typing-indicator';
 import { stopPropagation } from '../../utils/keyboard';
-import { getMatrixToRoom } from '../../plugins/matrix-to';
 import { getCanonicalAliasOrRoomId, isRoomAlias } from '../../utils/matrix';
 import { getViaServers } from '../../plugins/via-servers';
 import { useMediaAuthentication } from '../../hooks/useMediaAuthentication';
@@ -51,6 +50,8 @@ import { RoomNotificationModeSwitcher } from '../../components/RoomNotificationS
 import { useRoomCreators } from '../../hooks/useRoomCreators';
 import { useRoomPermissions } from '../../hooks/useRoomPermissions';
 import { InviteUserPrompt } from '../../components/invite-user-prompt';
+import { getOriginBaseUrl, withOriginBaseUrl } from '../../pages/pathUtils';
+import { useClientConfig } from '../../hooks/useClientConfig';
 
 type RoomNavItemMenuProps = {
   room: Room;
@@ -60,6 +61,7 @@ type RoomNavItemMenuProps = {
 const RoomNavItemMenu = forwardRef<HTMLDivElement, RoomNavItemMenuProps>(
   ({ room, requestClose, notificationMode }, ref) => {
     const mx = useMatrixClient();
+    const { hashRouter } = useClientConfig();
     const [hideActivity] = useSetting(settingsAtom, 'hideActivity');
     const unread = useRoomUnread(room.roomId, roomToUnreadAtom);
     const powerLevels = usePowerLevels(room);
@@ -84,7 +86,16 @@ const RoomNavItemMenu = forwardRef<HTMLDivElement, RoomNavItemMenuProps>(
     const handleCopyLink = () => {
       const roomIdOrAlias = getCanonicalAliasOrRoomId(mx, room.roomId);
       const viaServers = isRoomAlias(roomIdOrAlias) ? undefined : getViaServers(room);
-      copyToClipboard(getMatrixToRoom(roomIdOrAlias, viaServers));
+      console.log('viaServers', viaServers);
+
+      const baseUrl = getOriginBaseUrl(hashRouter);
+      const encodedRoom = encodeURIComponent(roomIdOrAlias);
+      const viaQuery =
+        viaServers && viaServers.length > 0
+          ? `?via=${viaServers.map((server) => encodeURIComponent(server)).join(',')}`
+          : '';
+
+      copyToClipboard(withOriginBaseUrl(baseUrl, `/home/${encodedRoom}${viaQuery}`));
       requestClose();
     };
 
