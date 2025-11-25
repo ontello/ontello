@@ -21,6 +21,7 @@ import { APP_INFO } from '../../config/appInfo';
 import othersPng from '@app/static/imgs/Group 99246462.png';
 import iosPng1 from '@app/static/imgs/IMG_9524.png';
 import iosPng2 from '@app/static/imgs/IMG_9525.png';
+import OntellSvg from '@src/app/static/imgs/ontello.svg';
 
 export type InstallPromptPlatform = 'android' | 'ios' | 'other';
 export const INSTALL_PROMPT_DISMISS_KEY = 'ontello_install_prompt_dismissed';
@@ -45,8 +46,11 @@ export function InstallPromptModal({
   const platformContent = useMemo(() => {
     if (platform === 'android') {
       return (
-        <Box direction="Column" gap="200">
-          <Button disabled={installing} onClick={onInstallClick}>
+        <Box direction="Column" gap="300" alignItems="Center">
+          <img src={OntellSvg} alt="" width={toRem(1300)} />
+          <Text>Add Ontello to your desktop, open the app in one click!</Text>
+
+          <Button style={{ width: '100%' }} disabled={installing} onClick={onInstallClick}>
             <Text as="span" size="B400">
               {installing ? 'Installing...' : 'Install'}
             </Text>
