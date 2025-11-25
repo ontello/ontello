@@ -355,7 +355,7 @@ export const MessageCopyLinkItem = as<
       ref={ref}
     >
       <Text className={css.MessageMenuItemText} as="span" size="T300" truncate>
-        Copy Link 1
+        Copy Link
       </Text>
     </MenuItem>
   );
