@@ -1,16 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import UAParser from 'ua-parser-js';
-import {
-  INSTALL_PROMPT_DISMISS_KEY,
-  InstallPromptModal,
-  type InstallPromptPlatform,
-} from './InstallPromptModal';
+import { InstallPromptModal, type InstallPromptPlatform } from './InstallPromptModal';
 import {
   clearDeferredPrompt,
   getDeferredPrompt,
   subscribeBeforeInstallPrompt,
   type BeforeInstallPromptEvent,
 } from '../../utils/beforeInstallPromptStore';
+import { INSTALL_PROMPT_DISMISS_KEY } from './InstallPromptStorage';
 
 type InstallEnvironment = {
   isStandalone: boolean;

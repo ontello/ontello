@@ -57,7 +57,7 @@ import { setAfterLoginRedirectPath } from './afterLoginRedirectPath';
 import { Room } from '../features/room';
 import { Lobby } from '../features/lobby';
 import { WelcomePage } from './client/WelcomePage';
-import { InstallPromptRenderer } from './client/InstallPromptRenderer';
+
 import { SidebarNav } from './client/SidebarNav';
 import { PageRoot } from '../components/page';
 import { ScreenSize } from '../hooks/useScreenSize';
@@ -82,6 +82,7 @@ import { Agent } from './client/agent/Agent';
 import { AgentStore } from './client/agent/AgentStore';
 import { Wallet } from './client/wallet/Wallet';
 import { CheckAgent } from './client/wallet/CheckAgent';
+import { InstallPromptRenderer } from '../components/install-prompt/InstallPromptRenderer';
 
 export const createRouter = (clientConfig: ClientConfig, screenSize: ScreenSize) => {
   const { hashRouter } = clientConfig;

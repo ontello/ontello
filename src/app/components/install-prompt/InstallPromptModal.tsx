@@ -22,9 +22,9 @@ import othersPng from '@app/static/imgs/Group 99246462.png';
 import iosPng1 from '@app/static/imgs/IMG_9524.png';
 import iosPng2 from '@app/static/imgs/IMG_9525.png';
 import OntellSvg from '@src/app/static/imgs/ontello.svg';
+import { INSTALL_PROMPT_DISMISS_KEY } from './InstallPromptStorage';
 
 export type InstallPromptPlatform = 'android' | 'ios' | 'other';
-export const INSTALL_PROMPT_DISMISS_KEY = 'ontello_install_prompt_dismissed';
 
 type InstallPromptModalProps = {
   platform: InstallPromptPlatform;
