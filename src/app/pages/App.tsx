@@ -13,6 +13,7 @@ import { FeatureCheck } from './FeatureCheck';
 import { createRouter } from './Router';
 import { ScreenSizeProvider, useScreenSize } from '../hooks/useScreenSize';
 import { useCompositionEndTracking } from '../hooks/useComposingCheck';
+import { appJotaiStore } from '../state/jotaiStore';
 
 const queryClient = new QueryClient();
 
@@ -37,7 +38,7 @@ function App() {
                 {(clientConfig) => (
                   <ClientConfigProvider value={clientConfig}>
                     <QueryClientProvider client={queryClient}>
-                      <JotaiProvider>
+                      <JotaiProvider store={appJotaiStore}>
                         <ChainConfigLoader
                           fallback={() => <ConfigConfigLoading />}
                           error={(err, retry) => (

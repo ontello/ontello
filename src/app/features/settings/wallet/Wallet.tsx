@@ -3,7 +3,6 @@ import { Box, Text, Button, Icon, IconButton, Icons, Scroll, Chip } from 'folds'
 import { Address } from 'viem';
 import { CredentialItem } from '@src/app/extendApis';
 import { copyToClipboard } from '@src/app/utils/dom';
-import { SyncOwnershipChange } from '@src/app/components/wallet/multi-chain/SyncOwnershipChange';
 import { useChainConfig } from '@src/app/hooks/web3/useChainConfig';
 import { useOwnerManage } from '@src/app/hooks/web3/useOwnerManage';
 import { Page, PageContent, PageHeader } from '../../../components/page';
@@ -11,10 +10,12 @@ import { SequenceCard } from '../../../components/sequence-card';
 import { SequenceCardStyle } from '../styles.css';
 import { SettingTile } from '../../../components/setting-tile';
 import { getAuthExtras } from '../../../state/authExtras';
+import { ensureOwnershipSynced } from '@src/app/utils/ownershipSync';
 import { useFetchPasskeyList } from '../../../hooks/useFetchPasskeyList';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
 import { OwnerItem } from './OwnerItem';
 import { RecoveryPhrase } from '../../../components/wallet/multi-chain/RecoveryPhrase';
+import { GlobalDialogType, openGlobalDialog } from '@src/app/state/globalDialogs';
 
 type Props = {
   requestClose: () => void;
@@ -22,7 +23,6 @@ type Props = {
 
 export function Wallet({ requestClose }: Props) {
   const [isRecoveryDialogOpen, setIsRecoveryDialogOpen] = useState(false);
-  const [isSetIsSyncDialogOpen, setIsSyncDialogOpen] = useState(false);
   const [isOwnerInitial, setIsOwnerInitial] = useState<boolean>(true);
   const { availableChains } = useChainConfig();
   const { publicKey: currentPublicKey, aaAddress } = getAuthExtras();
@@ -49,7 +49,14 @@ export function Wallet({ requestClose }: Props) {
     setIsRecoveryDialogOpen(true);
   };
   const handleSync = async () => {
-    setIsSyncDialogOpen(true);
+    // try {
+    //   await ensureOwnershipSynced(availableChains.map((chain) => chain.chainId));
+    // } catch {
+    //   // User dismissed dialog without syncing
+    // }
+    openGlobalDialog(GlobalDialogType.SyncOwnershipChange, {
+      chainIds: availableChains.map((chain) => chain.chainId),
+    });
   };
 
   return (
@@ -158,15 +165,7 @@ export function Wallet({ requestClose }: Props) {
           </PageContent>
         </Scroll>
       </Box>
-
       {isRecoveryDialogOpen && <RecoveryPhrase onClose={() => setIsRecoveryDialogOpen(false)} />}
-
-      {isSetIsSyncDialogOpen && (
-        <SyncOwnershipChange
-          onClose={() => setIsSyncDialogOpen(false)}
-          chainIds={availableChains.map((chain) => chain.chainId)}
-        />
-      )}
     </Page>
   );
 }

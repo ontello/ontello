@@ -34,7 +34,9 @@ import { onEnterOrSpace } from '../utils/keyboard';
 import { tryDecodeURIComponent } from '../utils/dom';
 import { confirmDialog } from '../components/confirm';
 import { testOntelloLink, parseOntelloLink } from './ontello-link';
-import { openReviewTransferDialog } from '../state/reviewTransferDialog';
+import { openGlobalDialog, GlobalDialogType } from '../state/globalDialogs';
+import { TransferData } from '../components/review-transfer';
+import { ensureOwnershipSynced } from '../utils/ownershipSync';
 
 const ReactPrism = lazy(() => import('./react-prism/ReactPrism'));
 
@@ -427,13 +429,20 @@ export const getReactCustomHtmlParser = (
         if (name === 'a' && testOntelloLink(tryDecodeURIComponent(props.href))) {
           const ontelloData = parseOntelloLink(tryDecodeURIComponent(props.href));
           if (ontelloData) {
-            const handleOntelloClick: ReactEventHandler<HTMLElement> = (e) => {
+            const handleOntelloClick: ReactEventHandler<HTMLElement> = async (e) => {
               e.preventDefault();
               // Handle different types of Ontello links
               switch (ontelloData.type) {
-                case 'transfer':
-                  openReviewTransferDialog(ontelloData.data);
+                case 'transfer': {
+                  const transferData = ontelloData.data as TransferData;
+                  try {
+                    await ensureOwnershipSynced([transferData.chainId]);
+                    openGlobalDialog(GlobalDialogType.ReviewTransfer, transferData);
+                  } catch {
+                    // User cancelled sync dialog; do nothing
+                  }
                   break;
+                }
                 // Future: add other types here
                 default:
                   break;

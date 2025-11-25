@@ -3,27 +3,23 @@ import { Box, Spinner, Text } from 'folds';
 import { useChainConfig } from '@src/app/hooks/web3/useChainConfig';
 import { useAsyncCallback, AsyncStatus } from '@src/app/hooks/useAsyncCallback';
 import { FeeSessionResp } from '@src/app/externalApis';
-import { useFetchPasskeyList } from '@src/app/hooks/useFetchPasskeyList';
-import { useMatrixClient } from '@src/app/hooks/useMatrixClient';
 import { useOwnerManage } from '@src/app/hooks/web3/useOwnerManage';
+import { useCloseGlobalDialog, useGlobalDialogState } from '@src/app/state/hooks/globalDialogs';
+import { GlobalDialogType } from '@src/app/state/globalDialogs';
 import { SyncDialog, SyncStatus } from './SyncDialog';
+import { Address } from 'viem';
+import { AUTH_EXTRA_KEYS } from '@src/app/state/authExtras';
 
-export function SyncOwnershipChange({
-  chainIds,
-  onClose,
-  onSuccess,
-}: {
-  chainIds: number[];
-  onClose: () => void;
-  onSuccess?: () => void;
-}) {
-  const mx = useMatrixClient();
-  const userId = mx.getUserId();
-  const [passkeyData] = useFetchPasskeyList(userId!);
+export function SyncOwnershipChangeDialog() {
+  const dialogData = useGlobalDialogState(GlobalDialogType.SyncOwnershipChange);
+  const closeDialog = useCloseGlobalDialog(GlobalDialogType.SyncOwnershipChange);
 
-  const { syncOwner, getSyncStatus } = useOwnerManage(passkeyData?.walletAddress as `0x${string}`);
+  const aaAddress = localStorage.getItem(AUTH_EXTRA_KEYS.AA_ADDRESS) as Address;
+
+  const { syncOwner, getSyncStatus, checkOwnerInitial } = useOwnerManage(aaAddress);
 
   const getSyncStatusRef = useRef(getSyncStatus);
+  const checkOwnerInitialRef = useRef(checkOwnerInitial);
 
   const syncOwnerRef = useRef(syncOwner);
 
@@ -31,6 +27,7 @@ export function SyncOwnershipChange({
   const [isGettingSyncStatus, setIsGettingSyncStatus] = useState(false);
   const [selectedChainIds, setSelectedChainIds] = useState<number[]>([]);
   const prevChainIdsRef = useRef<number[]>([]);
+  const [status, setStatus] = useState<SyncStatus>(SyncStatus.Init);
 
   // Deep compare arrays
   const areArraysEqual = (arr1: number[], arr2: number[]): boolean => {
@@ -38,25 +35,76 @@ export function SyncOwnershipChange({
     return arr1.every((val, index) => val === arr2[index]);
   };
 
+  const resetDialogState = useCallback(() => {
+    setNeedSyncChainIds([]);
+    setSelectedChainIds([]);
+    setIsGettingSyncStatus(false);
+    setStatus(SyncStatus.Init);
+    prevChainIdsRef.current = [];
+  }, []);
+
+  const onCloseWithStatus = useCallback(
+    (status?: SyncStatus) => {
+      if (!dialogData) {
+        throw Error('dialogData is undefined');
+      }
+      if (status === SyncStatus.Success) {
+        dialogData.onSuccess?.();
+        closeDialog();
+      } else if (status === SyncStatus.NoSyncNeeded) {
+        dialogData.onSuccess?.();
+      } else {
+        dialogData.onClose?.();
+        closeDialog();
+      }
+      resetDialogState();
+    },
+    [closeDialog, dialogData, resetDialogState]
+  );
+
   useEffect(() => {
-    // If the content has not changed, do not re-fetch data
-    if (areArraysEqual(prevChainIdsRef.current, chainIds)) {
+    if (!dialogData) {
       return;
     }
-    prevChainIdsRef.current = [...chainIds];
+
+    resetDialogState();
+    const targetChainIds = dialogData.chainIds;
+    if (!targetChainIds.length) {
+      onCloseWithStatus(SyncStatus.Success);
+      return;
+    }
+
+    // If the content has not changed, do not re-fetch data
+    if (areArraysEqual(prevChainIdsRef.current, targetChainIds)) {
+      return;
+    }
+    prevChainIdsRef.current = [...targetChainIds];
 
     setIsGettingSyncStatus(true);
-    getSyncStatusRef
-      .current(chainIds)
-      .then((syncStatus) => {
-        const needSyncIds = chainIds.filter((chainId) => !syncStatus[chainId]);
+    Promise.all([getSyncStatusRef.current(targetChainIds), checkOwnerInitialRef.current()])
+      .then(([syncStatus, isOwnerInitial]) => {
+        if (isOwnerInitial) {
+          setStatus(SyncStatus.NoSyncNeeded);
+          onCloseWithStatus(SyncStatus.NoSyncNeeded);
+          return;
+        }
+        const needSyncIds = targetChainIds.filter((chainId) => !syncStatus[chainId]);
+        if (!needSyncIds.length) {
+          setStatus(SyncStatus.NoSyncNeeded);
+          onCloseWithStatus(SyncStatus.NoSyncNeeded);
+          return;
+        }
         setNeedSyncChainIds(needSyncIds);
         setSelectedChainIds(needSyncIds);
+      })
+      .catch((error) => {
+        console.error(error);
+        onCloseWithStatus();
       })
       .finally(() => {
         setIsGettingSyncStatus(false);
       });
-  }, [chainIds]);
+  }, [dialogData, onCloseWithStatus, resetDialogState]);
 
   const { availableChains } = useChainConfig();
   const chains = useMemo(
@@ -64,7 +112,6 @@ export function SyncOwnershipChange({
     [availableChains, needSyncChainIds]
   );
 
-  const [status, setStatus] = useState<SyncStatus>(SyncStatus.Init);
   // Define the asynchronous function to fetch fee data
   const fetchFeeData = useCallback(async () => {
     if (!selectedChainIds.length) {
@@ -97,13 +144,6 @@ export function SyncOwnershipChange({
       setStatus(SyncStatus.Init);
       throw error;
     }
-  };
-
-  const onCloseWithStatus = (closeStatus?: SyncStatus) => {
-    if (closeStatus === SyncStatus.Success && onSuccess) {
-      onSuccess?.();
-    }
-    onClose();
   };
 
   const onDone = () => {
@@ -154,9 +194,13 @@ export function SyncOwnershipChange({
     [chains]
   );
 
+  if (!dialogData) {
+    return null;
+  }
+
   return (
     <SyncDialog
-      title="Sync Ownership Change"
+      title="Sync ownership change"
       customBody={customBody}
       description={description}
       chains={chains}
@@ -171,7 +215,7 @@ export function SyncOwnershipChange({
       feeSessionData={feeSessionData}
       selectedChainIds={selectedChainIds}
       setSelectedChainIds={setSelectedChainIds}
-      aaAddress={passkeyData?.walletAddress || ''}
+      aaAddress={aaAddress}
       status={status}
       setStatus={setStatus}
     />

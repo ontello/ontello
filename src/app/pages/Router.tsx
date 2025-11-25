@@ -76,7 +76,7 @@ import { HomeCreateRoom } from './client/home/CreateRoom';
 import { Create } from './client/create';
 import { CreateSpaceModalRenderer } from '../features/create-space';
 import { SearchModalRenderer } from '../features/search';
-import { ReviewTransferDialog } from '../components/review-transfer';
+import { GlobalDialogsRenderer } from '../components/GlobalDialogsRenderer';
 import { getFallbackSession } from '../state/sessions';
 import { Agent } from './client/agent/Agent';
 import { AgentStore } from './client/agent/AgentStore';
@@ -149,7 +149,7 @@ export const createRouter = (clientConfig: ClientConfig, screenSize: ScreenSize)
                       </ClientLayout>
                       <InstallPromptRenderer />
                       <SearchModalRenderer />
-                      <ReviewTransferDialog />
+                      <GlobalDialogsRenderer />
                       <UserRoomProfileRenderer />
                       <CreateRoomModalRenderer />
                       <CreateSpaceModalRenderer />

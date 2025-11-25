@@ -3,8 +3,9 @@ import { Box, Button, Text, color, toRem } from 'folds';
 import { Address, parseUnits, formatUnits } from 'viem';
 import { GasToken } from '@src/app/hooks/web3/types';
 import { TransferData } from '@src/app/components/review-transfer';
-import { useOpenReviewTransferDialog } from '@src/app/state/hooks/reviewTransferDialog';
-import { useOwnerManage } from '@src/app/hooks/web3/useOwnerManage';
+import { useOpenGlobalDialog } from '@src/app/state/hooks/globalDialogs';
+import { GlobalDialogType } from '@src/app/state/globalDialogs';
+import { ensureOwnershipSynced } from '@src/app/utils/ownershipSync';
 import { PageNavContent } from '../../../../components/page';
 import { WalletNavMode, TokenWithChain } from '../../../../../types/wallet/types';
 import { Back } from '../../../../components/ontello/Back';
@@ -16,14 +17,13 @@ import { AmountInput } from './AmountInput';
 import { useTokensContext } from '../../../../hooks/wallet/useTokens';
 import { useAbstractAccount } from '../../../../hooks/web3/useAbstractAccount';
 import { walletApi } from '../../../../externalApis';
-import { SyncOwnershipChange } from '../../../../components/wallet/multi-chain/SyncOwnershipChange';
 import { getAuthExtras } from '@src/app/state/authExtras';
 
 export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavMode) => void }) {
   const extras = getAuthExtras();
   const aaAddress = (extras.aaAddress ?? '0x0') as Address;
   const { tokens } = useTokensContext();
-  const openReviewTransfer = useOpenReviewTransferDialog();
+  const openReviewTransfer = useOpenGlobalDialog(GlobalDialogType.ReviewTransfer);
 
   const [amount, setAmount] = useState('');
   const [selectedToken, setSelectedToken] = useState<TokenWithChain | null>(null);
@@ -31,9 +31,6 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
   const [feeToken, setFeeToken] = useState<GasToken | null>(null);
   const [isMaxAmount, setIsMaxAmount] = useState(false);
   const [isEstimatingFee, setIsEstimatingFee] = useState(false);
-  const [showSyncOwnershipChange, setShowSyncOwnershipChange] = useState(false);
-  const { checkOwnerInitial, getSyncStatus } = useOwnerManage(aaAddress);
-
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Get abstract account hook at component level
@@ -122,15 +119,9 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
 
     if (!isFormValid || !selectedToken || !recipient || !feeToken || !aaAddress) return;
 
-    const [syncStatus, isOwnerInitial] = await Promise.all([
-      getSyncStatus([selectedToken.chainId]),
-      checkOwnerInitial(),
-    ]);
-
-    if (!syncStatus[selectedToken.chainId] && !isOwnerInitial) {
-      console.log(1111);
-
-      setShowSyncOwnershipChange(true);
+    try {
+      await ensureOwnershipSynced([selectedToken.chainId]);
+    } catch {
       return;
     }
 
@@ -310,12 +301,6 @@ export function Send({ setWalletNavMode }: { setWalletNavMode: (mode: WalletNavM
           {isEstimatingFee ? 'Calculating...' : 'Pay'}
         </Button>
       </PageNavContent>
-      {showSyncOwnershipChange && selectedToken?.chainId && (
-        <SyncOwnershipChange
-          chainIds={[selectedToken?.chainId]}
-          onClose={() => setShowSyncOwnershipChange(false)}
-        />
-      )}
     </Box>
   );
 }

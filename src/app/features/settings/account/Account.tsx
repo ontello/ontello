@@ -32,7 +32,7 @@ export function Account({ requestClose }: AccountProps) {
             <Box direction="Column" gap="700">
               <Profile />
               <MatrixId />
-              <ContactInformation />
+              {/* <ContactInformation /> */}
               <IgnoredUserList />
             </Box>
           </PageContent>
