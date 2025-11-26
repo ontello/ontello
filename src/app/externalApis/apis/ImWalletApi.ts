@@ -113,8 +113,8 @@ export interface WalletdataTokensGetRequest {
 
 export interface WalletdataTransferBalanceGetRequest {
     chain_id: number;
-    token_addr: string;
     addr: string;
+    token_addr?: string;
     Authorization?: string;
 }
 
@@ -623,13 +623,6 @@ export class ImWalletApi extends runtime.BaseAPI {
             throw new runtime.RequiredError(
                 'chain_id',
                 'Required parameter "chain_id" was null or undefined when calling walletdataTransferBalanceGet().'
-            );
-        }
-
-        if (requestParameters['token_addr'] == null) {
-            throw new runtime.RequiredError(
-                'token_addr',
-                'Required parameter "token_addr" was null or undefined when calling walletdataTransferBalanceGet().'
             );
         }
 

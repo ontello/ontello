@@ -27,10 +27,10 @@ export interface UserOperation {
     sender?: string;
     /**
      * 
-     * @type {number}
+     * @type {string}
      * @memberof UserOperation
      */
-    nonce?: number;
+    nonce?: string;
     /**
      * 
      * @type {string}
@@ -39,28 +39,28 @@ export interface UserOperation {
     initCode?: string;
     /**
      * 
-     * @type {number}
+     * @type {string}
      * @memberof UserOperation
      */
-    verificationGasLimit?: number;
+    verificationGasLimit?: string;
     /**
      * 
-     * @type {number}
+     * @type {string}
      * @memberof UserOperation
      */
-    preVerificationGas?: number;
+    preVerificationGas?: string;
     /**
      * 
-     * @type {number}
+     * @type {string}
      * @memberof UserOperation
      */
-    maxFeePerGas?: number;
+    maxFeePerGas?: string;
     /**
      * 
-     * @type {number}
+     * @type {string}
      * @memberof UserOperation
      */
-    callGasLimit?: number;
+    callGasLimit?: string;
     /**
      * 
      * @type {string}
@@ -69,10 +69,10 @@ export interface UserOperation {
     callData?: string;
     /**
      * 
-     * @type {number}
+     * @type {string}
      * @memberof UserOperation
      */
-    maxPriorityFeePerGas?: number;
+    maxPriorityFeePerGas?: string;
     /**
      * 
      * @type {string}

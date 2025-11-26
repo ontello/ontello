@@ -17,6 +17,11 @@ import * as runtime from '../runtime';
 import type {
   BusinessBotDetailGet200Response,
   BusinessBotsGet200Response,
+  BusinessCreditsGet200Response,
+  BusinessInviteListGet200Response,
+  BusinessRechargeAssetPostRequest,
+  BusinessRechargeHistoryGet200Response,
+  BusinessSaveInvitedCodePostRequest,
   BusinessUserRoomsGet200Response,
 } from '../models/index';
 import {
@@ -24,6 +29,16 @@ import {
     BusinessBotDetailGet200ResponseToJSON,
     BusinessBotsGet200ResponseFromJSON,
     BusinessBotsGet200ResponseToJSON,
+    BusinessCreditsGet200ResponseFromJSON,
+    BusinessCreditsGet200ResponseToJSON,
+    BusinessInviteListGet200ResponseFromJSON,
+    BusinessInviteListGet200ResponseToJSON,
+    BusinessRechargeAssetPostRequestFromJSON,
+    BusinessRechargeAssetPostRequestToJSON,
+    BusinessRechargeHistoryGet200ResponseFromJSON,
+    BusinessRechargeHistoryGet200ResponseToJSON,
+    BusinessSaveInvitedCodePostRequestFromJSON,
+    BusinessSaveInvitedCodePostRequestToJSON,
     BusinessUserRoomsGet200ResponseFromJSON,
     BusinessUserRoomsGet200ResponseToJSON,
 } from '../models/index';
@@ -38,6 +53,36 @@ export interface BusinessBotsGetRequest {
     page_size?: number;
     keyword?: string;
     body?: object;
+}
+
+export interface BusinessCreditsGetRequest {
+    authorization?: string;
+}
+
+export interface BusinessInviteListGetRequest {
+    page_num?: number;
+    page_size?: number;
+    authorization?: string;
+}
+
+export interface BusinessInvitecodeGetRequest {
+    authorization?: string;
+}
+
+export interface BusinessRechargeAssetPostOperationRequest {
+    authorization?: string;
+    BusinessRechargeAssetPostRequest?: BusinessRechargeAssetPostRequest;
+}
+
+export interface BusinessRechargeHistoryGetRequest {
+    page_num?: number;
+    page_size?: number;
+    authorization?: string;
+}
+
+export interface BusinessSaveInvitedCodePostOperationRequest {
+    authorization?: string;
+    BusinessSaveInvitedCodePostRequest?: BusinessSaveInvitedCodePostRequest;
 }
 
 export interface BusinessUserRoomsGetRequest {
@@ -141,6 +186,268 @@ export class ImBotApi extends runtime.BaseAPI {
      */
     async businessBotsGet(requestParameters: BusinessBotsGetRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BusinessBotsGet200Response> {
         const response = await this.businessBotsGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * user_id  like. @tasktalk:matrix.org
+     * get user credits
+     */
+    async businessCreditsGetRaw(requestParameters: BusinessCreditsGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BusinessCreditsGet200Response>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/business/credits`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => BusinessCreditsGet200ResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * user_id  like. @tasktalk:matrix.org
+     * get user credits
+     */
+    async businessCreditsGet(requestParameters: BusinessCreditsGetRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BusinessCreditsGet200Response> {
+        const response = await this.businessCreditsGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * user_id  like. @tasktalk:matrix.org
+     * get user invite history list
+     */
+    async businessInviteListGetRaw(requestParameters: BusinessInviteListGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BusinessInviteListGet200Response>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['page_num'] != null) {
+            queryParameters['page_num'] = requestParameters['page_num'];
+        }
+
+        if (requestParameters['page_size'] != null) {
+            queryParameters['page_size'] = requestParameters['page_size'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/business/invite_list`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => BusinessInviteListGet200ResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * user_id  like. @tasktalk:matrix.org
+     * get user invite history list
+     */
+    async businessInviteListGet(requestParameters: BusinessInviteListGetRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BusinessInviteListGet200Response> {
+        const response = await this.businessInviteListGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * user_id  like. @tasktalk:matrix.org
+     * get user invite code
+     */
+    async businessInvitecodeGetRaw(requestParameters: BusinessInvitecodeGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BusinessUserRoomsGet200Response>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/business/invitecode`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => BusinessUserRoomsGet200ResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * user_id  like. @tasktalk:matrix.org
+     * get user invite code
+     */
+    async businessInvitecodeGet(requestParameters: BusinessInvitecodeGetRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BusinessUserRoomsGet200Response> {
+        const response = await this.businessInvitecodeGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * user_id  like. @tasktalk:matrix.org
+     * recharge_asset
+     */
+    async businessRechargeAssetPostRaw(requestParameters: BusinessRechargeAssetPostOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BusinessUserRoomsGet200Response>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/business/recharge_asset`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: BusinessRechargeAssetPostRequestToJSON(requestParameters['BusinessRechargeAssetPostRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => BusinessUserRoomsGet200ResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * user_id  like. @tasktalk:matrix.org
+     * recharge_asset
+     */
+    async businessRechargeAssetPost(requestParameters: BusinessRechargeAssetPostOperationRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BusinessUserRoomsGet200Response> {
+        const response = await this.businessRechargeAssetPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * user_id  like. @tasktalk:matrix.org
+     * get user recharge_history
+     */
+    async businessRechargeHistoryGetRaw(requestParameters: BusinessRechargeHistoryGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BusinessRechargeHistoryGet200Response>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['page_num'] != null) {
+            queryParameters['page_num'] = requestParameters['page_num'];
+        }
+
+        if (requestParameters['page_size'] != null) {
+            queryParameters['page_size'] = requestParameters['page_size'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/business/recharge_history`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => BusinessRechargeHistoryGet200ResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * user_id  like. @tasktalk:matrix.org
+     * get user recharge_history
+     */
+    async businessRechargeHistoryGet(requestParameters: BusinessRechargeHistoryGetRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BusinessRechargeHistoryGet200Response> {
+        const response = await this.businessRechargeHistoryGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * user_id  like. @tasktalk:matrix.org
+     * save user invited code
+     */
+    async businessSaveInvitedCodePostRaw(requestParameters: BusinessSaveInvitedCodePostOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BusinessUserRoomsGet200Response>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/business/save_invited_code`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: BusinessSaveInvitedCodePostRequestToJSON(requestParameters['BusinessSaveInvitedCodePostRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => BusinessUserRoomsGet200ResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * user_id  like. @tasktalk:matrix.org
+     * save user invited code
+     */
+    async businessSaveInvitedCodePost(requestParameters: BusinessSaveInvitedCodePostOperationRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BusinessUserRoomsGet200Response> {
+        const response = await this.businessSaveInvitedCodePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
