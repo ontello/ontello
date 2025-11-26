@@ -1,14 +1,15 @@
 import { useEffect, useState, useCallback, createContext, useContext, useMemo } from 'react';
 import { walletApi } from '@src/app/externalApis';
 import { mxidToOntid } from '@src/app/utils/ontid';
-import { useFetchPasskeyList } from '../../hooks/useFetchPasskeyList';
 import { Token } from '../../externalApis/models';
 import { useMatrixClient } from '../../hooks/useMatrixClient';
+import { getAuthExtras } from '../../state/authExtras';
 
 export interface TokensContextType {
   tokens: Token[];
-  getTokens: () => Promise<void>;
+  // getTokens: () => Promise<void>;
   totalTokensCurrency: number;
+  getToken: (addr: string) => Token | undefined;
 }
 
 export const useTokens = () => {
@@ -16,7 +17,6 @@ export const useTokens = () => {
 
   const mx = useMatrixClient();
   const userId = mx.getUserId();
-  const [passkeyData] = useFetchPasskeyList(userId!);
   const ontId = mxidToOntid(userId!);
 
   const totalTokensCurrency = useMemo(
@@ -24,21 +24,28 @@ export const useTokens = () => {
     [tokens]
   );
 
+  const getToken = useCallback(
+    (addr: string) =>
+      tokens.find((token) => token.tokenAddr?.toLowerCase() === addr?.toLowerCase()),
+    [tokens]
+  );
+
   const getTokens = useCallback(async () => {
-    if (!passkeyData?.walletAddress) {
+    const { aaAddress } = getAuthExtras();
+    if (!aaAddress) {
       setTokens([]);
       return;
     }
 
     walletApi
       .walletdataTokensGet({
-        addr: passkeyData.walletAddress,
+        addr: aaAddress,
         ont_id: ontId!,
       })
       .then((res) => {
         setTokens(res.result);
       });
-  }, [passkeyData?.walletAddress, ontId]);
+  }, [ontId]);
 
   useEffect(() => {
     getTokens();
@@ -48,13 +55,14 @@ export const useTokens = () => {
     return () => clearInterval(interval);
   }, [getTokens]);
 
-  return { tokens, getTokens, totalTokensCurrency };
+  return { tokens, getTokens, totalTokensCurrency, getToken };
 };
 
 export const TokensContext = createContext<TokensContextType>({
   tokens: [],
-  getTokens: async () => Promise.resolve(),
+  // getTokens: async () => Promise.resolve(),
   totalTokensCurrency: 0,
+  getToken: () => undefined,
 });
 
 export const TokensProvider = TokensContext.Provider;
