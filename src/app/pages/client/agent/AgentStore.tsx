@@ -1,18 +1,22 @@
 import React, { useState } from 'react';
-import { Avatar, Badge, Box, Button, Icon, Icons, Scroll, Spinner, Text, as, toRem } from 'folds';
+import {
+  Avatar,
+  Badge,
+  Box,
+  Button,
+  Icon,
+  Icons,
+  Scroll,
+  Spinner,
+  Text,
+  config,
+  toRem,
+} from 'folds';
 import { useQuery } from '@tanstack/react-query';
 import { Page, PageContent, PageContentCenter, PageHeader } from '../../../components/page';
 import { RoomCardBase, RoomCardGrid } from '../../../components/room-card';
 import { BotInfo, api } from '../../../externalApis';
 import { AgentDetailDialog } from './AgentDetailDialog';
-
-const AgentCardName = as<'h6'>(({ ...props }, ref) => (
-  <Text as="h6" size="H6" truncate {...props} ref={ref} />
-));
-
-const AgentCardDescription = as<'p'>(({ ...props }, ref) => (
-  <Text as="p" size="T200" priority="400" {...props} ref={ref} />
-));
 
 function AgentCard({ agent }: { agent: BotInfo }) {
   const [detailOpen, setDetailOpen] = useState(false);
@@ -46,8 +50,12 @@ function AgentCard({ agent }: { agent: BotInfo }) {
           </Box>
         </Box>
         <Box grow="Yes" direction="Column" gap="100">
-          <AgentCardName>{agent.bot_name}</AgentCardName>
-          <AgentCardDescription>{agent.description}</AgentCardDescription>
+          <Text as="h6" size="H6" truncate>
+            {agent.bot_name}
+          </Text>
+          <Text as="p" size="T200" priority="400">
+            {agent.description}
+          </Text>
         </Box>
         <Box gap="100">
           <Icon size="50" src={Icons.User} />
@@ -78,7 +86,6 @@ function StoreHeader() {
 }
 
 export function AgentStore() {
-  // Fetch bots data
   const { data, isLoading, error } = useQuery({
     queryKey: ['bots'],
     queryFn: async () => {
@@ -87,21 +94,17 @@ export function AgentStore() {
     },
   });
 
-  if (isLoading) {
-    return (
-      <Page>
-        <StoreHeader />
+  const renderContent = () => {
+    if (isLoading) {
+      return (
         <Box grow="Yes" alignItems="Center" justifyContent="Center">
           <Spinner size="600" />
         </Box>
-      </Page>
-    );
-  }
+      );
+    }
 
-  if (error) {
-    return (
-      <Page>
-        <StoreHeader />
+    if (error) {
+      return (
         <Box grow="Yes" alignItems="Center" justifyContent="Center" direction="Column" gap="200">
           <Icon size="600" src={Icons.Warning} />
           <Text size="T300">Failed to load agents</Text>
@@ -114,9 +117,32 @@ export function AgentStore() {
             <Text size="B300">Retry</Text>
           </Button>
         </Box>
-      </Page>
+      );
+    }
+
+    if (!data || data.length === 0) {
+      return (
+        <Box
+          direction="Column"
+          alignItems="Center"
+          justifyContent="Center"
+          gap="200"
+          style={{ padding: toRem(40) }}
+        >
+          <Icon size="600" src={Icons.Bulb} />
+          <Text size="T300">No agents available</Text>
+        </Box>
+      );
+    }
+
+    return (
+      <RoomCardGrid>
+        {data.map((agent) => (
+          <AgentCard key={agent.bot_id} agent={agent} />
+        ))}
+      </RoomCardGrid>
     );
-  }
+  };
 
   return (
     <Page>
@@ -128,24 +154,7 @@ export function AgentStore() {
               <Box direction="Column" gap="600">
                 <Box direction="Column" gap="400">
                   <Text size="H4">Popular agents</Text>
-                  {data && data.length > 0 ? (
-                    <RoomCardGrid>
-                      {data.map((agent) => (
-                        <AgentCard key={agent.bot_id} agent={agent} />
-                      ))}
-                    </RoomCardGrid>
-                  ) : (
-                    <Box
-                      direction="Column"
-                      alignItems="Center"
-                      justifyContent="Center"
-                      gap="200"
-                      style={{ padding: toRem(40) }}
-                    >
-                      <Icon size="600" src={Icons.Bulb} />
-                      <Text size="T300">No agents available</Text>
-                    </Box>
-                  )}
+                  {renderContent()}
                 </Box>
               </Box>
             </PageContentCenter>
