@@ -8,14 +8,18 @@ export interface SyncOwnershipDialogData {
   onClose?: () => void;
 }
 
+export interface InviteFriendsDialogData {}
+
 export enum GlobalDialogType {
   ReviewTransfer,
   SyncOwnershipChange,
+  InviteFriends,
 }
 
 export interface GlobalDialogPayloads {
   [GlobalDialogType.ReviewTransfer]: TransferData;
   [GlobalDialogType.SyncOwnershipChange]: SyncOwnershipDialogData;
+  [GlobalDialogType.InviteFriends]: InviteFriendsDialogData;
 }
 
 export type GlobalDialogState<T extends GlobalDialogType> = GlobalDialogPayloads[T] | undefined;
@@ -29,6 +33,8 @@ export const dialogAtoms: DialogAtomMap = {
     atom<GlobalDialogState<GlobalDialogType.ReviewTransfer>>(undefined),
   [GlobalDialogType.SyncOwnershipChange]:
     atom<GlobalDialogState<GlobalDialogType.SyncOwnershipChange>>(undefined),
+  [GlobalDialogType.InviteFriends]:
+    atom<GlobalDialogState<GlobalDialogType.InviteFriends>>(undefined),
 };
 
 export const openGlobalDialog = <T extends GlobalDialogType>(

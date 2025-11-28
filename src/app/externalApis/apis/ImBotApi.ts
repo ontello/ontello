@@ -65,10 +65,6 @@ export interface BusinessInviteListGetRequest {
     authorization?: string;
 }
 
-export interface BusinessInvitecodeGetRequest {
-    authorization?: string;
-}
-
 export interface BusinessRechargeAssetPostOperationRequest {
     authorization?: string;
     BusinessRechargeAssetPostRequest?: BusinessRechargeAssetPostRequest;
@@ -281,14 +277,10 @@ export class ImBotApi extends runtime.BaseAPI {
      * user_id  like. @tasktalk:matrix.org
      * get user invite code
      */
-    async businessInvitecodeGetRaw(requestParameters: BusinessInvitecodeGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BusinessUserRoomsGet200Response>> {
+    async businessInvitecodeGetRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BusinessBotDetailGet200Response>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
-
-        if (requestParameters['authorization'] != null) {
-            headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
 
         if (this.configuration && this.configuration.accessToken) {
             const token = this.configuration.accessToken;
@@ -305,15 +297,15 @@ export class ImBotApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => BusinessUserRoomsGet200ResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => BusinessBotDetailGet200ResponseFromJSON(jsonValue));
     }
 
     /**
      * user_id  like. @tasktalk:matrix.org
      * get user invite code
      */
-    async businessInvitecodeGet(requestParameters: BusinessInvitecodeGetRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BusinessUserRoomsGet200Response> {
-        const response = await this.businessInvitecodeGetRaw(requestParameters, initOverrides);
+    async businessInvitecodeGet(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BusinessBotDetailGet200Response> {
+        const response = await this.businessInvitecodeGetRaw(initOverrides);
         return await response.value();
     }
 

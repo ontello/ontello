@@ -59,6 +59,8 @@ import {
 } from '../../../hooks/useRoomsNotificationPreferences';
 import { STORE_PATH } from '../../paths';
 import { getAgentDirectRoomPath } from '../../pathUtils';
+import { useOpenGlobalDialog } from '../../../state/hooks/globalDialogs';
+import { GlobalDialogType } from '../../../state/globalDialogs';
 
 // Agent menu (can be extended later)
 type AgentMenuProps = {
@@ -180,7 +182,11 @@ function AgentEmpty() {
 }
 
 function AgentFooter() {
-  const handleOpenInvite = () => {};
+  const openInviteDialog = useOpenGlobalDialog(GlobalDialogType.InviteFriends);
+
+  const handleOpenInvite = useCallback(() => {
+    openInviteDialog({});
+  }, [openInviteDialog]);
   const [popAnchor, setPopAnchor] = useState<RectCords>();
   const popContentRef = useRef<HTMLDivElement>(null);
   const [credits, setCredits] = useState<Credits | null>(null);

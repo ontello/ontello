@@ -1,0 +1,1 @@
+export { InviteFriendsDialog } from './InviteFriendsDialog';
