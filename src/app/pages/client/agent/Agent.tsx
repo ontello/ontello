@@ -1,4 +1,12 @@
-import React, { MouseEventHandler, forwardRef, useMemo, useRef, useState } from 'react';
+import React, {
+  MouseEventHandler,
+  forwardRef,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAtom, useAtomValue } from 'jotai';
 import {
@@ -14,12 +22,15 @@ import {
   RectCords,
   Text,
   config,
+  color,
   toRem,
 } from 'folds';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import FocusTrap from 'focus-trap-react';
 import storeImg from '@app/static/imgs/AgentstoreL.png';
+import { Credits, botApi } from '../../../externalApis';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
+import { useInterval } from '../../../hooks/useInterval';
 import { factoryRoomIdByActivity } from '../../../utils/sort';
 import {
   NavButton,
@@ -168,6 +179,136 @@ function AgentEmpty() {
   );
 }
 
+function AgentFooter() {
+  const handleOpenInvite = () => {};
+  const [popAnchor, setPopAnchor] = useState<RectCords>();
+  const popContentRef = useRef<HTMLDivElement>(null);
+  const [credits, setCredits] = useState<Credits | null>(null);
+  const [creditsError, setCreditsError] = useState<string>();
+  const [loadingCredits, setLoadingCredits] = useState(false);
+
+  const handleTogglePopOut: MouseEventHandler<HTMLButtonElement> = (evt) => {
+    const cords = evt.currentTarget.getBoundingClientRect();
+    setPopAnchor((currentState) => {
+      if (currentState) return undefined;
+      return cords;
+    });
+  };
+
+  const fetchCredits = useCallback(async () => {
+    try {
+      setLoadingCredits(true);
+      const res = await botApi.businessCreditsGet();
+      setCredits(res.result ?? null);
+      setCreditsError(undefined);
+    } catch (error) {
+      setCredits(null);
+      setCreditsError((error as Error).message);
+    } finally {
+      setLoadingCredits(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchCredits();
+  }, [fetchCredits]);
+
+  useInterval(fetchCredits, 5000);
+
+  const totalLabel = credits?.totalCredits ?? '--';
+
+  return (
+    <Box
+      style={{
+        position: 'sticky',
+        bottom: 0,
+        padding: `${config.space.S200}`,
+      }}
+    >
+      <Box gap="200" direction="Column" style={{ width: '100%' }}>
+        <Button
+          variant="Primary"
+          fill="Soft"
+          size="300"
+          onClick={handleOpenInvite}
+          style={{ flex: 1, width: '100%', minHeight: toRem(42) }}
+        >
+          <Text size="B300" truncate>
+            Get free credits
+          </Text>
+        </Button>
+        <Button
+          variant="Primary"
+          fill="Soft"
+          size="300"
+          onClick={handleTogglePopOut}
+          style={{ flex: 1, width: '100%', minHeight: toRem(42) }}
+        >
+          <Text size="B300" truncate>
+            {totalLabel}
+          </Text>
+        </Button>
+        {popAnchor && (
+          <PopOut
+            anchor={popAnchor}
+            position="Top"
+            align="Start"
+            offset={8}
+            content={
+              <FocusTrap
+                focusTrapOptions={{
+                  initialFocus: false,
+                  returnFocusOnDeactivate: false,
+                  onDeactivate: () => setPopAnchor(undefined),
+                  clickOutsideDeactivates: true,
+                  escapeDeactivates: stopPropagation,
+                  fallbackFocus: () => popContentRef.current || document.body,
+                }}
+              >
+                <Box
+                  ref={popContentRef}
+                  direction="Column"
+                  gap="100"
+                  style={{
+                    padding: config.space.S300,
+                    borderRadius: config.radii.R400,
+                    backgroundColor: color.Surface.Container,
+                    boxShadow: config.shadow.E200,
+                    width: popAnchor.width,
+                  }}
+                  tabIndex={-1}
+                >
+                  <Box direction="Column" gap="100">
+                    {credits && (
+                      <Box gap="200" direction="Column">
+                        <Box direction="Row" justifyContent="SpaceBetween" alignItems="Center">
+                          <Text size="T300">Daily credits</Text>
+                          <Text size="T300">{credits.freeCredits}</Text>
+                        </Box>
+                        <Box direction="Row" justifyContent="SpaceBetween" alignItems="Center">
+                          <Text size="T300">Recharge credits</Text>
+                          <Text size="T300">{credits.paidCredits}</Text>
+                        </Box>
+                        <Box direction="Row" justifyContent="SpaceBetween" alignItems="Center">
+                          <Text size="T300">Referral credits</Text>
+                          <Text size="T300">{credits.inviteCredits}</Text>
+                        </Box>
+                        <Box direction="Row" justifyContent="SpaceBetween" alignItems="Center">
+                          <Text size="T300">Recharge history</Text>
+                        </Box>
+                      </Box>
+                    )}
+                  </Box>
+                </Box>
+              </FocusTrap>
+            }
+          />
+        )}
+      </Box>
+    </Box>
+  );
+}
+
 export function Agent() {
   const mx = useMatrixClient();
   useNavToActivePathMapper('agent');
@@ -234,6 +375,7 @@ export function Agent() {
           </Box>
         </PageNavContent>
       )}
+      <AgentFooter />
     </PageNav>
   );
 }
