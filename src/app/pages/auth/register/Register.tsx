@@ -19,6 +19,7 @@ const useRegisterSearchParams = (searchParams: URLSearchParams): RegisterPathSea
       username: searchParams.get('username') ?? undefined,
       email: searchParams.get('email') ?? undefined,
       token: searchParams.get('token') ?? undefined,
+      code: searchParams.get('code') ?? undefined,
     }),
     [searchParams]
   );
@@ -71,6 +72,7 @@ export function Register() {
                   defaultUsername={registerSearchParams.username}
                   defaultEmail={registerSearchParams.email}
                   defaultRegisterToken={registerSearchParams.token}
+                  inviteCode={registerSearchParams.code}
                 />
               )
             }

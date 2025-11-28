@@ -181,6 +181,7 @@ type PasswordRegisterFormProps = {
   defaultUsername?: string;
   defaultEmail?: string;
   defaultRegisterToken?: string;
+  inviteCode?: string;
 };
 export function PasswordRegisterForm({
   authData,
@@ -188,6 +189,7 @@ export function PasswordRegisterForm({
   defaultUsername,
   defaultEmail,
   defaultRegisterToken,
+  inviteCode,
 }: PasswordRegisterFormProps) {
   const serverDiscovery = useAutoDiscoveryInfo();
   const baseUrl = serverDiscovery['m.homeserver'].base_url;
@@ -217,7 +219,7 @@ export function PasswordRegisterForm({
   const registerError =
     registerState.status === AsyncStatus.Error ? registerState.error : undefined;
 
-  useRegisterComplete(customRegisterResp);
+  useRegisterComplete(customRegisterResp, inviteCode);
   const { getWeb3PublicClient } = useWeb3Client();
   const { publicClient } = getWeb3PublicClient();
   const { mainChainConfig } = useChainConfig();

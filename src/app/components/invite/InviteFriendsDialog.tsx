@@ -19,6 +19,8 @@ import { GlobalDialogType } from '../../state/globalDialogs';
 import * as css from './InviteFriendsDialog.css';
 import { stopPropagation } from '../../utils/keyboard';
 import { botApi } from '../../externalApis';
+import { useMatrixClient } from '../../hooks/useMatrixClient';
+import { getMxIdServer } from '../../utils/matrix';
 
 export function InviteFriendsDialog() {
   const dialogData = useGlobalDialogState(GlobalDialogType.InviteFriends);
@@ -28,6 +30,8 @@ export function InviteFriendsDialog() {
   const [inviteLink, setInviteLink] = useState('');
   const [loadingLink, setLoadingLink] = useState(false);
   const [inviteError, setInviteError] = useState<string | null>(null);
+  const mx = useMatrixClient();
+  const serverName = getMxIdServer(mx.getUserId() || '') ?? '';
 
   useEffect(() => {
     setIsOpen(Boolean(dialogData));
@@ -49,7 +53,7 @@ export function InviteFriendsDialog() {
         const inviteCode = res.result;
 
         const origin = typeof window !== 'undefined' ? window.location.origin : '';
-        const link = inviteCode ? `${origin}/register?code=${inviteCode}` : '';
+        const link = inviteCode ? `${origin}/register/${serverName}?code=${inviteCode}` : '';
         setInviteLink(link);
       })
       .catch((error) => {
@@ -58,7 +62,7 @@ export function InviteFriendsDialog() {
         setInviteError('Failed to load invite link');
       })
       .finally(() => setLoadingLink(false));
-  }, [dialogData]);
+  }, [dialogData, serverName]);
 
   if (!dialogData) return null;
 

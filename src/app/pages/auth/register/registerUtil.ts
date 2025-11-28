@@ -18,6 +18,7 @@ import { getHomePath, getLoginPath, withSearchParam } from '../../pathUtils';
 import { getMxIdLocalPart, getMxIdServer } from '../../../utils/matrix';
 import { setFallbackSession } from '../../../state/sessions';
 import { setAuthExtras } from '../../../state/authExtras';
+import { botApi } from '../../../externalApis';
 
 export enum RegisterError {
   UserTaken = 'UserTaken',
@@ -114,7 +115,7 @@ export const register = async (
   ];
 };
 
-export const useRegisterComplete = (data?: CustomRegisterResponse) => {
+export const useRegisterComplete = (data?: CustomRegisterResponse, inviteCode?: string) => {
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -128,6 +129,20 @@ export const useRegisterComplete = (data?: CustomRegisterResponse) => {
       if (accessToken && deviceId) {
         setAuthExtras({ publicKey: data.publicKey, aaAddress: data.aaAddress });
         setFallbackSession(accessToken, deviceId, userId, baseUrl);
+
+        console.log('inviteCode', inviteCode);
+        console.log('location', location);
+
+        if (inviteCode) {
+          void botApi
+            .businessSaveInvitedCodePost({
+              BusinessSaveInvitedCodePostRequest: { code: inviteCode },
+            })
+            .catch((error) => {
+              console.error('Failed to save invite code', error);
+            });
+        }
+
         const afterLoginRedirectPath = getAfterLoginRedirectPath();
         deleteAfterLoginRedirectPath();
         navigate(afterLoginRedirectPath ?? getHomePath(), { replace: true });
@@ -142,5 +157,5 @@ export const useRegisterComplete = (data?: CustomRegisterResponse) => {
         );
       }
     }
-  }, [data, navigate]);
+  }, [data, inviteCode, navigate]);
 };

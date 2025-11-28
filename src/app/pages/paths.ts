@@ -11,6 +11,7 @@ export type RegisterPathSearchParams = {
   username?: string;
   email?: string;
   token?: string;
+  code?: string;
 };
 export const REGISTER_PATH = '/register/:server?/';
 
