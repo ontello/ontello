@@ -4,7 +4,7 @@ import { PageNav, PageNavHeader } from '../../../components/page';
 import { WalletHomepage } from './WalletHomepage';
 import { Send } from './send/Send';
 import { WalletNavMode } from '../../../../types/wallet/types';
-import { TokensProvider, useTokens, useTokensContext } from '../../../hooks/wallet/useTokens';
+import { TokensProvider, useTokens } from '../../../hooks/wallet/useTokens';
 import { AgentLogo } from '../../../components/wallet/AgentLogo';
 import { useScreenSizeContext, ScreenSize } from '../../../hooks/useScreenSize';
 
@@ -28,8 +28,7 @@ function WalletHeader() {
 
 export function Wallet() {
   const [walletNavMode, setWalletNavMode] = useState<WalletNavMode>(WalletNavMode.Main);
-  // const { tokens, getTokens, totalTokensCurrency } = useTokens();
-  const tokensContext = useTokensContext();
+  const tokensContext = useTokens();
 
   return (
     <TokensProvider value={tokensContext}>
