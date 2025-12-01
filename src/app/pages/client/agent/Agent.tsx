@@ -286,7 +286,7 @@ function AgentFooter() {
                 >
                   <Box direction="Column" gap="100">
                     {credits && (
-                      <Box gap="200" direction="Column">
+                      <Box gap="300" direction="Column">
                         <Box direction="Row" justifyContent="SpaceBetween" alignItems="Center">
                           <Text size="T300">Daily credits</Text>
                           <Text size="T300">{credits.freeCredits}</Text>
@@ -298,9 +298,6 @@ function AgentFooter() {
                         <Box direction="Row" justifyContent="SpaceBetween" alignItems="Center">
                           <Text size="T300">Referral credits</Text>
                           <Text size="T300">{credits.inviteCredits}</Text>
-                        </Box>
-                        <Box direction="Row" justifyContent="SpaceBetween" alignItems="Center">
-                          <Text size="T300">Recharge history</Text>
                         </Box>
                       </Box>
                     )}

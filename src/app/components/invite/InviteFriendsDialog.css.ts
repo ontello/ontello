@@ -102,3 +102,94 @@ export const Highlight = style([
     color: color.Primary.Main,
   },
 ]);
+
+export const HistoryDialog = style([
+  DefaultReset,
+  {
+    width: '100%',
+    maxWidth: '420px',
+    minWidth: '320px',
+  },
+]);
+
+export const HistoryHeader = style([
+  DefaultReset,
+  {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: `${config.space.S300} ${config.space.S400}`,
+    borderBottom: `1px solid ${color.Surface.ContainerLine}`,
+  },
+]);
+
+export const HistoryContent = style([
+  DefaultReset,
+  {
+    padding: `${config.space.S300} ${config.space.S400} ${config.space.S400}`,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: config.space.S200,
+  },
+]);
+
+export const HistoryHeadings = style([
+  DefaultReset,
+  {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: config.space.S100,
+  },
+]);
+
+export const HistoryList = style([
+  DefaultReset,
+  {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: config.space.S200,
+    minHeight: '240px',
+    maxHeight: '320px',
+    overflowY: 'auto',
+    paddingRight: config.space.S100,
+  },
+]);
+
+export const HistoryEmpty = style([
+  DefaultReset,
+  {
+    minHeight: '240px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+]);
+
+export const HistoryRow = style([
+  DefaultReset,
+  {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: config.space.S200,
+  },
+]);
+
+export const HistoryInvitee = style([
+  DefaultReset,
+  {
+    flex: 1,
+    minWidth: 0,
+  },
+]);
+
+export const HistoryDate = style([
+  DefaultReset,
+  {
+    marginLeft: config.space.S200,
+    whiteSpace: 'nowrap',
+    textAlign: 'right',
+    minWidth: '96px',
+  },
+]);
