@@ -1,14 +1,7 @@
 import { atom, type PrimitiveAtom } from 'jotai';
 import type { TransferData } from '../components/review-transfer/types';
+import type { SyncOwnershipDialogData } from '../components/wallet/multi-chain/SyncOwnershipChange';
 import { appJotaiStore } from './jotaiStore';
-
-export interface SyncOwnershipDialogData {
-  chainIds: number[];
-  onSuccess?: () => void;
-  onClose?: () => void;
-}
-
-export interface InviteFriendsDialogData {}
 
 export enum GlobalDialogType {
   ReviewTransfer,
@@ -19,7 +12,7 @@ export enum GlobalDialogType {
 export interface GlobalDialogPayloads {
   [GlobalDialogType.ReviewTransfer]: TransferData;
   [GlobalDialogType.SyncOwnershipChange]: SyncOwnershipDialogData;
-  [GlobalDialogType.InviteFriends]: InviteFriendsDialogData;
+  [GlobalDialogType.InviteFriends]: {};
 }
 
 export type GlobalDialogState<T extends GlobalDialogType> = GlobalDialogPayloads[T] | undefined;

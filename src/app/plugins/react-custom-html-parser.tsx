@@ -432,6 +432,8 @@ export const getReactCustomHtmlParser = (
             const handleOntelloClick: ReactEventHandler<HTMLElement> = async (e) => {
               e.preventDefault();
               // Handle different types of Ontello links
+              console.log('ontelloData.type', ontelloData.type);
+
               switch (ontelloData.type) {
                 case 'transfer': {
                   const transferData = ontelloData.data as TransferData;
@@ -441,6 +443,10 @@ export const getReactCustomHtmlParser = (
                   } catch {
                     // User cancelled sync dialog; do nothing
                   }
+                  break;
+                }
+                case 'invite': {
+                  openGlobalDialog(GlobalDialogType.InviteFriends, {});
                   break;
                 }
                 // Future: add other types here

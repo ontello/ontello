@@ -10,6 +10,12 @@ import { SyncDialog, SyncStatus } from './SyncDialog';
 import { Address } from 'viem';
 import { AUTH_EXTRA_KEYS } from '@src/app/state/authExtras';
 
+export interface SyncOwnershipDialogData {
+  chainIds: number[];
+  onSuccess?: () => void;
+  onClose?: () => void;
+}
+
 export function SyncOwnershipChangeDialog() {
   const dialogData = useGlobalDialogState(GlobalDialogType.SyncOwnershipChange);
   const closeDialog = useCloseGlobalDialog(GlobalDialogType.SyncOwnershipChange);

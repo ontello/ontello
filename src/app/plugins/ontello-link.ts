@@ -2,7 +2,7 @@ import { TransferData } from '../components/review-transfer/types';
 
 const ONTELLO_DOMAIN = 'ontello.app';
 
-export type OntelloLinkType = 'transfer' | 'swap';
+export type OntelloLinkType = 'transfer' | 'swap' | 'invite';
 
 export interface OntelloLinkData {
   type: OntelloLinkType;
