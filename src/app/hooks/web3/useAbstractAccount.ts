@@ -1,29 +1,29 @@
+import { useMemo } from 'react';
 import {
   Hex,
   Address,
+  type SignableMessage,
+  type TypedData,
+  type TypedDataDefinition,
+  createWalletClient,
+  http,
   toHex,
   getContract,
   encodeFunctionData,
   encodeAbiParameters,
   maxUint256,
   bytesToBigInt,
+  hashMessage,
+  hashTypedData,
 } from 'viem';
-import { mnemonicToAccount } from 'viem/accounts';
-import {
-  EntryPointAbi,
-  Erc20Abi,
-  AccountAbi,
-  AccountFactoryAbi,
-  CrossChainRelayerAbi,
-} from '@src/app/static/abis';
-import { FeeSessionResp, walletApi } from '@src/app/externalApis';
+import { mnemonicToAccount, toAccount } from 'viem/accounts';
+import { EntryPointAbi, Erc20Abi, AccountAbi, AccountFactoryAbi } from '@src/app/static/abis';
 import { fromBase64Url, registerWithPasskey, signMessageWithPasskey } from '../../utils/passkey';
 import { useWeb3Client } from './useWeb3Client';
 import {
   AccountCallType,
   BuildUserOperationParams,
   BuildUserOperationResult,
-  ReplayOperation,
   UserOperation,
 } from './types';
 import {
@@ -323,6 +323,45 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
     return receipt;
   };
 
+  const aaAccount = useMemo(() => {
+    const signWithCurrentKey = async (hash: Hex) => {
+      const keyIndex = await getCurrentKeyIndex();
+      return getUserOpSignature(hash, keyIndex);
+    };
+
+    return toAccount({
+      address: aaAddress,
+
+      async signMessage({ message }: { message: SignableMessage }) {
+        const hash = hashMessage(message);
+        return signWithCurrentKey(hash);
+      },
+
+      async signTransaction() {
+        throw new Error(
+          'signTransaction is not supported for abstract accounts. Use UserOperations instead.'
+        );
+      },
+
+      async signTypedData<
+        typedData extends TypedData | Record<string, unknown>,
+        primaryType extends keyof typedData | 'EIP712Domain' = keyof typedData
+      >(typedData: TypedDataDefinition<typedData, primaryType>): Promise<Hex> {
+        const hash = hashTypedData(typedData);
+        return signWithCurrentKey(hash);
+      },
+    });
+  }, [aaAddress]);
+  const aaClient = useMemo(
+    () =>
+      createWalletClient({
+        account: aaAccount,
+        chain: ethClient.chain,
+        transport: http(chainConfig.rpcUrls[0]),
+      }),
+    [aaAccount, ethClient.chain, chainConfig.rpcUrls]
+  );
+
   const recoveryAccount = async (mnemonic: string, username: string) => {
     const mnemonicAccount = mnemonicToAccount(mnemonic);
     console.log('mnemonicAccount.address', mnemonicAccount.address);
@@ -464,6 +503,8 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
     getKeyIndexThroughAddress,
     getKeyIndexThroughXy,
     getCurrentKeyIndex,
+    aaAccount,
+    aaClient,
 
     // TODO abandon or move
     recoveryAccount,
