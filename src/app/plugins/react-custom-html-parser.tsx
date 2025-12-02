@@ -37,6 +37,7 @@ import { testOntelloLink, parseOntelloLink } from './ontello-link';
 import { openGlobalDialog, GlobalDialogType } from '../state/globalDialogs';
 import { TransferData } from '../components/review-transfer';
 import { ensureOwnershipSynced } from '../utils/ownershipSync';
+import { X402PaymentDialogData } from '../components/x402-payment';
 
 const ReactPrism = lazy(() => import('./react-prism/ReactPrism'));
 
@@ -432,7 +433,7 @@ export const getReactCustomHtmlParser = (
             const handleOntelloClick: ReactEventHandler<HTMLElement> = async (e) => {
               e.preventDefault();
               // Handle different types of Ontello links
-              console.log('ontelloData.type', ontelloData.type);
+              console.log('ontelloData.type', ontelloData);
 
               switch (ontelloData.type) {
                 case 'transfer': {
@@ -448,6 +449,12 @@ export const getReactCustomHtmlParser = (
                 case 'invite': {
                   openGlobalDialog(GlobalDialogType.InviteFriends, {});
                   break;
+                }
+                case 'x402': {
+                  openGlobalDialog(
+                    GlobalDialogType.X402Payment,
+                    ontelloData.data as X402PaymentDialogData
+                  );
                 }
                 // Future: add other types here
                 default:

@@ -1,18 +1,21 @@
 import { atom, type PrimitiveAtom } from 'jotai';
 import type { TransferData } from '../components/review-transfer/types';
 import type { SyncOwnershipDialogData } from '../components/wallet/multi-chain/SyncOwnershipChange';
+import type { X402PaymentDialogData } from '../components/x402-payment/types';
 import { appJotaiStore } from './jotaiStore';
 
 export enum GlobalDialogType {
   ReviewTransfer,
   SyncOwnershipChange,
   InviteFriends,
+  X402Payment,
 }
 
 export interface GlobalDialogPayloads {
   [GlobalDialogType.ReviewTransfer]: TransferData;
   [GlobalDialogType.SyncOwnershipChange]: SyncOwnershipDialogData;
   [GlobalDialogType.InviteFriends]: {};
+  [GlobalDialogType.X402Payment]: X402PaymentDialogData;
 }
 
 export type GlobalDialogState<T extends GlobalDialogType> = GlobalDialogPayloads[T] | undefined;
@@ -28,6 +31,8 @@ export const dialogAtoms: DialogAtomMap = {
     atom<GlobalDialogState<GlobalDialogType.SyncOwnershipChange>>(undefined),
   [GlobalDialogType.InviteFriends]:
     atom<GlobalDialogState<GlobalDialogType.InviteFriends>>(undefined),
+  [GlobalDialogType.X402Payment]:
+    atom<GlobalDialogState<GlobalDialogType.X402Payment>>(undefined),
 };
 
 export const openGlobalDialog = <T extends GlobalDialogType>(
