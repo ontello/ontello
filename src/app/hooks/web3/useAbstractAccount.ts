@@ -5,6 +5,7 @@ import {
   type SignableMessage,
   type TypedData,
   type TypedDataDefinition,
+  concatHex,
   createWalletClient,
   http,
   toHex,
@@ -15,6 +16,7 @@ import {
   bytesToBigInt,
   hashMessage,
   hashTypedData,
+  keccak256,
 } from 'viem';
 import { mnemonicToAccount, toAccount } from 'viem/accounts';
 import { EntryPointAbi, Erc20Abi, AccountAbi, AccountFactoryAbi } from '@src/app/static/abis';
@@ -57,11 +59,9 @@ import { useChainConfig } from './useChainConfig';
 //   console.log(output);
 // }
 
-// TODO
-const MAIN_NETWORK_GAS_ADDRESS = '0xd878dfE2b33A07E7FB290c1578A0b3cbc8aDadEA';
-
 const INIT_SIGNATURE =
   '0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000260000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000000001200000000000000000000000000000000000000000000000000000000000000017000000000000000000000000000000000000000000000000000000000000000168bd76d24faae41e9b10fa547c74f6d82ef3baf9ecfb18f828abb0fc13888b5bff4aa483155037396e6ca63771f0cba4585cb91a08d6492325d7f61518508eaf000000000000000000000000000000000000000000000000000000000000002549960de5880e8c687434170f6476605b8fe4aeb9a28632c7995cf3ba831d97631d0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f37b2274797065223a22176562617574686e2e676574222c226368616c6c656e6765223a224b33624e59524e524f767432776b4f5449376f6d7153384a56794e5431536d544c56646d68586d6d357851222c226f726967696e223a22687474703a2f2f6c6f63616c686f73743a38303830222c2263726f73734f726967696e223a66616c73652c226f746865725f6b6579735f63616e5f62655f61646465645f68657265223a22646f206e6f7420636f6d7061726520636c69656e74446174614a534f4e20616761696e737420612074656d706c6174652e205365652068747470733a2f2f676f6f2e666c2f796162506577227d00000000000000000000000000' as Hex;
+const MESSAGE_TYPEHASH = keccak256(toHex('OntelloSmartWalletMessage(bytes32 hash)'));
 
 export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
   const { getWeb3PublicClient } = useWeb3Client();
@@ -367,7 +367,12 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
         primaryType extends keyof typedData | 'EIP712Domain' = keyof typedData
       >(typedData: TypedDataDefinition<typedData, primaryType>): Promise<Hex> {
         const hash = hashTypedData(typedData);
-        const signature = await signWithCurrentKey(hash);
+        const domainSeparator = (await passKeyAccountContract.read.domainSeparator()) as Hex;
+        const structHash = keccak256(
+          encodeAbiParameters([{ type: 'bytes32' }, { type: 'bytes32' }], [MESSAGE_TYPEHASH, hash])
+        );
+        const eip712Hash = keccak256(concatHex(['0x1901', domainSeparator, structHash]));
+        const signature = await signWithCurrentKey(eip712Hash);
         return signature;
       },
     });
