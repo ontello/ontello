@@ -226,7 +226,7 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
         const paymasterAndData = await getPaymasterSign(userOp, gasAddress);
         userOp.paymasterAndData = paymasterAndData;
       }
-
+      // formatUserOpStruct(userOp);
       const estimatedGas = await estimateUserOperationGas(userOp);
       userOp.preVerificationGas = BigInt(estimatedGas.preVerificationGas);
       userOp.verificationGasLimit = chainConfig.supportPassKeySign
@@ -332,6 +332,10 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
     return toAccount({
       address: aaAddress,
 
+      async sign({ hash }: { hash: Hex }) {
+        return signWithCurrentKey(hash);
+      },
+
       async signMessage({ message }: { message: SignableMessage }) {
         const hash = hashMessage(message);
         return signWithCurrentKey(hash);
@@ -348,7 +352,8 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
         primaryType extends keyof typedData | 'EIP712Domain' = keyof typedData
       >(typedData: TypedDataDefinition<typedData, primaryType>): Promise<Hex> {
         const hash = hashTypedData(typedData);
-        return signWithCurrentKey(hash);
+        const signature = await signWithCurrentKey(hash);
+        return signature;
       },
     });
   }, [aaAddress]);
@@ -495,6 +500,12 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
     }
   };
 
+  const verify = async (hash: Hex, signature: Hex) => {
+    const res = await passKeyAccountContract.read.isValidSignature([hash, signature]);
+    console.log('isValidSignature result', res);
+    return res;
+  };
+
   return {
     isAccountDeployed,
     buildCallData,
@@ -512,5 +523,6 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
     addOwnerByAddress,
     transfer,
     estimateTransfer,
+    verify,
   };
 };

@@ -18,22 +18,29 @@ import { useCloseGlobalDialog, useGlobalDialogState } from '../../state/hooks/gl
 import { GlobalDialogType } from '../../state/globalDialogs';
 import { stopPropagation } from '../../utils/keyboard';
 import * as css from './X402PaymentDialog.css';
+import { wrapFetchWithPayment } from 'x402-fetch';
+import { useAbstractAccount } from '@src/app/hooks/web3/useAbstractAccount';
+import { getAuthExtras } from '@src/app/state/authExtras';
+import { Address } from 'viem';
 
 export function X402PaymentDialog() {
   const dialogData = useGlobalDialogState(GlobalDialogType.X402Payment);
   const closeDialog = useCloseGlobalDialog(GlobalDialogType.X402Payment);
   const [isOpen, setIsOpen] = useState(false);
+  const { aaAddress } = getAuthExtras();
+  const { aaAccount, verify } = useAbstractAccount(aaAddress as Address, 84532); //TODO
 
   const [accepts, setAccepts] = useState<string[]>([]);
   const [loadingAccepts, setLoadingAccepts] = useState(false);
   const [acceptsError, setAcceptsError] = useState<string | null>(null);
+  const link = dialogData?.link;
 
   useEffect(() => {
     setIsOpen(Boolean(dialogData));
   }, [dialogData]);
 
   useEffect(() => {
-    if (!dialogData?.link) return;
+    if (!link) return;
 
     setLoadingAccepts(true);
     setAcceptsError(null);
@@ -41,7 +48,7 @@ export function X402PaymentDialog() {
 
     const fetchAccepts = async () => {
       try {
-        const response = await fetch(dialogData.link, { method: 'GET' });
+        const response = await fetch(link, { method: 'GET' });
         console.log('response', response);
         console.log('json');
         if (response.status !== 402) {
@@ -57,18 +64,22 @@ export function X402PaymentDialog() {
     fetchAccepts();
   }, [dialogData?.link]);
 
-  if (!dialogData) return null;
-
-  const acceptsLabel = (() => {
-    if (loadingAccepts) return 'Fetching payment accepts...';
-    if (acceptsError) return acceptsError;
-    if (accepts.length) return `Supported accepts: ${accepts.join(', ')}`;
-    return 'No available accepts.';
-  })();
-
   const handleClose = () => {
     setIsOpen(false);
     closeDialog();
+  };
+
+  if (!dialogData) return null;
+
+  const handlePay = async () => {
+    if (!dialogData?.link) return;
+    const fetchWithPay = wrapFetchWithPayment(fetch, aaAccount);
+    const response = await fetchWithPay(dialogData.link, {
+      method: 'GET',
+    });
+
+    const data = await response.json();
+    console.log('data', data);
   };
 
   return (
@@ -104,7 +115,7 @@ export function X402PaymentDialog() {
               </Box>
 
               <Box className={css.Actions}>
-                <Button variant="Primary" size="300" fill="Solid" disabled>
+                <Button variant="Primary" size="300" fill="Solid" onClick={handlePay}>
                   <Text size="B300">Pay</Text>
                 </Button>
               </Box>
