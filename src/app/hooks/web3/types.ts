@@ -82,3 +82,11 @@ export enum ReplayOperation {
   RemoveOwner = 'removeOwner',
   AddOwnerPublicKey = 'addOwnerPublicKey',
 }
+
+export type GasData = {
+  callGasLimit: BigInt;
+  verificationGasLimit: BigInt;
+  preVerificationGas: BigInt;
+  maxFeePerGas: BigInt;
+  maxPriorityFeePerGas: BigInt;
+};

@@ -23,6 +23,7 @@ import {
   AccountCallType,
   BuildUserOperationParams,
   BuildUserOperationResult,
+  GasData,
   ReplayOperation,
   UserOperation,
 } from './types';
@@ -217,8 +218,8 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
         callGasLimit: BigInt(21000),
         verificationGasLimit: BigInt(100_000),
         preVerificationGas: BigInt(50_000),
-        maxFeePerGas: feeData.maxFeePerGas,
-        maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
+        maxFeePerGas: BigInt(1),
+        maxPriorityFeePerGas: BigInt(0),
         paymasterAndData: '0x' as Hex,
         signature: INIT_SIGNATURE,
       };
@@ -233,6 +234,8 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
         ? (BigInt(estimatedGas.verificationGasLimit) * BigInt(12)) / BigInt(10)
         : BigInt(1000000); // maxVerificationGas of 3000000
       userOp.callGasLimit = BigInt(estimatedGas.callGasLimit);
+      userOp.maxFeePerGas = feeData.maxFeePerGas;
+      userOp.maxPriorityFeePerGas = feeData.maxPriorityFeePerGas;
 
       if (gasAddress) {
         // again
@@ -294,13 +297,24 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
     const actualVerificationGasLimit = chainConfig.supportPassKeySign
       ? BigInt(estimatedGas.verificationGasLimit)
       : BigInt(1000000);
+
+    const gasData: GasData = {
+      callGasLimit: BigInt(estimatedGas.callGasLimit),
+      verificationGasLimit: actualVerificationGasLimit,
+      preVerificationGas: BigInt(estimatedGas.preVerificationGas),
+      maxFeePerGas: feeData.maxFeePerGas,
+      maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
+    };
+
     const maxEthFee =
       (BigInt(estimatedGas.callGasLimit) +
         actualVerificationGasLimit +
         BigInt(estimatedGas.preVerificationGas) +
         BigInt(50000)) *
       feeData.maxFeePerGas;
+
     return {
+      gasData,
       maxEthFee,
     };
   };
