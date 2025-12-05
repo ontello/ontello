@@ -21,6 +21,7 @@ export function RecoveryKeyForm() {
   const serverDiscovery = useAutoDiscoveryInfo();
   const baseUrl = serverDiscovery['m.homeserver'].base_url;
   const mx = useMemo(() => createClient({ baseUrl }), [baseUrl]);
+  const loginPath = getLoginPath(server);
 
   const [address, setAddress] = useState<Address>('0x');
   // const [shouldRecover, setShouldRecover] = useState(false); // 控制恢复操作
@@ -34,11 +35,17 @@ export function RecoveryKeyForm() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  const recoverSuccess = () => {
+    setShowRecoverAccount(false);
+    navigate(loginPath);
+  };
+
   const base64ToHex = (base64: string) => toHex(new Uint8Array(fromBase64Url(base64)));
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = async (evt) => {
     evt.preventDefault();
     try {
+      setErrorData(null);
       const passkeyCredentials = await getPasskeyCredentials(
         mx,
         `@${form.username.trim().toLowerCase()}:${server}`
@@ -131,7 +138,7 @@ export function RecoveryKeyForm() {
           username={form.username.trim().toLowerCase()}
           aaAddress={address}
           recoveryPhrase={form.recoveryKey}
-          onSuccess={() => setShowRecoverAccount(false)}
+          onSuccess={() => recoverSuccess()}
           onClose={() => setShowRecoverAccount(false)}
         />
       )}
