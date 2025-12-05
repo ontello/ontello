@@ -27,7 +27,7 @@ export const Content = style([
     padding: config.space.S400,
     display: 'flex',
     flexDirection: 'column',
-    gap: config.space.S300,
+    gap: config.space.S200,
   },
 ]);
 
@@ -37,13 +37,23 @@ export const Section = style([
     display: 'flex',
     flexDirection: 'column',
     gap: config.space.S200,
-    backgroundColor: color.Surface.Container,
+    backgroundColor: '#f6f6f6',
     borderRadius: config.radii.R400,
     padding: config.space.S300,
   },
 ]);
 
 export const LabelRow = style([
+  DefaultReset,
+  {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: config.space.S200,
+  },
+]);
+
+export const Row = style([
   DefaultReset,
   {
     display: 'flex',
@@ -88,9 +98,9 @@ export const Actions = style([
   DefaultReset,
   {
     display: 'flex',
-    justifyContent: 'flex-end',
+    flexDirection: 'column',
     gap: config.space.S200,
-    marginTop: config.space.S200,
+    marginTop: config.space.S400,
   },
 ]);
 
@@ -98,5 +108,22 @@ export const Helper = style([
   DefaultReset,
   {
     color: color.Surface.OnContainer,
+  },
+]);
+
+export const PriceBlock = style([
+  DefaultReset,
+  {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: config.space.S100,
+  },
+]);
+
+export const CardValue = style([
+  DefaultReset,
+  {
+    wordBreak: 'break-all',
+    textAlign: 'right',
   },
 ]);
