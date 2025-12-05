@@ -61,6 +61,7 @@ import { STORE_PATH } from '../../paths';
 import { getAgentDirectRoomPath } from '../../pathUtils';
 import { useOpenGlobalDialog } from '../../../state/hooks/globalDialogs';
 import { GlobalDialogType } from '../../../state/globalDialogs';
+import { RechargeHistoryDialog } from '../../../components/agent/RechargeHistoryDialog';
 
 // Agent menu (can be extended later)
 type AgentMenuProps = {
@@ -192,6 +193,7 @@ function AgentFooter() {
   const [credits, setCredits] = useState<Credits | null>(null);
   const [creditsError, setCreditsError] = useState<string>();
   const [loadingCredits, setLoadingCredits] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
 
   const handleTogglePopOut: MouseEventHandler<HTMLButtonElement> = (evt) => {
     const cords = evt.currentTarget.getBoundingClientRect();
@@ -199,6 +201,11 @@ function AgentFooter() {
       if (currentState) return undefined;
       return cords;
     });
+  };
+
+  const handleOpenRechargeHistory = () => {
+    setShowHistory(true);
+    setPopAnchor(undefined);
   };
 
   const fetchCredits = useCallback(async () => {
@@ -224,91 +231,104 @@ function AgentFooter() {
   const totalLabel = credits?.totalCredits ?? '--';
 
   return (
-    <Box
-      style={{
-        position: 'sticky',
-        bottom: 0,
-        padding: `${config.space.S200}`,
-      }}
-    >
-      <Box gap="200" direction="Column" style={{ width: '100%' }}>
-        <Button
-          variant="Primary"
-          fill="Soft"
-          size="300"
-          onClick={handleOpenInvite}
-          style={{ flex: 1, width: '100%', minHeight: toRem(42) }}
-        >
-          <Text size="B300" truncate>
-            Get free credits
-          </Text>
-        </Button>
-        <Button
-          variant="Primary"
-          fill="Soft"
-          size="300"
-          onClick={handleTogglePopOut}
-          style={{ flex: 1, width: '100%', minHeight: toRem(42) }}
-        >
-          <Text size="B300" truncate>
-            {totalLabel}
-          </Text>
-        </Button>
-        {popAnchor && (
-          <PopOut
-            anchor={popAnchor}
-            position="Top"
-            align="Start"
-            offset={8}
-            content={
-              <FocusTrap
-                focusTrapOptions={{
-                  initialFocus: false,
-                  returnFocusOnDeactivate: false,
-                  onDeactivate: () => setPopAnchor(undefined),
-                  clickOutsideDeactivates: true,
-                  escapeDeactivates: stopPropagation,
-                  fallbackFocus: () => popContentRef.current || document.body,
-                }}
-              >
-                <Box
-                  ref={popContentRef}
-                  direction="Column"
-                  gap="100"
-                  style={{
-                    padding: config.space.S300,
-                    borderRadius: config.radii.R400,
-                    backgroundColor: color.Surface.Container,
-                    boxShadow: config.shadow.E200,
-                    width: popAnchor.width,
+    <>
+      <Box
+        style={{
+          position: 'sticky',
+          bottom: 0,
+          padding: `${config.space.S200}`,
+        }}
+      >
+        <Box gap="200" direction="Column" style={{ width: '100%' }}>
+          <Button
+            variant="Primary"
+            fill="Soft"
+            size="300"
+            onClick={handleOpenInvite}
+            style={{ flex: 1, width: '100%', minHeight: toRem(42) }}
+          >
+            <Text size="B300" truncate>
+              Get free credits
+            </Text>
+          </Button>
+          <Button
+            variant="Primary"
+            fill="Soft"
+            size="300"
+            onClick={handleTogglePopOut}
+            style={{ flex: 1, width: '100%', minHeight: toRem(42) }}
+          >
+            <Text size="B300" truncate>
+              {totalLabel}
+            </Text>
+          </Button>
+
+          {popAnchor && (
+            <PopOut
+              anchor={popAnchor}
+              position="Top"
+              align="Start"
+              offset={8}
+              content={
+                <FocusTrap
+                  focusTrapOptions={{
+                    initialFocus: false,
+                    returnFocusOnDeactivate: false,
+                    onDeactivate: () => setPopAnchor(undefined),
+                    clickOutsideDeactivates: true,
+                    escapeDeactivates: stopPropagation,
+                    fallbackFocus: () => popContentRef.current || document.body,
                   }}
-                  tabIndex={-1}
                 >
-                  <Box direction="Column" gap="100">
-                    {credits && (
-                      <Box gap="300" direction="Column">
-                        <Box direction="Row" justifyContent="SpaceBetween" alignItems="Center">
-                          <Text size="T300">Daily credits</Text>
-                          <Text size="T300">{credits.freeCredits}</Text>
+                  <Box
+                    ref={popContentRef}
+                    direction="Column"
+                    gap="100"
+                    style={{
+                      padding: config.space.S300,
+                      borderRadius: config.radii.R400,
+                      backgroundColor: color.Surface.Container,
+                      boxShadow: config.shadow.E200,
+                      width: popAnchor.width,
+                    }}
+                    tabIndex={-1}
+                  >
+                    <Box direction="Column" gap="100">
+                      {credits && (
+                        <Box gap="300" direction="Column">
+                          <Box direction="Row" justifyContent="SpaceBetween" alignItems="Center">
+                            <Text size="T300">Daily credits</Text>
+                            <Text size="T300">{credits.freeCredits}</Text>
+                          </Box>
+                          <Box direction="Row" justifyContent="SpaceBetween" alignItems="Center">
+                            <Text size="T300">Recharge credits</Text>
+                            <Text size="T300">{credits.paidCredits}</Text>
+                          </Box>
+                          <Box direction="Row" justifyContent="SpaceBetween" alignItems="Center">
+                            <Text size="T300">Referral credits</Text>
+                            <Text size="T300">{credits.inviteCredits}</Text>
+                          </Box>
+                          <Button
+                            variant="Secondary"
+                            size="300"
+                            fill="Soft"
+                            onClick={handleOpenRechargeHistory}
+                            style={{ width: '100%' }}
+                          >
+                            <Text size="B300">Recharge history</Text>
+                          </Button>
                         </Box>
-                        <Box direction="Row" justifyContent="SpaceBetween" alignItems="Center">
-                          <Text size="T300">Recharge credits</Text>
-                          <Text size="T300">{credits.paidCredits}</Text>
-                        </Box>
-                        <Box direction="Row" justifyContent="SpaceBetween" alignItems="Center">
-                          <Text size="T300">Referral credits</Text>
-                          <Text size="T300">{credits.inviteCredits}</Text>
-                        </Box>
-                      </Box>
-                    )}
+                      )}
+                    </Box>
                   </Box>
-                </Box>
-              </FocusTrap>
-            }
-          />
-        )}
+                </FocusTrap>
+              }
+            />
+          )}
+        </Box>
       </Box>
-    </Box>
+      <RechargeHistoryDialog open={showHistory} onClose={() => setShowHistory(false)} />
+    </>
   );
 }
 
