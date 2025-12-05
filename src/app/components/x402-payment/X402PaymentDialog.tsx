@@ -96,21 +96,10 @@ export function X402PaymentDialog() {
   const matchedChain = availableChains.find((chain) => chain.chainId === chainId);
 
   const tokenSymbol = tokenInfo?.symbol || accept?.extra?.name;
-  const amountValue = (() => {
+  const amount = (() => {
     if (!accept?.maxAmountRequired) return null;
-    try {
-      // accept amount is provided in micro-units (6 decimals)
-      return BigInt(accept.maxAmountRequired);
-    } catch {
-      try {
-        // Fallback for non-integer strings
-        return parseUnits(accept.maxAmountRequired, 6);
-      } catch {
-        return null;
-      }
-    }
+    return formatUnits(BigInt(accept.maxAmountRequired), 6);
   })();
-  const amount = amountValue !== null ? formatUnits(amountValue, 6) : null;
   const fiat =
     amount && tokenInfo?.currencyPrice
       ? (Number(amount) * Number(tokenInfo.currencyPrice)).toFixed(2)
