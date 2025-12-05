@@ -34,104 +34,57 @@ export function X402PaymentDialog() {
   const { aaAddress } = getAuthExtras();
   const [accept, setAccept] = useState<Accept | undefined>(undefined);
   const [chainId, setChainId] = useState<number | undefined>(undefined);
-  const [chainLabel, setChainLabel] = useState<string | null>(null);
   const [tokenInfo, setTokenInfo] = useState<Token | null>(null);
-  const [loadingAccepts, setLoadingAccepts] = useState(false);
-  const [loadingBalance, setLoadingBalance] = useState(false);
-  const [acceptsError, setAcceptsError] = useState<string | null>(null);
-  const [balanceError, setBalanceError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const { availableChains } = useChainConfig();
   const { aaAccount } = useAbstractAccount(aaAddress as Address, chainId);
   const link = dialogData?.link;
-
-  const normalizeNetworkName = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
   useEffect(() => {
     setIsOpen(Boolean(dialogData));
   }, [dialogData]);
 
   useEffect(() => {
-    if (!link) return;
+    if (!link || !availableChains.length) return;
 
-    setLoadingAccepts(true);
-    setAcceptsError(null);
-    setAccept(undefined);
-    setChainId(undefined);
-    setChainLabel(null);
-    setTokenInfo(null);
-    setBalanceError(null);
-    setLoadingBalance(false);
+    const loadData = async () => {
+      setLoading(true);
+      setAccept(undefined);
+      setChainId(undefined);
+      setTokenInfo(null);
 
-    const fetchAccepts = async () => {
       try {
         const response = await fetch(link, { method: 'GET' });
-        console.log('response', response);
-        console.log('json');
-        if (response.status !== 402) {
-          setAcceptsError(`No accepts found (status ${response.status}).`);
-        }
-        const resbBody = await response.json();
-        const firstAccept: Accept | undefined = resbBody.accepts?.[0];
+        const resBody = await response.json();
+        const firstAccept: Accept | undefined = resBody.accepts?.[0];
         setAccept(firstAccept);
-        if (!firstAccept) {
-          setAcceptsError('No accepts returned from payment endpoint.');
+        if (!firstAccept) return;
+
+        const networkName = firstAccept.network;
+        const matchedChain = availableChains.find((chain) => chain.chainName === networkName);
+        if (!matchedChain) return;
+        setChainId(matchedChain.chainId);
+
+        if (!aaAddress) return;
+        try {
+          const res = await walletApi.walletdataTransferBalanceGet({
+            chain_id: matchedChain.chainId,
+            addr: aaAddress,
+            token_addr: firstAccept.asset,
+          });
+          setTokenInfo(res.result);
+        } catch (error) {
+          console.error('Failed to fetch balance', error);
         }
       } catch (error) {
-        setAcceptsError('Unable to load payment accepts.');
+        console.error('Unable to load payment accepts.', error);
       } finally {
-        setLoadingAccepts(false);
+        setLoading(false);
       }
     };
 
-    fetchAccepts();
-  }, [dialogData?.link]);
-
-  useEffect(() => {
-    if (!accept || !availableChains.length) return;
-
-    const networkSlug = normalizeNetworkName(accept.network);
-    const matchedChain = availableChains.find((chain) => {
-      const nameSlug = normalizeNetworkName(chain.chainName);
-      const viewSlug = normalizeNetworkName(chain.chainNameView);
-      return nameSlug === networkSlug || viewSlug === networkSlug;
-    });
-
-    if (!matchedChain) {
-      setAcceptsError(`Unsupported payment network: ${accept.network}`);
-      setChainId(undefined);
-      setChainLabel(null);
-      return;
-    }
-
-    setChainId(matchedChain.chainId);
-    setChainLabel(matchedChain.chainNameView || matchedChain.chainName);
-  }, [accept, availableChains]);
-
-  useEffect(() => {
-    if (!accept || !chainId || !aaAddress) return;
-
-    const fetchBalance = async () => {
-      try {
-        setLoadingBalance(true);
-        setBalanceError(null);
-
-        const res = await walletApi.walletdataTransferBalanceGet({
-          chain_id: chainId,
-          addr: aaAddress,
-          token_addr: accept.asset,
-        });
-
-        setTokenInfo(res.result);
-      } catch (error) {
-        console.error('Failed to fetch balance', error);
-        setBalanceError('Unable to load token balance.');
-      } finally {
-        setLoadingBalance(false);
-      }
-    };
-
-    fetchBalance();
-  }, [accept, chainId, aaAddress]);
+    loadData();
+  }, [link, availableChains, aaAddress]);
 
   const handleClose = () => {
     setIsOpen(false);
@@ -140,32 +93,24 @@ export function X402PaymentDialog() {
 
   if (!dialogData) return null;
 
-  const decimals = tokenInfo?.decimals ?? 18;
-  const tokenSymbol = tokenInfo?.symbol || accept?.extra?.name || 'Token';
+  const matchedChain = availableChains.find((chain) => chain.chainId === chainId);
+
+  const tokenSymbol = tokenInfo?.symbol || accept?.extra?.name;
   const amountValue = (() => {
     if (!accept?.maxAmountRequired) return null;
     try {
-      const micro = BigInt(accept.maxAmountRequired); // accept amount is in micro units (6 decimals)
-      const pow10 = (power: number) => BigInt(10) ** BigInt(power);
-      if (decimals >= 6) {
-        return micro * pow10(decimals - 6);
-      }
-      return micro / pow10(6 - decimals);
+      // accept amount is provided in micro-units (6 decimals)
+      return BigInt(accept.maxAmountRequired);
     } catch {
       try {
         // Fallback for non-integer strings
-        const microAmount = parseUnits(accept.maxAmountRequired, 6);
-        const pow10 = (power: number) => BigInt(10) ** BigInt(power);
-        if (decimals >= 6) {
-          return microAmount * pow10(decimals - 6);
-        }
-        return microAmount / pow10(6 - decimals);
+        return parseUnits(accept.maxAmountRequired, 6);
       } catch {
         return null;
       }
     }
   })();
-  const amount = amountValue !== null ? formatUnits(amountValue, decimals) : null;
+  const amount = amountValue !== null ? formatUnits(amountValue, 6) : null;
   const fiat =
     amount && tokenInfo?.currencyPrice
       ? (Number(amount) * Number(tokenInfo.currencyPrice)).toFixed(2)
@@ -184,14 +129,8 @@ export function X402PaymentDialog() {
 
   const handlePay = async () => {
     if (!dialogData?.link) return;
-    if (!chainId) {
-      setAcceptsError('Payment network not ready. Please try again in a moment.');
-      return;
-    }
-    if (!accept) {
-      setAcceptsError('Payment details not ready.');
-      return;
-    }
+    if (!chainId) return;
+    if (!accept) return;
     const fetchWithPay = wrapFetchWithPayment(fetch, aaAccount);
     const response = await fetchWithPay(dialogData.link, {
       method: 'GET',
@@ -248,7 +187,7 @@ export function X402PaymentDialog() {
                     Available balance:
                   </Text>
                   <Text size="B300" className={css.CardValue}>
-                    {balance ? `${balance} ${tokenSymbol}` : loadingBalance ? 'Checking…' : '—'}
+                    {balance ? `${balance} ${tokenSymbol}` : loading ? 'Checking…' : '—'}
                   </Text>
                 </Box>
                 <Box className={css.Row}>
@@ -256,7 +195,7 @@ export function X402PaymentDialog() {
                     Network :
                   </Text>
                   <Text size="B300" className={css.CardValue}>
-                    {chainLabel || accept?.network || '—'}
+                    {matchedChain?.chainNameView || '—'}
                   </Text>
                 </Box>
               </Box>
@@ -268,24 +207,11 @@ export function X402PaymentDialog() {
                   fill="Solid"
                   onClick={handlePay}
                   style={{ width: '100%' }}
-                  disabled={
-                    loadingAccepts || loadingBalance || !accept || !chainId || !!acceptsError
-                  }
+                  disabled={loading || !accept || !chainId}
                 >
                   <Text size="B300">Pay</Text>
                 </Button>
               </Box>
-
-              {acceptsError && (
-                <Text size="T200" color="Critical">
-                  {acceptsError}
-                </Text>
-              )}
-              {balanceError && (
-                <Text size="T200" color="Critical">
-                  {balanceError}
-                </Text>
-              )}
             </Box>
           </Dialog>
         </FocusTrap>
