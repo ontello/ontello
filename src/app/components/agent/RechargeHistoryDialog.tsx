@@ -14,15 +14,10 @@ import {
   Spinner,
   Text,
 } from 'folds';
-import dayjs from 'dayjs';
 import { botApi } from '../../externalApis';
 import type { RechargeHistory } from '../../externalApis';
 import * as css from './RechargeHistoryDialog.css';
-
-const formatTime = (timestamp: number) => {
-  const ms = timestamp > 1_000_000_000_000 ? timestamp : timestamp * 1000;
-  return dayjs(ms).format('YYYY-MM-DD HH:mm');
-};
+import { timeFullDateTime } from '@src/app/utils/time';
 
 type RechargeHistoryDialogProps = {
   open: boolean;
@@ -117,7 +112,7 @@ export function RechargeHistoryDialog({ open, onClose }: RechargeHistoryDialogPr
                       <Box key={`${item.rechargeTime}-${idx}`} className={css.Item}>
                         <Text size="B300">{item.creditsAmount}</Text>
                         <Text size="B300">{item.tokenAmount}</Text>
-                        <Text size="T300">{formatTime(item.rechargeTime)}</Text>
+                        <Text size="T300">{timeFullDateTime(item.rechargeTime)}</Text>
                       </Box>
                     ))}
                   </Box>

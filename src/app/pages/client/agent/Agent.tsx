@@ -62,6 +62,8 @@ import { getAgentDirectRoomPath } from '../../pathUtils';
 import { useOpenGlobalDialog } from '../../../state/hooks/globalDialogs';
 import { GlobalDialogType } from '../../../state/globalDialogs';
 import { RechargeHistoryDialog } from '../../../components/agent/RechargeHistoryDialog';
+import Gift from '../../../static/icons/Gift';
+import Diamond from '../../../static/icons/Diamond';
 
 // Agent menu (can be extended later)
 type AgentMenuProps = {
@@ -241,27 +243,41 @@ function AgentFooter() {
       >
         <Box gap="200" direction="Column" style={{ width: '100%' }}>
           <Button
-            variant="Primary"
-            fill="Soft"
-            size="300"
-            onClick={handleOpenInvite}
-            style={{ flex: 1, width: '100%', minHeight: toRem(42) }}
-          >
-            <Text size="B300" truncate>
-              Get free credits
-            </Text>
-          </Button>
-          <Button
-            variant="Primary"
-            fill="Soft"
-            size="300"
-            onClick={handleTogglePopOut}
-            style={{ flex: 1, width: '100%', minHeight: toRem(42) }}
-          >
-            <Text size="B300" truncate>
-              {totalLabel}
-            </Text>
-          </Button>
+          variant="Primary"
+          fill="Soft"
+          size="300"
+          onClick={handleOpenInvite}
+          style={{
+            flex: 1,
+            width: '100%',
+            minHeight: toRem(42),
+            justifyContent: 'flex-start',
+            gap: config.space.S200,
+          }}
+        >
+          <Icon src={Gift} />
+          <Text size="B300" truncate>
+            Get free credits
+          </Text>
+        </Button>
+        <Button
+          variant="Primary"
+          fill="Soft"
+          size="300"
+          onClick={handleTogglePopOut}
+          style={{
+            flex: 1,
+            width: '100%',
+            minHeight: toRem(42),
+            justifyContent: 'flex-start',
+            gap: config.space.S200,
+          }}
+        >
+          <Icon src={Diamond} />
+          <Text size="B300" truncate>
+            {totalLabel}
+          </Text>
+        </Button>
 
           {popAnchor && (
             <PopOut

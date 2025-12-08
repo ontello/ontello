@@ -1,11 +1,12 @@
 import { style } from '@vanilla-extract/css';
-import { DefaultReset, config } from 'folds';
+import { DefaultReset, config, toRem } from 'folds';
 
 export const Dialog = style([
   DefaultReset,
   {
-    minWidth: '420px',
-    maxWidth: '560px',
+    minWidth: toRem(420),
+    maxWidth: toRem(560),
+    minHeight: toRem(370),
   },
 ]);
 
