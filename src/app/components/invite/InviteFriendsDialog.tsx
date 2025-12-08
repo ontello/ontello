@@ -21,6 +21,9 @@ import { stopPropagation } from '../../utils/keyboard';
 import { InviteHistoryList, botApi } from '../../externalApis';
 import { useMatrixClient } from '../../hooks/useMatrixClient';
 import { getMxIdServer } from '../../utils/matrix';
+import Gift from '../../../app/static/icons/Gift';
+import Turbine from '../../../app/static/icons/Turbine';
+import Lightning from '@src/app/static/icons/Lightning';
 
 export function InviteFriendsDialog() {
   const dialogData = useGlobalDialogState(GlobalDialogType.InviteFriends);
@@ -191,15 +194,15 @@ export function InviteFriendsDialog() {
                     How it works:
                   </Text>
                   <Box className={css.Step}>
-                    <Icon size="200" src={Icons.Power} />
+                    <Icon size="200" src={Lightning} />
                     <Text size="T200">Share your invite link</Text>
                   </Box>
                   <Box className={css.Step}>
-                    <Icon size="200" src={Icons.UserPlus} />
+                    <Icon size="200" src={Turbine} />
                     <Text size="T200">They sign up and activate AI</Text>
                   </Box>
                   <Box className={css.Step}>
-                    <Icon size="200" src={Icons.Star} />
+                    <Icon size="200" src={Gift} />
                     <Text size="T200">
                       You get <span className={css.Highlight}>10 credits</span>
                     </Text>
