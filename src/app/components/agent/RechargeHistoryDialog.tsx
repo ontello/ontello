@@ -91,9 +91,11 @@ export function RechargeHistoryDialog({ open, onClose }: RechargeHistoryDialogPr
                   <Spinner size="300" />
                 </Box>
               ) : history.length === 0 ? (
-                <Text size="T300" color="Secondary">
-                  No recharge history
-                </Text>
+                <Box direction="Column" gap="200" style={{ padding: '20px', textAlign: 'center' }}>
+                  <Text size="T200" priority="500">
+                    No Data
+                  </Text>
+                </Box>
               ) : (
                 <Scroll size="300" style={{ maxHeight: '360px' }}>
                   <Box className={css.List}>

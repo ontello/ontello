@@ -243,48 +243,48 @@ function AgentFooter() {
       >
         <Box gap="200" direction="Column" style={{ width: '100%' }}>
           <Button
-          variant="Primary"
-          fill="Soft"
-          size="300"
-          onClick={handleOpenInvite}
-          style={{
-            flex: 1,
-            width: '100%',
-            minHeight: toRem(42),
-            justifyContent: 'flex-start',
-            gap: config.space.S200,
-          }}
-        >
-          <Icon src={Gift} />
-          <Text size="B300" truncate>
-            Get free credits
-          </Text>
-        </Button>
-        <Button
-          variant="Primary"
-          fill="Soft"
-          size="300"
-          onClick={handleTogglePopOut}
-          style={{
-            flex: 1,
-            width: '100%',
-            minHeight: toRem(42),
-            justifyContent: 'flex-start',
-            gap: config.space.S200,
-          }}
-        >
-          <Icon src={Diamond} />
-          <Text size="B300" truncate>
-            {totalLabel}
-          </Text>
-        </Button>
+            variant="Primary"
+            fill="Soft"
+            size="300"
+            onClick={handleOpenInvite}
+            style={{
+              flex: 1,
+              width: '100%',
+              minHeight: toRem(42),
+              justifyContent: 'flex-start',
+              gap: config.space.S200,
+            }}
+          >
+            <Icon src={Gift} />
+            <Text size="B300" truncate>
+              Get free credits
+            </Text>
+          </Button>
+          <Button
+            variant="Primary"
+            fill="Soft"
+            size="300"
+            onClick={handleTogglePopOut}
+            style={{
+              flex: 1,
+              width: '100%',
+              minHeight: toRem(42),
+              justifyContent: 'flex-start',
+              gap: config.space.S200,
+            }}
+          >
+            <Icon src={Diamond} />
+            <Text size="B300" truncate>
+              {totalLabel}
+            </Text>
+          </Button>
 
           {popAnchor && (
             <PopOut
               anchor={popAnchor}
               position="Top"
               align="Start"
-              offset={8}
+              offset={2}
               content={
                 <FocusTrap
                   focusTrapOptions={{
@@ -312,10 +312,14 @@ function AgentFooter() {
                     <Box direction="Column" gap="100">
                       {credits && (
                         <Box gap="300" direction="Column">
-                          <Box direction="Row" justifyContent="SpaceBetween" alignItems="Center">
-                            <Text size="T300">Daily credits</Text>
-                            <Text size="T300">{credits.freeCredits}</Text>
+                          <Box direction="Column">
+                            <Box direction="Row" justifyContent="SpaceBetween" alignItems="Center">
+                              <Text size="T300">Daily credits</Text>
+                              <Text size="T300">{credits.freeCredits}</Text>
+                            </Box>
+                            <Text size="T200">Reset at midnight UTC</Text>
                           </Box>
+
                           <Box direction="Row" justifyContent="SpaceBetween" alignItems="Center">
                             <Text size="T300">Recharge credits</Text>
                             <Text size="T300">{credits.paidCredits}</Text>

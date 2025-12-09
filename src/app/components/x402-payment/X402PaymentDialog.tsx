@@ -130,7 +130,7 @@ export function X402PaymentDialog() {
     if (!dialogData?.link) return;
     if (!chainId) return;
     if (!accept) return;
-    const fetchWithPay = wrapFetchWithPayment(fetch, aaAccount);
+    const fetchWithPay = wrapFetchWithPayment(fetch, aaAccount, BigInt(10000000) /* TODO */);
     const response = await fetchWithPay(dialogData.link, {
       method: 'GET',
     });
@@ -193,29 +193,29 @@ export function X402PaymentDialog() {
                   <Text size="B300" priority="500">
                     Network :
                   </Text>
-          <Text size="B300" className={css.CardValue}>
-            {matchedChain?.chainNameView || '—'}
-          </Text>
-        </Box>
-      </Box>
+                  <Text size="B300" className={css.CardValue}>
+                    {matchedChain?.chainNameView || '—'}
+                  </Text>
+                </Box>
+              </Box>
 
-      <Box className={css.Actions}>
-        {hasInsufficientBalance && (
-          <Text size="T200" color="Critical">
-            Insufficient balance
-          </Text>
-        )}
-        <Button
-          variant="Primary"
-          size="300"
-          fill="Solid"
-          onClick={handlePay}
-          style={{ width: '100%' }}
-          disabled={loading || !accept || !chainId || hasInsufficientBalance}
-        >
-          <Text size="B300">Pay</Text>
-        </Button>
-      </Box>
+              <Box className={css.Actions}>
+                {hasInsufficientBalance && (
+                  <Text size="T200" color="Critical">
+                    Insufficient balance
+                  </Text>
+                )}
+                <Button
+                  variant="Primary"
+                  size="300"
+                  fill="Solid"
+                  onClick={handlePay}
+                  style={{ width: '100%' }}
+                  disabled={loading || !accept || !chainId || hasInsufficientBalance}
+                >
+                  <Text size="B300">Pay</Text>
+                </Button>
+              </Box>
             </Box>
           </Dialog>
         </FocusTrap>
