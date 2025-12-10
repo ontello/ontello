@@ -2,8 +2,9 @@ import React, { FormEventHandler, useEffect, useMemo, useState } from 'react';
 import { Box, Button, Input, Text, TextArea, Spinner } from 'folds';
 import { getPasskeyCredentials } from '@src/app/extendApis';
 import { useAuthServer } from '@src/app/hooks/useAuthServer';
+import { fromBase64Url } from '@src/app/utils/passkey';
 import { useAbstractAccount } from '@src/app/hooks/web3/useAbstractAccount';
-import { Address } from 'viem';
+import { Address, toHex } from 'viem';
 import { createClient } from 'matrix-js-sdk';
 import { useAutoDiscoveryInfo } from '@src/app/hooks/useAutoDiscoveryInfo';
 import { RecoverAccount } from '@src/app/components/wallet/multi-chain/RecoverAccount';
@@ -20,6 +21,7 @@ export function RecoveryKeyForm() {
   const serverDiscovery = useAutoDiscoveryInfo();
   const baseUrl = serverDiscovery['m.homeserver'].base_url;
   const mx = useMemo(() => createClient({ baseUrl }), [baseUrl]);
+  const loginPath = getLoginPath(server);
 
   const [address, setAddress] = useState<Address>('0x');
   // const [shouldRecover, setShouldRecover] = useState(false); // 控制恢复操作
@@ -33,14 +35,36 @@ export function RecoveryKeyForm() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  const recoverSuccess = () => {
+    setShowRecoverAccount(false);
+    navigate(loginPath);
+  };
+
+  const base64ToHex = (base64: string) => toHex(new Uint8Array(fromBase64Url(base64)));
+
   const handleSubmit: FormEventHandler<HTMLFormElement> = async (evt) => {
     evt.preventDefault();
     try {
-      const aaAddress = (
-        await getPasskeyCredentials(mx, `@${form.username.trim().toLowerCase()}:${server}`)
-      ).walletAddress;
+      setErrorData(null);
+      const passkeyCredentials = await getPasskeyCredentials(
+        mx,
+        `@${form.username.trim().toLowerCase()}:${server}`
+      );
+      const aaAddress = passkeyCredentials.walletAddress;
       setAddress(aaAddress);
-      mnemonicToAccount(form.recoveryKey); // check
+      const account = mnemonicToAccount(form.recoveryKey);
+      // After converting publicKey from base64Url to hex, take the last 40 characters
+      // and compare with the last 40 characters of account.address. Return true if they match.
+      // Note: publicKey is stored in base64Url format.
+      const recoverPhraseIsMatchUsername = passkeyCredentials.credentials.some((credential) => {
+        const hexPk = base64ToHex(credential.publicKey);
+        const pkAddress = hexPk.slice(-40);
+        return pkAddress.toLowerCase() === account.address.replace('0x', '').toLowerCase();
+      });
+      if (!recoverPhraseIsMatchUsername) {
+        setErrorData('Recovery failed, please check the username and mnemonic~');
+        return;
+      }
       setShowRecoverAccount(true);
     } catch (error) {
       setErrorData('Recovery failed, please check the username and mnemonic.');
@@ -114,7 +138,7 @@ export function RecoveryKeyForm() {
           username={form.username.trim().toLowerCase()}
           aaAddress={address}
           recoveryPhrase={form.recoveryKey}
-          onSuccess={() => setShowRecoverAccount(false)}
+          onSuccess={() => recoverSuccess()}
           onClose={() => setShowRecoverAccount(false)}
         />
       )}

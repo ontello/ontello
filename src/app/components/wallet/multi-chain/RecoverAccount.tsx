@@ -106,6 +106,7 @@ export function RecoverAccount({
       successText="Submit successful"
       failText="Submit failed"
       failButtonText="Try again"
+      doneButtonText="Login"
       account={mnemonicToAccount(recoveryPhrase)}
     />
   );
