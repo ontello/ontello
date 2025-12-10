@@ -1,13 +1,13 @@
 {
   "defaultHomeserver": 0,
-  "homeserverList": [""],
+  "homeserverList": ["for-test.ont.network"],
   "allowCustomHomeservers": false,
 
   "featuredCommunities": {
     "openAsDefault": false,
     "spaces": [],
     "rooms": [],
-    "servers": [""]
+    "servers": ["for-test.ont.network"]
   },
 
   "hashRouter": {
