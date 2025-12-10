@@ -11,6 +11,7 @@ import {
   Overlay,
   OverlayBackdrop,
   OverlayCenter,
+  Scroll,
   Text,
 } from 'folds';
 
@@ -24,6 +25,7 @@ import { getMxIdServer } from '../../utils/matrix';
 import Gift from '../../../app/static/icons/Gift';
 import Turbine from '../../../app/static/icons/Turbine';
 import Lightning from '@src/app/static/icons/Lightning';
+import { timeDayMonthYear } from '@src/app/utils/time';
 
 export function InviteFriendsDialog() {
   const dialogData = useGlobalDialogState(GlobalDialogType.InviteFriends);
@@ -95,16 +97,6 @@ export function InviteFriendsDialog() {
   }, [historyOpen]);
 
   if (!dialogData) return null;
-
-  const formatInviteDate = (inviteTime: number) => {
-    const normalized = inviteTime > 1e12 ? inviteTime : inviteTime * 1000;
-    const date = new Date(normalized);
-    if (Number.isNaN(date.getTime())) return '--';
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-  };
 
   const handleClose = () => {
     setIsOpen(false);
@@ -276,18 +268,20 @@ export function InviteFriendsDialog() {
                   </Box>
                 )}
                 {!historyLoading && !historyError && historyList.length > 0 && (
-                  <Box className={css.HistoryList}>
-                    {historyList.map((item) => (
-                      <Box className={css.HistoryRow} key={`${item.invitee}-${item.inviteTime}`}>
-                        <Text className={css.HistoryInvitee} size="T300" priority="500" truncate>
-                          {item.invitee}
-                        </Text>
-                        <Text className={css.HistoryDate} size="T300" priority="500">
-                          {formatInviteDate(item.inviteTime)}
-                        </Text>
-                      </Box>
-                    ))}
-                  </Box>
+                  <Scroll className={css.HistoryScroll} visibility="Always" hideTrack>
+                    <Box className={css.HistoryList}>
+                      {historyList.map((item) => (
+                        <Box className={css.HistoryRow} key={`${item.invitee}-${item.inviteTime}`}>
+                          <Text className={css.HistoryInvitee} size="T300" priority="500" truncate>
+                            {item.invitee}
+                          </Text>
+                          <Text className={css.HistoryDate} size="T300" priority="500">
+                            {timeDayMonthYear(item.inviteTime)}
+                          </Text>
+                        </Box>
+                      ))}
+                    </Box>
+                  </Scroll>
                 )}
               </Box>
             </Dialog>
