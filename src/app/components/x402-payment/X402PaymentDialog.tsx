@@ -28,8 +28,7 @@ import { useChainConfig } from '@src/app/hooks/web3/useChainConfig';
 import { getAuthExtras } from '@src/app/state/authExtras';
 import { Address, formatUnits, parseUnits } from 'viem';
 import { Accept } from './types';
-import { walletApi } from '@src/app/externalApis';
-import { Token } from '@src/app/externalApis/models/Token';
+import { useTokensContext } from '@src/app/hooks/wallet/useTokens';
 
 export function X402PaymentDialog() {
   const dialogData = useGlobalDialogState(GlobalDialogType.X402Payment);
@@ -38,12 +37,12 @@ export function X402PaymentDialog() {
   const { aaAddress } = getAuthExtras();
   const [accept, setAccept] = useState<Accept | undefined>(undefined);
   const [chainId, setChainId] = useState<number | undefined>(undefined);
-  const [tokenInfo, setTokenInfo] = useState<Token | null>(null);
   const [loading, setLoading] = useState(false);
   const { availableChains } = useChainConfig();
   const { aaAccount } = useAbstractAccount(aaAddress as Address, chainId);
   const link = dialogData?.link;
   const openReceiveDialog = useOpenGlobalDialog(GlobalDialogType.Receive);
+  const { tokens } = useTokensContext();
 
   useEffect(() => {
     setIsOpen(Boolean(dialogData));
@@ -56,7 +55,6 @@ export function X402PaymentDialog() {
       setLoading(true);
       setAccept(undefined);
       setChainId(undefined);
-      setTokenInfo(null);
 
       try {
         const response = await fetch(link, { method: 'GET' });
@@ -69,18 +67,6 @@ export function X402PaymentDialog() {
         const matchedChain = availableChains.find((chain) => chain.chainName === networkName);
         if (!matchedChain) return;
         setChainId(matchedChain.chainId);
-
-        if (!aaAddress) return;
-        try {
-          const res = await walletApi.walletdataTransferBalanceGet({
-            chain_id: matchedChain.chainId,
-            addr: aaAddress,
-            token_addr: firstAccept.asset,
-          });
-          setTokenInfo(res.result);
-        } catch (error) {
-          console.error('Failed to fetch balance', error);
-        }
       } catch (error) {
         console.error('Unable to load payment accepts.', error);
       } finally {
@@ -104,36 +90,50 @@ export function X402PaymentDialog() {
 
   const matchedChain = availableChains.find((chain) => chain.chainId === chainId);
 
-  const tokenSymbol = tokenInfo?.symbol || accept?.extra?.name;
-  const amount = (() => {
-    if (!accept?.maxAmountRequired) return null;
-    return formatUnits(BigInt(accept.maxAmountRequired), 6);
-  })();
+  const contextToken =
+    tokens.find(
+      (token) =>
+        token.tokenAddr?.toLowerCase() === accept?.asset?.toLowerCase() &&
+        (chainId ? token.chainId === chainId : true)
+    ) || null;
+
+  const tokenDecimals =
+    contextToken && contextToken.decimals > 0 ? contextToken.decimals : 18;
+
+  const tokenSymbol = contextToken?.symbol || accept?.extra?.name;
+
+  const amountRequired = accept?.maxAmountRequired ? BigInt(accept.maxAmountRequired) : null;
+  const amount = amountRequired ? formatUnits(amountRequired, tokenDecimals) : null;
+
   const fiat =
-    amount && tokenInfo?.currencyPrice
-      ? (Number(amount) * Number(tokenInfo.currencyPrice)).toFixed(2)
+    amount && contextToken?.currencyPrice
+      ? (Number(amount) * Number(contextToken.currencyPrice)).toFixed(2)
       : null;
+
+  const balanceRaw = contextToken?.balance;
   const balance =
-    tokenInfo && tokenInfo.balance
+    balanceRaw != null
       ? (() => {
           try {
-            const value = parseUnits(tokenInfo.balance, tokenInfo.decimals);
-            return formatUnits(value, tokenInfo.decimals);
+            const value = parseUnits(balanceRaw, tokenDecimals);
+            return formatUnits(value, tokenDecimals);
           } catch {
             return null;
           }
         })()
       : null;
-  const hasInsufficientBalance = (() => {
-    if (!amount || !tokenInfo?.balance) return false;
-    try {
-      const required = parseUnits(amount, tokenInfo.decimals);
-      const available = parseUnits(tokenInfo.balance, tokenInfo.decimals);
-      return available < required;
-    } catch {
-      return false;
-    }
-  })();
+
+  const hasInsufficientBalance =
+    amountRequired && balanceRaw
+      ? (() => {
+          try {
+            const available = parseUnits(balanceRaw, tokenDecimals);
+            return available < amountRequired;
+          } catch {
+            return false;
+          }
+        })()
+      : false;
 
   const handlePay = async () => {
     if (!dialogData?.link) return;
@@ -174,7 +174,7 @@ export function X402PaymentDialog() {
                   {amount ? `${amount} ${tokenSymbol}` : '—'}
                 </Text>
                 <Text size="T300" color="Secondary">
-                  {fiat ? `${fiat} ${tokenInfo?.currency ?? 'USD'}` : '—'}
+                  {fiat ? `${fiat} ${contextToken?.currency ?? 'USD'}` : '—'}
                 </Text>
               </Box>
 
