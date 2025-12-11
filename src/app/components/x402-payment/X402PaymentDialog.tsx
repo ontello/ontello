@@ -14,7 +14,11 @@ import {
   Text,
 } from 'folds';
 
-import { useCloseGlobalDialog, useGlobalDialogState } from '../../state/hooks/globalDialogs';
+import {
+  useCloseGlobalDialog,
+  useGlobalDialogState,
+  useOpenGlobalDialog,
+} from '../../state/hooks/globalDialogs';
 import { GlobalDialogType } from '../../state/globalDialogs';
 import { stopPropagation } from '../../utils/keyboard';
 import * as css from './X402PaymentDialog.css';
@@ -39,6 +43,7 @@ export function X402PaymentDialog() {
   const { availableChains } = useChainConfig();
   const { aaAccount } = useAbstractAccount(aaAddress as Address, chainId);
   const link = dialogData?.link;
+  const openReceiveDialog = useOpenGlobalDialog(GlobalDialogType.Receive);
 
   useEffect(() => {
     setIsOpen(Boolean(dialogData));
@@ -89,6 +94,10 @@ export function X402PaymentDialog() {
   const handleClose = () => {
     setIsOpen(false);
     closeDialog();
+  };
+
+  const handleFundWallet = () => {
+    openReceiveDialog({});
   };
 
   if (!dialogData) return null;
@@ -201,9 +210,26 @@ export function X402PaymentDialog() {
 
               <Box className={css.Actions}>
                 {hasInsufficientBalance && (
-                  <Text size="T200" color="Critical">
-                    Insufficient balance
-                  </Text>
+                  <Box gap="300">
+                    <Text size="T200" style={{ color: '#e5484d' }}>
+                      Insufficient balance
+                    </Text>
+                    <Text
+                      as="button"
+                      type="button"
+                      size="T200"
+                      style={{
+                        textDecoration: 'underline',
+                        cursor: 'pointer',
+                        background: 'none',
+                        border: 'none',
+                        padding: 0,
+                      }}
+                      onClick={handleFundWallet}
+                    >
+                      Fund wallet
+                    </Text>
+                  </Box>
                 )}
                 <Button
                   variant="Primary"
