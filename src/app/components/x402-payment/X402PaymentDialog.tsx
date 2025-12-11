@@ -97,8 +97,7 @@ export function X402PaymentDialog() {
         (chainId ? token.chainId === chainId : true)
     ) || null;
 
-  const tokenDecimals =
-    contextToken && contextToken.decimals > 0 ? contextToken.decimals : 18;
+  const tokenDecimals = contextToken && contextToken.decimals > 0 ? contextToken.decimals : 18;
 
   const tokenSymbol = contextToken?.symbol || accept?.extra?.name;
 
@@ -200,7 +199,7 @@ export function X402PaymentDialog() {
                 </Box>
                 <Box className={css.Row}>
                   <Text size="B300" priority="500">
-                    Network :
+                    Network:
                   </Text>
                   <Text size="B300" className={css.CardValue}>
                     {matchedChain?.chainNameView || '—'}
