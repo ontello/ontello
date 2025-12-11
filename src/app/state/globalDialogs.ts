@@ -9,6 +9,7 @@ export enum GlobalDialogType {
   SyncOwnershipChange,
   InviteFriends,
   X402Payment,
+  Receive,
 }
 
 export interface GlobalDialogPayloads {
@@ -16,6 +17,7 @@ export interface GlobalDialogPayloads {
   [GlobalDialogType.SyncOwnershipChange]: SyncOwnershipDialogData;
   [GlobalDialogType.InviteFriends]: {};
   [GlobalDialogType.X402Payment]: X402PaymentDialogData;
+  [GlobalDialogType.Receive]: {};
 }
 
 export type GlobalDialogState<T extends GlobalDialogType> = GlobalDialogPayloads[T] | undefined;
@@ -33,6 +35,7 @@ export const dialogAtoms: DialogAtomMap = {
     atom<GlobalDialogState<GlobalDialogType.InviteFriends>>(undefined),
   [GlobalDialogType.X402Payment]:
     atom<GlobalDialogState<GlobalDialogType.X402Payment>>(undefined),
+  [GlobalDialogType.Receive]: atom<GlobalDialogState<GlobalDialogType.Receive>>(undefined),
 };
 
 export const openGlobalDialog = <T extends GlobalDialogType>(

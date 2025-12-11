@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import { Box, Icon, Text } from 'folds';
 import { mxidToOntid } from '@src/app/utils/ontid';
 import { useMatrixClient } from '@src/app/hooks/useMatrixClient';
@@ -12,10 +12,10 @@ import OntIdIconSvg from '../../../static/imgs/ONTID.svg';
 import TopUp from '../../../static/icons/TopUp';
 import Send from '../../../static/icons/Send';
 import { TokensAndActivities } from './tokensAndActivities';
-import { Receive } from './receive/Receive';
 import { useTokensContext } from '../../../hooks/wallet/useTokens';
 import { CopyIcon } from '../../../components/CopyIcon';
 import { actionButton } from './WalletHomepage.css';
+import { GlobalDialogType, openGlobalDialog } from '@src/app/state/globalDialogs';
 
 export function WalletHomepage({
   setWalletNavMode,
@@ -23,7 +23,6 @@ export function WalletHomepage({
   setWalletNavMode: (mode: WalletNavMode) => void;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [showReceive, setShowReceive] = useState(false);
   const { totalTokensCurrency } = useTokensContext();
 
   const mx = useMatrixClient();
@@ -63,7 +62,7 @@ export function WalletHomepage({
               alignItems="Center"
               justifyContent="Center"
               className={`${ContainerColor({ variant: 'SurfaceVariant' })} ${actionButton}`}
-              onClick={() => setShowReceive(true)}
+              onClick={() => openGlobalDialog(GlobalDialogType.Receive, {})}
             >
               <Icon src={TopUp} size="Inherit" style={{ fontSize: '12px' }} />
               <Text size="T200">Top up</Text>
@@ -86,7 +85,6 @@ export function WalletHomepage({
           <TokensAndActivities />
         </Box>
       </PageNavContent>
-      {showReceive && <Receive onClose={() => setShowReceive(false)} />}
     </Box>
   );
 }
