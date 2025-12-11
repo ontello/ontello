@@ -83,6 +83,13 @@ import { AgentStore } from './client/agent/AgentStore';
 import { Wallet } from './client/wallet/Wallet';
 import { CheckAgent } from './client/wallet/CheckAgent';
 import { InstallPromptRenderer } from '../components/install-prompt/InstallPromptRenderer';
+import { TokensProvider, useTokens } from '../hooks/wallet/useTokens';
+
+function TokensProviderWrapper({ children }: { children: React.ReactNode }) {
+  const tokensContext = useTokens();
+
+  return <TokensProvider value={tokensContext}>{children}</TokensProvider>;
+}
 
 export const createRouter = (clientConfig: ClientConfig, screenSize: ScreenSize) => {
   const { hashRouter } = clientConfig;
@@ -135,33 +142,35 @@ export const createRouter = (clientConfig: ClientConfig, screenSize: ScreenSize)
         element={
           <AuthRouteThemeManager>
             <ClientRoot>
-              <ClientInitStorageAtom>
-                <ClientRoomsNotificationPreferences>
-                  <ClientBindAtoms>
-                    <ClientNonUIFeatures>
-                      <ClientLayout
-                        nav={
-                          <MobileFriendlyClientNav>
-                            <SidebarNav />
-                          </MobileFriendlyClientNav>
-                        }
-                      >
-                        <Outlet />
-                      </ClientLayout>
-                      <InstallPromptRenderer />
-                      <SearchModalRenderer />
-                      <GlobalDialogsRenderer />
-                      <UserRoomProfileRenderer />
-                      <CreateRoomModalRenderer />
-                      <CreateSpaceModalRenderer />
-                      <RoomSettingsRenderer />
-                      <SpaceSettingsRenderer />
-                      <ReceiveSelfDeviceVerification />
-                      <AutoRestoreBackupOnVerification />
-                    </ClientNonUIFeatures>
-                  </ClientBindAtoms>
-                </ClientRoomsNotificationPreferences>
-              </ClientInitStorageAtom>
+              <TokensProviderWrapper>
+                <ClientInitStorageAtom>
+                  <ClientRoomsNotificationPreferences>
+                    <ClientBindAtoms>
+                      <ClientNonUIFeatures>
+                        <ClientLayout
+                          nav={
+                            <MobileFriendlyClientNav>
+                              <SidebarNav />
+                            </MobileFriendlyClientNav>
+                          }
+                        >
+                          <Outlet />
+                        </ClientLayout>
+                        <InstallPromptRenderer />
+                        <SearchModalRenderer />
+                        <GlobalDialogsRenderer />
+                        <UserRoomProfileRenderer />
+                        <CreateRoomModalRenderer />
+                        <CreateSpaceModalRenderer />
+                        <RoomSettingsRenderer />
+                        <SpaceSettingsRenderer />
+                        <ReceiveSelfDeviceVerification />
+                        <AutoRestoreBackupOnVerification />
+                      </ClientNonUIFeatures>
+                    </ClientBindAtoms>
+                  </ClientRoomsNotificationPreferences>
+                </ClientInitStorageAtom>
+              </TokensProviderWrapper>
             </ClientRoot>
           </AuthRouteThemeManager>
         }
