@@ -7,7 +7,7 @@ export * from './runtime';
 export * from './apis/index';
 export * from './models/index';
 
-const BASE_URL = 'https://chatbotapitest.ont.network';
+const BASE_URL = import.meta.env.VITE_EXTERNAL_API_URL;
 
 const createConfig = () => {
   const token = localStorage.getItem('cinny_access_token') || undefined;

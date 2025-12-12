@@ -1,13 +1,13 @@
 {
   "defaultHomeserver": 0,
-  "homeserverList": ["ontello.app"],
+  "homeserverList": ["for-test.ont.network"],
   "allowCustomHomeservers": false,
 
   "featuredCommunities": {
     "openAsDefault": false,
     "spaces": [],
     "rooms": [],
-    "servers": ["ontello.app"]
+    "servers": ["for-test.ont.network"]
   },
 
   "hashRouter": {

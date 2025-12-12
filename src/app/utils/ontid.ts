@@ -4,7 +4,7 @@ import { getMxIdServer } from './matrix';
 /**
  * Convert Matrix ID (@username:server.name) to ONT ID (username.server.name)
  * @example
- * mxidToOntid("@chichi:ont.id") // returns "chichi.ont.id"
+ * mxidToOntid("@chichi:ont.im") // returns "chichi.ont.im"
  * mxidToOntid("@alice:matrix.org") // returns "alice.matrix.org"
  * mxidToOntid("invalid") // returns null
  * @param mxid Matrix ID string
@@ -20,24 +20,24 @@ export function mxidToOntid(mxid: string): string | null {
   if (!match || !match[1] || !match[2]) return null;
   const [, username, serverName] = match;
 
-  return `${username}.${'ont.id'}`;
+  return `${username}.${'ont.im'}`;
 }
 
 /**
  * Convert ONT ID (username.server.name) to Matrix ID (@username:server.name)
  * @example
- * ontidToMxid("chichi.ont.id", mx) // returns "@chichi:<mx server>"
- * ontidToMxid("alice.ont.id", mx) // returns "@alice:<mx server>"
+ * ontidToMxid("chichi.ont.im", mx) // returns "@chichi:<mx server>"
+ * ontidToMxid("alice.ont.im", mx) // returns "@alice:<mx server>"
  * ontidToMxid("invalid", mx) // returns null
- * @param ontid ONT ID string (username.ont.id)
+ * @param ontid ONT ID string (username.ont.im)
  * @param mx Matrix client used to determine homeserver
  * @returns Matrix ID string or null if invalid format
  */
 export function ontidToMxid(ontid: string, mx: MatrixClient): string | null {
   if (!ontid) return null;
 
-  // Extract username from <username>.ont.id
-  const usernameMatch = ontid.match(/^([a-zA-Z0-9_-]+)\.ont\.id$/);
+  // Extract username from <username>.ont.im
+  const usernameMatch = ontid.match(/^([a-zA-Z0-9_-]+)\.ont\.im$/);
   if (!usernameMatch || !usernameMatch[1]) return null;
 
   const serverName = getMxIdServer(mx.getUserId() ?? '');
@@ -49,7 +49,7 @@ export function ontidToMxid(ontid: string, mx: MatrixClient): string | null {
 /**
  * Check if a string is a valid ONT ID
  * @example
- * isValidOntid("chichi.ont.id") // returns true
+ * isValidOntid("chichi.ont.im") // returns true
  * isValidOntid("alice.matrix.org") // returns true
  * isValidOntid("invalid") // returns false
  * @param ontid String to check
@@ -57,5 +57,5 @@ export function ontidToMxid(ontid: string, mx: MatrixClient): string | null {
  */
 export function isValidOntid(ontid: string): boolean {
   if (!ontid) return false;
-  return /^[a-zA-Z0-9_-]+\.ont\.id$/.test(ontid);
+  return /^[a-zA-Z0-9_-]+\.ont\.im$/.test(ontid);
 }

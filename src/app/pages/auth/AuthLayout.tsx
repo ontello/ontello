@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect } from 'react';
-import { Box, Header, Scroll, Spinner, Text, color } from 'folds';
+import { Badge, Box, Header, Scroll, Spinner, Text, color } from 'folds';
 import {
   Outlet,
   generatePath,
@@ -136,6 +136,11 @@ export function AuthLayout() {
             <Box grow="Yes" direction="Row" gap="300" alignItems="Center">
               <img className={css.AuthLogo} src={OntelloSVG} alt="Ontello Logo" />
               <Text size="H3">Ontello</Text>
+              <Badge aria-label="A status badge" role="status">
+                <Text as="span" size="L400">
+                  Beta
+                </Text>
+              </Badge>
             </Box>
           </Header>
           <Box className={css.AuthCardContent} direction="Column">

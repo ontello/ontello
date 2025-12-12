@@ -8,7 +8,7 @@ RUN npm install
 RUN npm ci
 COPY . /src/
 ENV NODE_OPTIONS=--max_old_space_size=4096
-RUN npm run build
+RUN npm run build:dev
 
 
 ## App

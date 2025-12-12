@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Text, IconButton, Icon, Icons, Scroll, Button, config, toRem } from 'folds';
+import { Box, Text, IconButton, Icon, Icons, Scroll, Button, config, toRem, Badge } from 'folds';
 import { Page, PageContent, PageHeader } from '../../../components/page';
 import { SequenceCard } from '../../../components/sequence-card';
 import { SequenceCardStyle } from '../styles.css';
@@ -48,6 +48,11 @@ export function About({ requestClose }: AboutProps) {
                     <Box gap="100" alignItems="End">
                       <Text size="H3">{APP_INFO.name}</Text>
                       <Text size="T200">v{APP_INFO.version}</Text>
+                      <Badge aria-label="A status badge" role="status">
+                        <Text as="span" size="L400">
+                          Beta
+                        </Text>
+                      </Badge>
                     </Box>
                     <Text>{APP_INFO.tagline}</Text>
                   </Box>

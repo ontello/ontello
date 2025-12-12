@@ -9,6 +9,7 @@ import {
   Spinner,
   Text,
   color,
+  config,
 } from 'folds';
 import React, { ChangeEventHandler, useCallback, useMemo, useState } from 'react';
 import {
@@ -48,6 +49,7 @@ import { ConfirmPasswordMatch } from '../../../components/ConfirmPasswordMatch';
 import { UIAFlowOverlay } from '../../../components/UIAFlowOverlay';
 import { RequestEmailTokenCallback, RequestEmailTokenResponse } from '../../../hooks/types';
 import { registerWithPasskey } from '../../../utils/passkey';
+import { useUsernameValidate } from '../../../hooks/user/useUsernameValidate';
 
 export const SUPPORTED_REGISTER_STAGES = [
   AuthType.RegistrationToken,
@@ -197,7 +199,8 @@ export function PasswordRegisterForm({
   const params = useUIAParams(authData);
   const termUrl = getLoginTermUrl(params);
   const [formData, setFormData] = useState<FormData>();
-
+  const [usernameCheckError, setUsernameCheckError] = useState<string | undefined>(undefined);
+  const { usernameFormatCheck } = useUsernameValidate();
   const [ongoingFlow, setOngoingFlow] = useState<UIAFlow>();
 
   const [registerEmailState, registerEmail] = useRegisterEmail(mx);
@@ -235,6 +238,19 @@ export function PasswordRegisterForm({
     } = evt.target as HTMLFormElement & RegisterFormInputs;
     const token = tokenInput?.value.trim();
     const username = usernameInput.value.trim().toLowerCase();
+
+    setUsernameCheckError(undefined);
+    const formatError = usernameFormatCheck(username);
+    if (formatError) {
+      setUsernameCheckError(formatError as string);
+      return;
+    }
+    const available = await mx.isUsernameAvailable(username);
+    if (!available) {
+      setUsernameCheckError('Username is not available');
+      return;
+    }
+
     // const password = passwordInput.value;
     // const confirmPassword = confirmPasswordInput.value;
     // if (password !== confirmPassword) {
@@ -300,7 +316,6 @@ export function PasswordRegisterForm({
             outlined
             required
           />
-          <Text size="B300">Username must be at least 9 characters, letters and numbers only.</Text>
           {registerError?.errcode === RegisterError.UserTaken && (
             <FieldError message="This username is already taken." />
           )}
@@ -310,6 +325,35 @@ export function PasswordRegisterForm({
           {registerError?.errcode === RegisterError.UserExclusive && (
             <FieldError message="This username is reserved." />
           )}
+
+          {usernameCheckError && <FieldError message={usernameCheckError} />}
+          <Box direction="Column" gap="100" style={{ marginTop: config.space.S300 }}>
+            <Box>
+              <Text size="B300" priority="300">
+                · 9-25 characters
+              </Text>
+            </Box>
+            <Box>
+              <Text size="B300" priority="300">
+                · Letters and numbers only
+              </Text>
+            </Box>
+            <Box>
+              <Text size="B300" priority="300">
+                · Starts with a letter
+              </Text>
+            </Box>
+            <Box>
+              <Text size="B300" priority="300">
+                · No spaces, emojis, or symbols
+              </Text>
+            </Box>
+            <Box>
+              <Text size="B300" priority="300">
+                · Available
+              </Text>
+            </Box>
+          </Box>
         </Box>
         {/*  <ConfirmPasswordMatch initialValue>
           {(match, doMatch, passRef, confPassRef) => (
