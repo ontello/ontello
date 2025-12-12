@@ -8,6 +8,7 @@ import { OntelloDialog } from '../../ontello/OntelloDialog';
 import { useChainConfig } from '../../../hooks/web3/useChainConfig';
 import { ReceiveUi, ReceiveChainInfo } from '../ReceiveUi';
 import { useOwnerManage } from '../../../hooks/web3/useOwnerManage';
+import { useTokensContext } from '../../../hooks/wallet/useTokens';
 import { formatDollarNumber } from '../../../utils/ontello/number';
 import { formatPrecision } from '../../../utils/number';
 
@@ -98,6 +99,7 @@ export function SyncDialog({
   const { payFee } = useOwnerManage(aaAddress as `0x${string}`);
   const payFeeRef = useRef(payFee);
   payFeeRef.current = payFee;
+  const { tokens } = useTokensContext();
 
   const toggleSelect = (chainId: number) => {
     if (!selectedChainIds || !setSelectedChainIds) return;
@@ -203,12 +205,47 @@ export function SyncDialog({
     return true;
   }, [isSponsoredNetworkFee, networkFeeData, yourNetworkFeeTokenData]);
 
+  const requiredNetworkFeeBalance = useMemo(() => {
+    if (!networkFeeData) return undefined;
+    return Number(networkFeeData.balance) + 3;
+  }, [networkFeeData]);
+
+  const networkFeeTokenPrice = useMemo(() => {
+    if (!networkFeeData) return undefined;
+    const token = tokens.find(
+      (item) =>
+        item.tokenAddr?.toLowerCase() === networkFeeData.tokenAddr?.toLowerCase() &&
+        item.chainId === networkFeeData.chainId
+    );
+    const priceFromTokenOrApi = Number(token?.currencyPrice ?? networkFeeData.currencyPrice);
+    if (Number.isFinite(priceFromTokenOrApi) && priceFromTokenOrApi > 0) return priceFromTokenOrApi;
+    const derivedPrice =
+      Number(networkFeeData.balance) > 0
+        ? Number(networkFeeData.currency) / Number(networkFeeData.balance)
+        : undefined;
+    if (Number.isFinite(derivedPrice) && (derivedPrice as number) > 0) return derivedPrice;
+    return undefined;
+  }, [tokens, networkFeeData]);
+
+  const requiredNetworkFeeCurrency = useMemo(() => {
+    if (requiredNetworkFeeBalance === undefined) return undefined;
+    if (networkFeeTokenPrice === undefined) return undefined;
+    return requiredNetworkFeeBalance * networkFeeTokenPrice;
+  }, [requiredNetworkFeeBalance, networkFeeTokenPrice]);
+
   const showNeedTopUpFeeToken = useMemo(() => {
     if (isSponsoredNetworkFee) return false;
     if (!feeInfoIsLoaded) return false;
     if (!yourNetworkFeeTokenData || !networkFeeData) return false;
-    return Number(yourNetworkFeeTokenData.balance) < Number(networkFeeData.balance);
-  }, [isSponsoredNetworkFee, feeInfoIsLoaded, yourNetworkFeeTokenData, networkFeeData]);
+    if (requiredNetworkFeeBalance === undefined) return false;
+    return Number(yourNetworkFeeTokenData.balance) < requiredNetworkFeeBalance;
+  }, [
+    isSponsoredNetworkFee,
+    feeInfoIsLoaded,
+    yourNetworkFeeTokenData,
+    networkFeeData,
+    requiredNetworkFeeBalance,
+  ]);
 
   const buttonDisabled = useMemo(() => {
     if (status === SyncStatus.NoSyncNeeded) return false;
@@ -364,9 +401,11 @@ export function SyncDialog({
                 size="T300"
                 style={{ textDecoration: isSponsoredNetworkFee ? 'line-through' : 'none' }}
               >
-                {formatDollarNumber(networkFeeData?.currency)}·
-                {formatPrecision(networkFeeData?.balance)}
-                {networkFeeData?.symbol}
+                {formatDollarNumber(
+                  requiredNetworkFeeCurrency ?? Number(networkFeeData.currency || 0)
+                )}
+                ·{formatPrecision(requiredNetworkFeeBalance ?? Number(networkFeeData.balance))}
+                {networkFeeData.symbol}
               </Text>
             ) : (
               <Text size="T300">-</Text>
@@ -397,8 +436,8 @@ export function SyncDialog({
         {showNeedTopUpFeeToken && networkFeeData && (
           <Box direction="Column" gap="200">
             <Text size="T200" style={{ color: '#FF0000' }}>
-              You need more than {networkFeeData.balance} {networkFeeData.symbol} in{' '}
-              {netWorkFeeChainConfig?.chainNameView} due to gas fees.
+              You need more than {formatPrecision(requiredNetworkFeeBalance ?? 0)}{' '}
+              {networkFeeData.symbol} in {netWorkFeeChainConfig?.chainNameView} due to gas fees.
             </Text>
           </Box>
         )}
