@@ -48,7 +48,12 @@ export function ConfirmDialog({
             </IconButton>
           </Header>
           <Box direction="Column" gap="400" style={{ padding: config.space.S400, minWidth: 0 }}>
-            <Text size="T300">{message}</Text>
+            <Text
+              size="T300"
+              style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', wordBreak: 'break-word' }}
+            >
+              {message}
+            </Text>
             <Box gap="200" justifyContent="End">
               <Button variant="Secondary" onClick={onCancel}>
                 <Text size="B300">{cancelLabel}</Text>
@@ -63,4 +68,3 @@ export function ConfirmDialog({
     </Overlay>
   );
 }
-
