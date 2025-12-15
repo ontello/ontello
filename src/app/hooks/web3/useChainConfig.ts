@@ -2,7 +2,6 @@ import { useAtom } from 'jotai';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { walletApi } from '@src/app/externalApis';
 import type { ChainConfig } from '@src/app/externalApis';
-// import type { ChainConfigResponse } from '../../state/web3/chainConfig';
 import {
   chainConfigAtom,
   isLoadingChainConfigAtom,
@@ -13,7 +12,6 @@ import {
 const CACHE_DURATION = 60 * 60 * 1000;
 
 type UseChainConfigReturn = {
-  // chainConfigRes: ChainConfigResponse | null;
   availableChains: ChainConfig[];
   mainChainConfig: ChainConfig;
   isLoading: boolean;
@@ -107,7 +105,6 @@ export const useChainConfig = (): UseChainConfigReturn => {
   }, []);
 
   return {
-    // chainConfigRes,
     availableChains,
     mainChainConfig,
     isLoading,

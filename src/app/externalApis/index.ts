@@ -62,5 +62,5 @@ const createConfig = () => {
 };
 
 export const api = new ImBotApi(createConfig());
-export const botApi = new ImBotApi(createConfig());
+export const botApi = api;
 export const walletApi = new ImWalletApi(createConfig());

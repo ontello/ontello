@@ -33,6 +33,7 @@ import {
 import {
   calculateGasFees,
   calculateUserOpHash,
+  formatUserOpStruct,
   getUserOpSignature,
   serializeBigInt,
 } from '../../utils/web3';
@@ -40,24 +41,6 @@ import { getAuthExtras } from '../../state/authExtras';
 import { useBundler } from './useBundler';
 import { usePaymaster } from './usePaymaster';
 import { useChainConfig } from './useChainConfig';
-
-// function formatUserOpStruct(struct: UserOperation) {
-//   const output = `{
-//             sender: ${struct.sender},
-//             nonce : ${struct.nonce},
-//             initCode : hex"${struct.initCode.slice(2)}",
-//             callData : hex"${struct.callData.slice(2)}",
-//             callGasLimit : ${struct.callGasLimit},
-//             verificationGasLimit : ${struct.verificationGasLimit},
-//             preVerificationGas : ${struct.preVerificationGas},
-//             maxFeePerGas : ${struct.maxFeePerGas},
-//             maxPriorityFeePerGas : ${struct.maxPriorityFeePerGas},
-//             paymasterAndData : hex"${struct.paymasterAndData.slice(2)}",
-//             signature : hex"${struct.signature.slice(2)}"
-//         }`;
-
-//   console.log(output);
-// }
 
 const INIT_SIGNATURE =
   '0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000260000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000000001200000000000000000000000000000000000000000000000000000000000000017000000000000000000000000000000000000000000000000000000000000000168bd76d24faae41e9b10fa547c74f6d82ef3baf9ecfb18f828abb0fc13888b5bff4aa483155037396e6ca63771f0cba4585cb91a08d6492325d7f61518508eaf000000000000000000000000000000000000000000000000000000000000002549960de5880e8c687434170f6476605b8fe4aeb9a28632c7995cf3ba831d97631d0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f37b2274797065223a22176562617574686e2e676574222c226368616c6c656e6765223a224b33624e59524e524f767432776b4f5449376f6d7153384a56794e5431536d544c56646d68586d6d357851222c226f726967696e223a22687474703a2f2f6c6f63616c686f73743a38303830222c2263726f73734f726967696e223a66616c73652c226f746865725f6b6579735f63616e5f62655f61646465645f68657265223a22646f206e6f7420636f6d7061726520636c69656e74446174614a534f4e20616761696e737420612074656d706c6174652e205365652068747470733a2f2f676f6f2e666c2f796162506577227d00000000000000000000000000' as Hex;
@@ -373,12 +356,12 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
         );
         const eip712Hash = keccak256(concatHex(['0x1901', domainSeparator, structHash]));
         const signature = await signWithCurrentKey(eip712Hash);
-        const validationResult = (await passKeyAccountContract.read.isValidSignature([
-          hash,
-          signature,
-        ])) as Hex;
-        //0x1626ba7e is true
-        console.log('validationResult', validationResult);
+        // const validationResult = (await passKeyAccountContract.read.isValidSignature([
+        //   hash,
+        //   signature,
+        // ])) as Hex;
+        // //0x1626ba7e is true
+        // console.log('validationResult', validationResult);
 
         return signature;
       },

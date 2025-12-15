@@ -159,3 +159,21 @@ export function serializeBigInt(obj: any): any {
 
   return obj;
 }
+
+export function formatUserOpStruct(struct: UserOperation) {
+  const output = `{
+    sender: ${struct.sender},
+    nonce : ${struct.nonce},
+    initCode : hex"${struct.initCode.slice(2)}",
+    callData : hex"${struct.callData.slice(2)}",
+    callGasLimit : ${struct.callGasLimit},
+    verificationGasLimit : ${struct.verificationGasLimit},
+    preVerificationGas : ${struct.preVerificationGas},
+    maxFeePerGas : ${struct.maxFeePerGas},
+    maxPriorityFeePerGas : ${struct.maxPriorityFeePerGas},
+    paymasterAndData : hex"${struct.paymasterAndData.slice(2)}",
+    signature : hex"${struct.signature.slice(2)}"
+  }`;
+
+  console.log(output);
+}

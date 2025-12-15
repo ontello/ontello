@@ -199,7 +199,6 @@ export const useOwnerManage = (aaAddress: Address) => {
       [toHex(new Uint8Array(x)), toHex(new Uint8Array(y))],
       chainIds,
       keyIndex,
-      // (message) => mnemonicAccount.signMessage({ message: { raw: message } }),
       (message) => mnemonicAccount.sign({ hash: message })
     );
     return feeSession;
