@@ -36,7 +36,7 @@ export const ToastItem = recipe({
     {
       width: '100%',
       display: 'flex',
-      alignItems: 'flex-start',
+      alignItems: 'center',
       gap: config.space.S200,
       padding: config.space.S200,
       backgroundColor: color.Surface.Container,
@@ -103,4 +103,3 @@ export const ToastMessage = style({
   overflowWrap: 'anywhere',
   wordBreak: 'break-word',
 });
-
