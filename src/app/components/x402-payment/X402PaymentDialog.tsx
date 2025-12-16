@@ -29,6 +29,7 @@ import { getAuthExtras } from '@src/app/state/authExtras';
 import { Address, formatUnits, parseUnits } from 'viem';
 import { Accept } from './types';
 import { useTokensContext } from '@src/app/hooks/wallet/useTokens';
+import { toast } from '../toast';
 
 export function X402PaymentDialog() {
   const dialogData = useGlobalDialogState(GlobalDialogType.X402Payment);
@@ -138,13 +139,20 @@ export function X402PaymentDialog() {
     if (!dialogData?.link) return;
     if (!chainId) return;
     if (!accept) return;
-    const fetchWithPay = wrapFetchWithPayment(fetch, aaAccount, BigInt(10000000) /* TODO */);
-    const response = await fetchWithPay(dialogData.link, {
-      method: 'GET',
-    });
+    try {
+      const fetchWithPay = wrapFetchWithPayment(fetch, aaAccount, BigInt(10000000) /* TODO */);
+      const response = await fetchWithPay(dialogData.link, {
+        method: 'GET',
+      });
 
-    const data = await response.json();
-    console.log('data', data);
+      const data = await response.json();
+      console.log('data', data);
+      toast.success('Payment successful');
+      handleClose();
+    } catch (error) {
+      console.error(error);
+      toast.error('Payment failed');
+    }
   };
 
   return (
