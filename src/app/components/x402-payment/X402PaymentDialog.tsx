@@ -181,7 +181,7 @@ export function X402PaymentDialog() {
                   {amount ? `${amount} ${tokenSymbol}` : '—'}
                 </Text>
                 <Text size="T300" color="Secondary">
-                  {fiat ? `${fiat} ${contextToken?.currency ?? 'USD'}` : '—'}
+                  {fiat ? `${fiat} USD` : '—'}
                 </Text>
               </Box>
 
