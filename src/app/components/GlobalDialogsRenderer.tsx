@@ -3,7 +3,7 @@ import { ReviewTransferDialog } from './review-transfer';
 import { SyncOwnershipChangeDialog } from './wallet/multi-chain/SyncOwnershipChange';
 import { InviteFriendsDialog } from './invite';
 import { X402PaymentDialog } from './x402-payment';
-import { ReceiveDialog } from './wallet/ReceiveDialog';
+import { Receive } from '../pages/client/wallet/receive/Receive';
 
 export function GlobalDialogsRenderer() {
   return (
@@ -12,7 +12,7 @@ export function GlobalDialogsRenderer() {
       <SyncOwnershipChangeDialog />
       <InviteFriendsDialog />
       <X402PaymentDialog />
-      <ReceiveDialog />
+      <Receive />
     </>
   );
 }

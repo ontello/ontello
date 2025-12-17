@@ -17,7 +17,7 @@ export interface GlobalDialogPayloads {
   [GlobalDialogType.SyncOwnershipChange]: SyncOwnershipDialogData;
   [GlobalDialogType.InviteFriends]: {};
   [GlobalDialogType.X402Payment]: X402PaymentDialogData;
-  [GlobalDialogType.Receive]: {};
+  [GlobalDialogType.Receive]: { chainId?: number };
 }
 
 export type GlobalDialogState<T extends GlobalDialogType> = GlobalDialogPayloads[T] | undefined;

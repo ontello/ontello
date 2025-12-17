@@ -87,7 +87,7 @@ export function X402PaymentDialog() {
   };
 
   const handleFundWallet = () => {
-    openReceiveDialog({});
+    openReceiveDialog({ chainId });
   };
 
   if (!dialogData) return null;

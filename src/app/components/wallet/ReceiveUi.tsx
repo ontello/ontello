@@ -20,12 +20,16 @@ export interface ReceiveUiState {
 export interface ReceiveUiProps {
   onClose: () => void;
   chainsWithOtherInfo: ReceiveChainInfo[];
+  chainId?: number;
 }
 
-export function ReceiveUi({ onClose, chainsWithOtherInfo }: ReceiveUiProps) {
-  const [selectedNetworkChainId, setSelectedNetworkChainId] = useState<number>(
-    chainsWithOtherInfo[0]?.chainId
-  );
+export function ReceiveUi({ onClose, chainsWithOtherInfo, chainId }: ReceiveUiProps) {
+  const [selectedNetworkChainId, setSelectedNetworkChainId] = useState<number>(() => {
+    if (chainId != null && chainsWithOtherInfo.some((chain) => chain.chainId === chainId)) {
+      return chainId;
+    }
+    return chainsWithOtherInfo[0]?.chainId ?? 0;
+  });
 
   const selectedChain = useMemo(
     () => chainsWithOtherInfo.find((chain) => chain.chainId === selectedNetworkChainId),
