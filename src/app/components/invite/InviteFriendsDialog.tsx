@@ -238,10 +238,10 @@ export function InviteFriendsDialog() {
               <Box className={css.HistoryContent}>
                 {(historyList.length > 0 || historyLoading || historyError) && (
                   <Box className={css.HistoryHeadings}>
-                    <Text size="B300" priority="500">
+                    <Text size="H5" priority="500">
                       Invitees
                     </Text>
-                    <Text className={css.HistoryDate} size="B300" priority="500">
+                    <Text className={css.HistoryDate} size="H5" priority="500">
                       Date
                     </Text>
                   </Box>

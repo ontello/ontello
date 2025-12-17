@@ -304,6 +304,7 @@ function AgentFooter() {
                       padding: config.space.S300,
                       borderRadius: config.radii.R400,
                       backgroundColor: color.Surface.Container,
+                      color: color.Surface.OnContainer,
                       boxShadow: config.shadow.E200,
                       width: popAnchor.width,
                     }}
