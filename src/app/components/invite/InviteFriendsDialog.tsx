@@ -25,7 +25,9 @@ import { getMxIdServer } from '../../utils/matrix';
 import Gift from '../../../app/static/icons/Gift';
 import Turbine from '../../../app/static/icons/Turbine';
 import Lightning from '@src/app/static/icons/Lightning';
-import { timeDayMonthYear } from '@src/app/utils/time';
+import { timeDayMonthYear, timeDayMonYear } from '@src/app/utils/time';
+import { settingsAtom } from '@src/app/state/settings';
+import { useSetting } from '@src/app/state/hooks/settings';
 
 export function InviteFriendsDialog() {
   const dialogData = useGlobalDialogState(GlobalDialogType.InviteFriends);
@@ -41,6 +43,7 @@ export function InviteFriendsDialog() {
   const [historyList, setHistoryList] = useState<InviteHistoryList[]>([]);
   const mx = useMatrixClient();
   const serverName = getMxIdServer(mx.getUserId() || '') ?? '';
+  const [dateFormatString] = useSetting(settingsAtom, 'dateFormatString');
 
   useEffect(() => {
     setIsOpen(Boolean(dialogData));
@@ -241,7 +244,7 @@ export function InviteFriendsDialog() {
                     <Text size="H5" priority="500">
                       Invitees
                     </Text>
-                    <Text className={css.HistoryDate} size="H5" priority="500">
+                    <Text className={css.dateTitle} size="H5" priority="500">
                       Date
                     </Text>
                   </Box>
@@ -276,7 +279,7 @@ export function InviteFriendsDialog() {
                             {item.invitee}
                           </Text>
                           <Text className={css.HistoryDate} size="T300" priority="500">
-                            {timeDayMonthYear(item.inviteTime)}
+                            {timeDayMonYear(item.inviteTime, dateFormatString)}
                           </Text>
                         </Box>
                       ))}

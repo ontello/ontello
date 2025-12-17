@@ -196,3 +196,10 @@ export const HistoryDate = style([
     minWidth: toRem(96),
   },
 ]);
+
+export const dateTitle = style([
+  DefaultReset,
+  {
+    paddingRight: toRem(18),
+  },
+]);
