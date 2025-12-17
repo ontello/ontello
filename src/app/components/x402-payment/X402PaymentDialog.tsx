@@ -11,6 +11,7 @@ import {
   Overlay,
   OverlayBackdrop,
   OverlayCenter,
+  Spinner,
   Text,
 } from 'folds';
 
@@ -30,6 +31,7 @@ import { Address, formatUnits, parseUnits } from 'viem';
 import { Accept } from './types';
 import { useTokensContext } from '@src/app/hooks/wallet/useTokens';
 import { toast } from '../toast';
+import { ensureOwnershipSynced } from '@src/app/utils/ownershipSync';
 
 export function X402PaymentDialog() {
   const dialogData = useGlobalDialogState(GlobalDialogType.X402Payment);
@@ -39,6 +41,7 @@ export function X402PaymentDialog() {
   const [accept, setAccept] = useState<Accept | undefined>(undefined);
   const [chainId, setChainId] = useState<number | undefined>(undefined);
   const [loading, setLoading] = useState(false);
+  const [isPaying, setIsPaying] = useState(false);
   const { availableChains } = useChainConfig();
   const { aaAccount } = useAbstractAccount(aaAddress as Address, chainId);
   const link = dialogData?.link;
@@ -136,10 +139,13 @@ export function X402PaymentDialog() {
       : false;
 
   const handlePay = async () => {
+    if (isPaying) return;
     if (!dialogData?.link) return;
     if (!chainId) return;
     if (!accept) return;
     try {
+      setIsPaying(true);
+      await ensureOwnershipSynced([chainId]);
       const fetchWithPay = wrapFetchWithPayment(fetch, aaAccount, BigInt(10000000) /* TODO */);
       const response = await fetchWithPay(dialogData.link, {
         method: 'GET',
@@ -152,6 +158,8 @@ export function X402PaymentDialog() {
     } catch (error) {
       console.error(error);
       toast.error('Payment failed');
+    } finally {
+      setIsPaying(false);
     }
   };
 
@@ -244,7 +252,18 @@ export function X402PaymentDialog() {
                   fill="Solid"
                   onClick={handlePay}
                   style={{ width: '100%' }}
-                  disabled={loading || !accept || !chainId || hasInsufficientBalance}
+                  before={
+                    isPaying ? <Spinner variant="Primary" fill="Solid" size="200" /> : undefined
+                  }
+                  aria-busy={isPaying}
+                  disabled={
+                    loading ||
+                    isPaying ||
+                    !accept ||
+                    !chainId ||
+                    !aaAccount ||
+                    hasInsufficientBalance
+                  }
                 >
                   <Text size="B300">Pay</Text>
                 </Button>

@@ -340,9 +340,7 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
       },
 
       async signTransaction() {
-        throw new Error(
-          'signTransaction is not supported for abstract accounts. Use UserOperations instead.'
-        );
+        throw new Error('signTransaction is not supported.');
       },
 
       async signTypedData<
@@ -356,12 +354,12 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
         );
         const eip712Hash = keccak256(concatHex(['0x1901', domainSeparator, structHash]));
         const signature = await signWithCurrentKey(eip712Hash);
-        // const validationResult = (await passKeyAccountContract.read.isValidSignature([
-        //   hash,
-        //   signature,
-        // ])) as Hex;
-        // //0x1626ba7e is true
-        // console.log('validationResult', validationResult);
+        const validationResult = (await passKeyAccountContract.read.isValidSignature([
+          hash,
+          signature,
+        ])) as Hex;
+        //0x1626ba7e is true
+        console.log('validationResult', validationResult);
 
         return signature;
       },
