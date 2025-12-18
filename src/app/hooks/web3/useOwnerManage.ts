@@ -158,6 +158,38 @@ export const useOwnerManage = (aaAddress: Address) => {
     return syncStatus;
   };
 
+  const getDeploymentStatus = async (targetChainIds: number[]) => {
+    const web3Clients = createWeb3Clients(targetChainIds);
+
+    const codeResults = await Promise.all(
+      web3Clients.map(async (clientResult) => {
+        const { publicClient, chainConfig: currentChainConfig } = clientResult;
+
+        try {
+          const bytecode = await publicClient.getCode({
+            address: aaAddress,
+          });
+
+          return {
+            chainId: currentChainConfig.chainId,
+            deployed: bytecode !== undefined && bytecode !== '0x',
+          };
+        } catch (error) {
+          console.error(`Error getting code for chain ${currentChainConfig.chainId}:`, error);
+          return { chainId: currentChainConfig.chainId, deployed: null };
+        }
+      })
+    );
+
+    const deploymentStatus: Record<number, boolean | null> = {};
+
+    codeResults.forEach((result) => {
+      deploymentStatus[result.chainId] = result.deployed;
+    });
+
+    return deploymentStatus;
+  };
+
   const changeOwner = async (
     operation: ReplayOperation,
     args: unknown[],
@@ -225,6 +257,7 @@ export const useOwnerManage = (aaAddress: Address) => {
     buildOwnerManageUserOperation,
     payFee,
     checkOwnerInitial,
+    getDeploymentStatus,
     getSyncStatus,
     addOwnerByAddress,
     addOwnerByPublicKey,

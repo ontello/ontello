@@ -22,10 +22,12 @@ export function SyncOwnershipChangeDialog() {
 
   const aaAddress = localStorage.getItem(AUTH_EXTRA_KEYS.AA_ADDRESS) as Address;
 
-  const { syncOwner, getSyncStatus, checkOwnerInitial } = useOwnerManage(aaAddress);
+  const { syncOwner, getSyncStatus, checkOwnerInitial, getDeploymentStatus } =
+    useOwnerManage(aaAddress);
 
   const getSyncStatusRef = useRef(getSyncStatus);
   const checkOwnerInitialRef = useRef(checkOwnerInitial);
+  const getDeploymentStatusRef = useRef(getDeploymentStatus);
 
   const syncOwnerRef = useRef(syncOwner);
 
@@ -87,14 +89,17 @@ export function SyncOwnershipChangeDialog() {
     prevChainIdsRef.current = [...targetChainIds];
 
     setIsGettingSyncStatus(true);
-    Promise.all([getSyncStatusRef.current(targetChainIds), checkOwnerInitialRef.current()])
-      .then(([syncStatus, isOwnerInitial]) => {
-        if (isOwnerInitial) {
-          setStatus(SyncStatus.NoSyncNeeded);
-          onCloseWithStatus(SyncStatus.NoSyncNeeded);
-          return;
-        }
-        const needSyncIds = targetChainIds.filter((chainId) => !syncStatus[chainId]);
+    Promise.all([
+      getSyncStatusRef.current(targetChainIds),
+      checkOwnerInitialRef.current(),
+      getDeploymentStatusRef.current(targetChainIds),
+    ])
+      .then(([syncStatus, isOwnerInitial, deploymentStatus]) => {
+        const needSyncIds = targetChainIds.filter((chainId) => {
+          if (deploymentStatus[chainId] === false) return true;
+          if (isOwnerInitial) return false;
+          return !syncStatus[chainId];
+        });
         if (!needSyncIds.length) {
           setStatus(SyncStatus.NoSyncNeeded);
           onCloseWithStatus(SyncStatus.NoSyncNeeded);
