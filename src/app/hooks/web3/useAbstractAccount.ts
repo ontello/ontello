@@ -54,16 +54,26 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
   );
   const { getPaymasterSign } = usePaymaster(chainConfig.chainId);
 
-  const passKeyAccountContract = getContract({
-    address: aaAddress,
-    abi: AccountAbi,
-    client: ethClient,
-  });
-  const entryPointContract = getContract({
-    address: chainConfig.entrypointAddr as Address,
-    abi: EntryPointAbi,
-    client: ethClient,
-  });
+  const passKeyAccountContract = useMemo(
+    () =>
+      getContract({
+        address: aaAddress,
+        abi: AccountAbi,
+        client: ethClient,
+      }),
+    [aaAddress, ethClient]
+  );
+
+  const entryPointContract = useMemo(
+    () =>
+      getContract({
+        address: chainConfig.entrypointAddr as Address,
+        abi: EntryPointAbi,
+        client: ethClient,
+      }),
+    [chainConfig.entrypointAddr, ethClient]
+  );
+
   const isAccountDeployed = async (): Promise<boolean> => {
     try {
       const bytecode = await ethClient.getCode({
@@ -114,15 +124,11 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
       throw new Error('Public key not found in local storage');
     }
     const xy = fromBase64Url(publicKeyBase64);
-    try {
-      const keyIndex = await getKeyIndexThroughXy(
-        toHex(new Uint8Array(xy.slice(0, 32))),
-        toHex(new Uint8Array(xy.slice(32)))
-      );
-      return keyIndex;
-    } catch (error) {
-      return BigInt(0);
-    }
+    const keyIndex = await getKeyIndexThroughXy(
+      toHex(new Uint8Array(xy.slice(0, 32))),
+      toHex(new Uint8Array(xy.slice(32)))
+    );
+    return keyIndex;
   };
 
   //
@@ -354,17 +360,16 @@ export const useAbstractAccount = (aaAddress: Address, chainId?: number) => {
         );
         const eip712Hash = keccak256(concatHex(['0x1901', domainSeparator, structHash]));
         const signature = await signWithCurrentKey(eip712Hash);
-        const validationResult = (await passKeyAccountContract.read.isValidSignature([
-          hash,
-          signature,
-        ])) as Hex;
-        //0x1626ba7e is true
-        console.log('validationResult', validationResult);
+        // const validationResult = (await passKeyAccountContract.read.isValidSignature([
+        //   hash,
+        //   signature,
+        // ])) as Hex;
+        // console.log('validationResult', validationResult === '0x1626ba7e');
 
         return signature;
       },
     });
-  }, [aaAddress]);
+  }, [aaAddress, chainId]);
   const aaClient = useMemo(
     () =>
       createWalletClient({
